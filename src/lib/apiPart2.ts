@@ -1,25 +1,41 @@
 import { API_URL, fetchWithAuth } from "./apiClient";
 
-export async function createAdminTeam(name: string, billingLabel: string) {
+export async function createAdminTeam(
+  name: string,
+  billingLabel: string
+) {
   const res = await fetchWithAuth("/admin/teams", {
     method: "POST",
     body: JSON.stringify({ name, billingLabel }),
   });
+
   return res.json();
 }
 
-export async function updateAdminTeam(id: string, billingLabel: string, active?: boolean) {
+export async function updateAdminTeam(
+  id: string,
+  billingLabel: string,
+  active?: boolean
+) {
   const body: Record<string, unknown> = { billingLabel };
-  if (typeof active === "boolean") body.active = active;
+
+  if (typeof active === "boolean") {
+    body.active = active;
+  }
+
   const res = await fetchWithAuth(`/admin/teams/${id}`, {
     method: "PATCH",
     body: JSON.stringify(body),
   });
+
   return res.json();
 }
 
 export async function deleteAdminTeam(id: string) {
-  const res = await fetchWithAuth(`/admin/teams/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(`/admin/teams/${id}`, {
+    method: "DELETE",
+  });
+
   return res.json();
 }
 
@@ -29,7 +45,11 @@ export async function getAdminDbStats() {
 }
 
 export async function purgeAdminCollection(collection: string) {
-  const res = await fetchWithAuth(`/admin/db/purge/${collection}`, { method: "DELETE" });
+  const res = await fetchWithAuth(
+    `/admin/db/purge/${collection}`,
+    { method: "DELETE" }
+  );
+
   return res.json();
 }
 
@@ -39,47 +59,83 @@ export async function getBotTemplates() {
 }
 
 export async function getBotTemplateBySlug(slug: string) {
-  const res = await fetch(`${API_URL}/bot-templates/slug/${slug}`);
+  const res = await fetch(
+    `${API_URL}/bot-templates/slug/${slug}`
+  );
+
   return res.json();
 }
 
-export async function addBotTemplate(data: { name: string; githubRepo: string; sessionIdUrl: string; costTx: number }) {
+export async function addBotTemplate(data: {
+  name: string;
+  githubRepo: string;
+  sessionIdUrl: string;
+  costTx: number;
+}) {
   const res = await fetchWithAuth("/bot-templates", {
     method: "POST",
     body: JSON.stringify(data),
   });
+
   return res.json();
 }
 
 export async function updateBotTemplate(
   id: string,
-  data: { name?: string; githubRepo?: string; sessionIdUrl?: string; costTx?: number }
+  data: {
+    name?: string;
+    githubRepo?: string;
+    sessionIdUrl?: string;
+    costTx?: number;
+  }
 ) {
   const res = await fetchWithAuth(`/bot-templates/${id}`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
+
   return res.json();
 }
 
 export async function deleteBotTemplate(id: string) {
-  const res = await fetchWithAuth(`/bot-templates/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(
+    `/bot-templates/${id}`,
+    { method: "DELETE" }
+  );
+
   return res.json();
 }
 
 export async function refreshBotTemplateImage(id: string) {
-  const res = await fetchWithAuth(`/bot-templates/${id}/refresh-image`, { method: "POST" });
+  const res = await fetchWithAuth(
+    `/bot-templates/${id}/refresh-image`,
+    { method: "POST" }
+  );
+
   return res.json();
 }
 
-/** Public — loads required + optional env vars from template app.json */
-export async function getTemplateAppVars(templateId: string): Promise<{
-  vars: { key: string; description: string; required: boolean; value: string }[];
+/**
+ * Public — loads required + optional env vars
+ * from template app.json.
+ */
+export async function getTemplateAppVars(
+  templateId: string
+): Promise<{
+  vars: {
+    key: string;
+    description: string;
+    required: boolean;
+    value: string;
+  }[];
   sessionIdUrl: string;
   branch?: string;
   error?: string;
 }> {
-  const res = await fetch(`${API_URL}/bots/template-appvars/${templateId}`);
+  const res = await fetch(
+    `${API_URL}/bots/template-appvars/${templateId}`
+  );
+
   return res.json();
 }
 
@@ -93,24 +149,49 @@ export async function getMyPanels() {
   return res.json();
 }
 
-export async function purchasePanel(planId: string, opts?: { panelEmail?: string; panelUsername?: string; panelPassword?: string }) {
+export async function purchasePanel(
+  planId: string,
+  opts?: {
+    panelEmail?: string;
+    panelUsername?: string;
+    panelPassword?: string;
+  }
+) {
   const res = await fetchWithAuth("/panels/purchase", {
     method: "POST",
-    body: JSON.stringify({ planId, ...opts }),
+    body: JSON.stringify({
+      planId,
+      ...opts,
+    }),
   });
+
   return res.json();
 }
 
 export async function renewPanel(panelId: string) {
-  const res = await fetchWithAuth(`/panels/${panelId}/renew`, { method: "POST" });
+  const res = await fetchWithAuth(
+    `/panels/${panelId}/renew`,
+    { method: "POST" }
+  );
+
   return res.json();
 }
 
-export async function purchaseAdminPanel(opts?: { panelEmail?: string; panelUsername?: string; panelPassword?: string }) {
-  const res = await fetchWithAuth("/panels/purchase-admin", {
-    method: "POST",
-    body: JSON.stringify({ ...opts }),
-  });
+export async function purchaseAdminPanel(
+  opts?: {
+    panelEmail?: string;
+    panelUsername?: string;
+    panelPassword?: string;
+  }
+) {
+  const res = await fetchWithAuth(
+    "/panels/purchase-admin",
+    {
+      method: "POST",
+      body: JSON.stringify({ ...opts }),
+    }
+  );
+
   return res.json();
 }
 
@@ -120,12 +201,20 @@ export async function getAdminPanels() {
 }
 
 export async function deleteAdminPanel(id: string) {
-  const res = await fetchWithAuth(`/panels/admin/panel/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(
+    `/panels/admin/panel/${id}`,
+    { method: "DELETE" }
+  );
+
   return res.json();
 }
 
 export async function deletePanel(id: string) {
-  const res = await fetchWithAuth(`/panels/my/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(
+    `/panels/my/${id}`,
+    { method: "DELETE" }
+  );
+
   return res.json();
 }
 
@@ -137,10 +226,14 @@ export async function deployBotWithTemplate(data: {
   months?: number;
   extraVars?: Record<string, string>;
 }) {
-  const res = await fetchWithAuth("/bots/deploy-template", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  const res = await fetchWithAuth(
+    "/bots/deploy-template",
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    }
+  );
+
   return res.json();
 }
 
@@ -158,54 +251,28 @@ export async function createAdminPanelPlan(data: {
   cpu: string;
   isBestDeal: boolean;
 }) {
-  const res = await fetchWithAuth("/panels/admin/plans", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  const res = await fetchWithAuth(
+    "/panels/admin/plans",
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    }
+  );
+
   return res.json();
 }
 
 export async function deleteAdminPanelPlan(id: string) {
-  const res = await fetchWithAuth(`/panels/admin/plans/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(
+    `/panels/admin/plans/${id}`,
+    { method: "DELETE" }
+  );
+
   return res.json();
 }
 
 export async function getAdminAllPanels() {
   const res = await fetchWithAuth("/panels/admin/all");
-  return res.json();
-}
-
-export async function initiateCustomPayment(ksAmount: number, txAmount: number) {
-  const res = await fetchWithAuth("/payments/initiate-custom", {
-    method: "POST",
-    body: JSON.stringify({ ksAmount, txAmount }),
-  });
-  return res.json();
-}
-
-export async function initiatePaymentNg(data: { ngnAmount: number; txAmount: number; bonusTx: number; packageName?: string }) {
-  const res = await fetchWithAuth("/payments/initiate-ng", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-  return res.json();
-}
-
-export async function prepareCardNg(data: { ngnAmount: number; txAmount: number; bonusTx: number }) {
-  const res = await fetchWithAuth("/payments/prepare-card-ng", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-  return res.json();
-}
-
-export async function getPaymentsConfig() {
-  const res = await fetch(`${API_URL}/payments/config`);
-  return res.json();
-}
-
-export async function getPaymentHistory() {
-  const res = await fetchWithAuth("/payments/history");
   return res.json();
 }
 
@@ -215,7 +282,11 @@ export async function getOrphanHerokuApps() {
 }
 
 export async function deleteOrphanApp(appName: string) {
-  const res = await fetchWithAuth(`/admin/orphan-apps/${encodeURIComponent(appName)}`, { method: "DELETE" });
+  const res = await fetchWithAuth(
+    `/admin/orphan-apps/${encodeURIComponent(appName)}`,
+    { method: "DELETE" }
+  );
+
   return res.json();
 }
 
@@ -229,29 +300,51 @@ export async function getAdminTutorials() {
   return res.json();
 }
 
-export async function createAdminTutorial(data: { title: string; youtubeUrl: string; order?: number }) {
-  const res = await fetchWithAuth("/admin/tutorials", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+export async function createAdminTutorial(data: {
+  title: string;
+  youtubeUrl: string;
+  order?: number;
+}) {
+  const res = await fetchWithAuth(
+    "/admin/tutorials",
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    }
+  );
+
   return res.json();
 }
 
 export async function deleteAdminTutorial(id: string) {
-  const res = await fetchWithAuth(`/admin/tutorials/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(
+    `/admin/tutorials/${id}`,
+    { method: "DELETE" }
+  );
+
   return res.json();
 }
 
-export async function deleteAdminTransactionsBulk(ids: string[]) {
-  const res = await fetchWithAuth("/admin/transactions/bulk", {
-    method: "DELETE",
-    body: JSON.stringify({ ids }),
-  });
+export async function deleteAdminTransactionsBulk(
+  ids: string[]
+) {
+  const res = await fetchWithAuth(
+    "/admin/transactions/bulk",
+    {
+      method: "DELETE",
+      body: JSON.stringify({ ids }),
+    }
+  );
+
   return res.json();
 }
 
 export async function resolveStaleTransactions() {
-  const res = await fetchWithAuth("/admin/transactions/resolve-stale", { method: "POST" });
+  const res = await fetchWithAuth(
+    "/admin/transactions/resolve-stale",
+    { method: "POST" }
+  );
+
   return res.json();
 }
 
@@ -266,22 +359,37 @@ export async function getNotifications() {
 }
 
 export async function getUnreadNotificationCount() {
-  const res = await fetchWithAuth("/notifications/unread-count");
+  const res = await fetchWithAuth(
+    "/notifications/unread-count"
+  );
+
   return res.json();
 }
 
 export async function markNotificationsRead() {
-  const res = await fetchWithAuth("/notifications/mark-read", { method: "POST" });
+  const res = await fetchWithAuth(
+    "/notifications/mark-read",
+    { method: "POST" }
+  );
+
   return res.json();
 }
 
 export async function deleteNotification(id: string) {
-  const res = await fetchWithAuth(`/notifications/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(
+    `/notifications/${id}`,
+    { method: "DELETE" }
+  );
+
   return res.json();
 }
 
 export async function deleteAllNotifications() {
-  const res = await fetchWithAuth("/notifications/all", { method: "DELETE" });
+  const res = await fetchWithAuth(
+    "/notifications/all",
+    { method: "DELETE" }
+  );
+
   return res.json();
 }
 
@@ -291,6 +399,9 @@ export async function getAdminRevenue() {
 }
 
 export async function getAdminBoostCatalogueMeta() {
-  const res = await fetchWithAuth("/admin/boost-catalogue/meta");
+  const res = await fetchWithAuth(
+    "/admin/boost-catalogue/meta"
+  );
+
   return res.json();
 }
