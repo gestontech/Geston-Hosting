@@ -9,11 +9,23 @@ export async function login(usernameOrEmail: string, password: string) {
   return res.json();
 }
 
-export async function signup(email: string, username: string, password: string, referralCode?: string, fingerprint?: string) {
+export async function signup(
+  email: string,
+  username: string,
+  password: string,
+  referralCode?: string,
+  fingerprint?: string
+) {
   const res = await fetch(`${API_URL}/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, username, password, referralCode, fingerprint }),
+    body: JSON.stringify({
+      email,
+      username,
+      password,
+      referralCode,
+      fingerprint,
+    }),
   });
   return res.json();
 }
@@ -48,7 +60,14 @@ export async function getBots() {
   return res.json();
 }
 
-export async function deployBot(data: { phoneNumber?: string; botName?: string; sessionVar: string; isTrial?: boolean; device?: string; months?: number }) {
+export async function deployBot(data: {
+  phoneNumber?: string;
+  botName?: string;
+  sessionVar: string;
+  isTrial?: boolean;
+  device?: string;
+  months?: number;
+}) {
   const res = await fetchWithAuth("/bots/deploy", {
     method: "POST",
     body: JSON.stringify(data),
@@ -57,17 +76,23 @@ export async function deployBot(data: { phoneNumber?: string; botName?: string; 
 }
 
 export async function stopBot(id: string) {
-  const res = await fetchWithAuth(`/bots/${id}/stop`, { method: "POST" });
+  const res = await fetchWithAuth(`/bots/${id}/stop`, {
+    method: "POST",
+  });
   return res.json();
 }
 
 export async function startBot(id: string) {
-  const res = await fetchWithAuth(`/bots/${id}/start`, { method: "POST" });
+  const res = await fetchWithAuth(`/bots/${id}/start`, {
+    method: "POST",
+  });
   return res.json();
 }
 
 export async function restartBot(id: string) {
-  const res = await fetchWithAuth(`/bots/${id}/restart`, { method: "POST" });
+  const res = await fetchWithAuth(`/bots/${id}/restart`, {
+    method: "POST",
+  });
   return res.json();
 }
 
@@ -80,7 +105,9 @@ export async function renewBot(id: string, months: number) {
 }
 
 export async function deleteBot(id: string) {
-  const res = await fetchWithAuth(`/bots/${id}/delete`, { method: "POST" });
+  const res = await fetchWithAuth(`/bots/${id}/delete`, {
+    method: "POST",
+  });
   return res.json();
 }
 
@@ -89,14 +116,27 @@ export async function getBotLogs(id: string) {
   return res.json();
 }
 
-export async function updateBotVars(id: string, session: string, device?: string, extraVars?: Record<string, string>) {
+export async function updateBotVars(
+  id: string,
+  session: string,
+  device?: string,
+  extraVars?: Record<string, string>
+) {
   const body: Record<string, unknown> = { session };
-  if (device) body.device = device;
-  if (extraVars && Object.keys(extraVars).length > 0) body.extraVars = extraVars;
+
+  if (device) {
+    body.device = device;
+  }
+
+  if (extraVars && Object.keys(extraVars).length > 0) {
+    body.extraVars = extraVars;
+  }
+
   const res = await fetchWithAuth(`/bots/${id}/vars`, {
     method: "PATCH",
     body: JSON.stringify(body),
   });
+
   return res.json();
 }
 
@@ -105,39 +145,12 @@ export async function checkTrial(phone: string) {
   return res.json();
 }
 
-export async function getPackages() {
-  const res = await fetch(`${API_URL}/payments/packages`);
-  return res.json();
-}
-
-export async function initiatePayment(packageId: string) {
-  const res = await fetchWithAuth("/payments/initiate", {
-    method: "POST",
-    body: JSON.stringify({ packageId }),
-  });
-  return res.json();
-}
-
-export async function getTransactions() {
-  const res = await fetchWithAuth("/payments/history");
-  return res.json();
-}
-
-export async function verifyPayment(reference: string) {
-  const res = await fetchWithAuth(`/payments/verify/${reference}`);
-  return res.json();
-}
-
-export async function getMobileChargeStatus(reference: string) {
-  const res = await fetchWithAuth(`/payments/charge/status/${reference}`);
-  return res.json();
-}
-
 export async function claimCoupon(code: string) {
   const res = await fetchWithAuth("/coupons/claim", {
     method: "POST",
     body: JSON.stringify({ code }),
   });
+
   return res.json();
 }
 
@@ -156,11 +169,15 @@ export async function banUser(id: string, reason?: string) {
     method: "POST",
     body: JSON.stringify({ reason }),
   });
+
   return res.json();
 }
 
 export async function unbanUser(id: string) {
-  const res = await fetchWithAuth(`/admin/users/${id}/unban`, { method: "POST" });
+  const res = await fetchWithAuth(`/admin/users/${id}/unban`, {
+    method: "POST",
+  });
+
   return res.json();
 }
 
@@ -169,6 +186,7 @@ export async function grantTx(id: string, amount: number) {
     method: "POST",
     body: JSON.stringify({ amount }),
   });
+
   return res.json();
 }
 
@@ -177,6 +195,7 @@ export async function subtractTx(id: string, amount: number) {
     method: "POST",
     body: JSON.stringify({ amount }),
   });
+
   return res.json();
 }
 
@@ -185,19 +204,28 @@ export async function resetPassword(id: string, password: string) {
     method: "POST",
     body: JSON.stringify({ password }),
   });
+
   return res.json();
 }
 
 export async function deleteUser(id: string) {
-  const res = await fetchWithAuth(`/admin/users/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(`/admin/users/${id}`, {
+    method: "DELETE",
+  });
+
   return res.json();
 }
 
-export async function sendUserNotification(id: string, title: string, message: string) {
+export async function sendUserNotification(
+  id: string,
+  title: string,
+  message: string
+) {
   const res = await fetchWithAuth(`/admin/users/${id}/notify`, {
     method: "POST",
     body: JSON.stringify({ title, message }),
   });
+
   return res.json();
 }
 
@@ -221,11 +249,15 @@ export async function createCoupon(code: string, txAmount: number) {
     method: "POST",
     body: JSON.stringify({ code, txAmount }),
   });
+
   return res.json();
 }
 
 export async function deleteCoupon(id: string) {
-  const res = await fetchWithAuth(`/admin/coupons/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(`/admin/coupons/${id}`, {
+    method: "DELETE",
+  });
+
   return res.json();
 }
 
@@ -235,32 +267,50 @@ export async function getAdminReferrals() {
 }
 
 export async function deleteAllAdminReferrals() {
-  const res = await fetchWithAuth("/admin/referrals/all", { method: "DELETE" });
+  const res = await fetchWithAuth("/admin/referrals/all", {
+    method: "DELETE",
+  });
+
   return res.json();
 }
 
 export async function stopAdminBot(id: string) {
-  const res = await fetchWithAuth(`/admin/bots/${id}/stop`, { method: "POST" });
+  const res = await fetchWithAuth(`/admin/bots/${id}/stop`, {
+    method: "POST",
+  });
+
   return res.json();
 }
 
 export async function startAdminBot(id: string) {
-  const res = await fetchWithAuth(`/admin/bots/${id}/start`, { method: "POST" });
+  const res = await fetchWithAuth(`/admin/bots/${id}/start`, {
+    method: "POST",
+  });
+
   return res.json();
 }
 
 export async function restartAdminBot(id: string) {
-  const res = await fetchWithAuth(`/admin/bots/${id}/restart`, { method: "POST" });
+  const res = await fetchWithAuth(`/admin/bots/${id}/restart`, {
+    method: "POST",
+  });
+
   return res.json();
 }
 
 export async function deleteAdminBot(id: string) {
-  const res = await fetchWithAuth(`/admin/bots/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(`/admin/bots/${id}`, {
+    method: "DELETE",
+  });
+
   return res.json();
 }
 
 export async function deleteAdminTransaction(id: string) {
-  const res = await fetchWithAuth(`/admin/transactions/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(`/admin/transactions/${id}`, {
+    method: "DELETE",
+  });
+
   return res.json();
 }
 
