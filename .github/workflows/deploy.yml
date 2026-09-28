@@ -1,0 +1,87 @@
+name: Geston Hosting - Deploy Production
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: geston-hosting-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check Node and npm versions
+        run: |
+          node --version
+          npm --version
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Production build
+        env:
+          NODE_ENV: production
+
+          JWT_SECRET: ci-test-secret-not-for-production
+          SESSION_SECRET: ci-session-secret-not-for-production
+
+          ADMIN_EMAIL: ci-admin@example.com
+          ADMIN_USERNAME: ci-admin
+          ADMIN_PASSWORD: ci-admin-password-not-for-production
+
+          MONGODB_URI: mongodb://localhost:27017/geston-hosting-ci
+
+          APP_URL: https://hosting.gestontech.online
+          CLIENT_URL: https://hosting.gestontech.online
+          SITE_URL: https://hosting.gestontech.online
+          FRONTEND_ORIGIN: https://hosting.gestontech.online
+
+        run: npm run build
+
+      - name: Verify production output
+        run: |
+          test -f dist/index.html
+          test -f dist-server/index.js
+
+          echo "Production build verified."
+
+  deploy:
+    name: Deploy to Heroku
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy application
+        uses: akhileshns/heroku-deploy@v3.14.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          usedocker: true
