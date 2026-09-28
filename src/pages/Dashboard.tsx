@@ -437,6 +437,7 @@ export function Dashboard() {
                   <Bot className="w-4 h-4" />
                   Déploiement de bot
                 </div>
+
                 <ChevronRight className="w-3.5 h-3.5 opacity-40" />
               </button>
 
@@ -451,6 +452,7 @@ export function Dashboard() {
                   <Server className="w-4 h-4" />
                   Panels
                 </div>
+
                 <ChevronRight className="w-3.5 h-3.5 opacity-40" />
               </button>
 
@@ -465,6 +467,7 @@ export function Dashboard() {
                   <TrendingUp className="w-4 h-4" />
                   Boost réseaux sociaux
                 </div>
+
                 <ChevronRight className="w-3.5 h-3.5 opacity-40" />
               </button>
 
@@ -479,6 +482,7 @@ export function Dashboard() {
                   <Code2 className="w-4 h-4" />
                   API développeur
                 </div>
+
                 <ChevronRight className="w-3.5 h-3.5 opacity-40" />
               </button>
             </div>
@@ -494,6 +498,7 @@ export function Dashboard() {
                 <Users className="w-4 h-4" />
                 Parrainer & gagner
               </div>
+
               <ChevronRight className="w-3.5 h-3.5 opacity-40" />
             </button>
 
@@ -508,6 +513,7 @@ export function Dashboard() {
                 <Gift className="w-4 h-4" />
                 Code promo
               </div>
+
               <ChevronRight className="w-3.5 h-3.5 opacity-40" />
             </button>
 
@@ -523,6 +529,7 @@ export function Dashboard() {
                   <Shield className="w-4 h-4" />
                   Panneau admin
                 </div>
+
                 <ChevronRight className="w-3.5 h-3.5 opacity-40" />
               </button>
             )}
@@ -652,6 +659,7 @@ export function Dashboard() {
               <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center">
                 <Bot className="w-4 h-4 text-teal-400" />
               </div>
+
               <span className="text-xs text-muted-foreground font-medium">
                 Bots
               </span>
@@ -674,6 +682,7 @@ export function Dashboard() {
               <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <Server className="w-4 h-4 text-blue-400" />
               </div>
+
               <span className="text-xs text-muted-foreground font-medium">
                 Panels
               </span>
@@ -682,7 +691,7 @@ export function Dashboard() {
             <p className="text-2xl font-bold">{panels.length}</p>
 
             <span className="mt-2 inline-block text-xs text-blue-400 font-medium">
-              Acheter/Gérer →
+              Créer/Gérer →
             </span>
           </div>
 
@@ -696,6 +705,7 @@ export function Dashboard() {
               <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-pink-400" />
               </div>
+
               <span className="text-xs text-muted-foreground font-medium">
                 Boost
               </span>
@@ -720,6 +730,7 @@ export function Dashboard() {
               <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
                 <Youtube className="w-4 h-4 text-amber-400" />
               </div>
+
               <span className="text-xs text-muted-foreground font-medium">
                 Tutoriels
               </span>
