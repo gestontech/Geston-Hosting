@@ -1,4 +1,4 @@
-name: Geston Hosting - Deploy Production
+name: Geston Hosting - Production Deploy
 
 on:
   workflow_dispatch:
@@ -16,14 +16,14 @@ concurrency:
 
 jobs:
   build:
-    name: Build Production
+    name: Production Build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -45,29 +45,26 @@ jobs:
       - name: Production build
         env:
           NODE_ENV: production
-
           JWT_SECRET: ci-test-secret-not-for-production
           SESSION_SECRET: ci-session-secret-not-for-production
-
           ADMIN_EMAIL: ci-admin@example.com
           ADMIN_USERNAME: ci-admin
           ADMIN_PASSWORD: ci-admin-password-not-for-production
-
           MONGODB_URI: mongodb://localhost:27017/geston-hosting-ci
-
           APP_URL: https://hosting.gestontech.online
           CLIENT_URL: https://hosting.gestontech.online
           SITE_URL: https://hosting.gestontech.online
           FRONTEND_ORIGIN: https://hosting.gestontech.online
-
         run: npm run build
 
-      - name: Verify production output
+      - name: Verify production files
         run: |
           test -f dist/index.html
           test -f dist-server/index.js
 
           echo "Production build verified."
+          echo "Frontend: dist/index.html"
+          echo "Backend: dist-server/index.js"
 
   deploy:
     name: Deploy to Heroku
@@ -78,10 +75,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy application
-        uses: akhileshns/heroku-deploy@v3.14.15
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          usedocker: true
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Authenticate with Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          heroku auth:whoami
+
+      - name: Deploy to Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+        run: |
+          if [ -z "$HEROKU_APP_NAME" ]; then
+            echo "HEROKU_APP_NAME secret is missing."
+            exit 1
+          fi
+
+          git remote add heroku "https://heroku:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_APP_NAME}.git"
+
+          git push heroku HEAD:main --force
+
+      - name: Show deployment information
+        env:
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+        run: |
+          heroku apps:info --app "$HEROKU_APP_NAME"
