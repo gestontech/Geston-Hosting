@@ -15,8 +15,7 @@ import type {
   NextFunction,
 } from "express";
 
-const mockUserId =
-  "507f1f77bcf86cd799439011";
+const mockUserId = "507f1f77bcf86cd799439011";
 
 vi.mock(
   "../../../middleware/auth.js",
@@ -59,43 +58,24 @@ const BotFind = vi.fn();
 const BotFindOne = vi.fn();
 const BotCreate = vi.fn();
 const BotDeleteOne = vi.fn();
-const BotFindByIdAndUpdate =
-  vi.fn();
+const BotFindByIdAndUpdate = vi.fn();
 
 const UserFindById = vi.fn();
 const UserUpdateOne = vi.fn();
 
 const TeamFind = vi.fn();
-
-const TransactionCreate =
-  vi.fn();
+const TransactionCreate = vi.fn();
 
 vi.mock(
   "../../../models/Bot.js",
   () => ({
     Bot: {
-      find: (
-        ...args: unknown[]
-      ) => BotFind(...args),
-
-      findOne: (
-        ...args: unknown[]
-      ) => BotFindOne(...args),
-
-      create: (
-        ...args: unknown[]
-      ) => BotCreate(...args),
-
-      deleteOne: (
-        ...args: unknown[]
-      ) => BotDeleteOne(...args),
-
-      findByIdAndUpdate: (
-        ...args: unknown[]
-      ) =>
-        BotFindByIdAndUpdate(
-          ...args,
-        ),
+      find: (...args: unknown[]) => BotFind(...args),
+      findOne: (...args: unknown[]) => BotFindOne(...args),
+      create: (...args: unknown[]) => BotCreate(...args),
+      deleteOne: (...args: unknown[]) => BotDeleteOne(...args),
+      findByIdAndUpdate: (...args: unknown[]) =>
+        BotFindByIdAndUpdate(...args),
     },
   }),
 );
@@ -104,17 +84,10 @@ vi.mock(
   "../../../models/User.js",
   () => ({
     User: {
-      findById: (
-        ...args: unknown[]
-      ) =>
+      findById: (...args: unknown[]) =>
         UserFindById(...args),
-
-      updateOne: (
-        ...args: unknown[]
-      ) =>
-        UserUpdateOne(
-          ...args,
-        ),
+      updateOne: (...args: unknown[]) =>
+        UserUpdateOne(...args),
     },
   }),
 );
@@ -123,9 +96,7 @@ vi.mock(
   "../../../models/Team.js",
   () => ({
     Team: {
-      find: (
-        ...args: unknown[]
-      ) => TeamFind(...args),
+      find: (...args: unknown[]) => TeamFind(...args),
     },
   }),
 );
@@ -134,12 +105,8 @@ vi.mock(
   "../../../models/Transaction.js",
   () => ({
     Transaction: {
-      create: (
-        ...args: unknown[]
-      ) =>
-        TransactionCreate(
-          ...args,
-        ),
+      create: (...args: unknown[]) =>
+        TransactionCreate(...args),
     },
   }),
 );
@@ -164,45 +131,26 @@ vi.mock(
   }),
 );
 
-const deployBotApp =
-  vi.fn();
-
-const findBestTeam =
-  vi.fn();
-
-const setConfigVar =
-  vi.fn();
-
-const appExists =
-  vi.fn();
+const deployBotApp = vi.fn();
+const findBestTeam = vi.fn();
+const setConfigVar = vi.fn();
+const appExists = vi.fn();
 
 vi.mock(
   "../../../services/heroku.js",
   () => ({
-    deployBotApp: (
-      ...args: unknown[]
-    ) =>
-      deployBotApp(
-        ...args,
-      ),
+    deployBotApp: (...args: unknown[]) =>
+      deployBotApp(...args),
 
     deleteApp: vi.fn(
       () => Promise.resolve(),
     ),
 
-    findBestTeam: (
-      ...args: unknown[]
-    ) =>
-      findBestTeam(
-        ...args,
-      ),
+    findBestTeam: (...args: unknown[]) =>
+      findBestTeam(...args),
 
-    setConfigVar: (
-      ...args: unknown[]
-    ) =>
-      setConfigVar(
-        ...args,
-      ),
+    setConfigVar: (...args: unknown[]) =>
+      setConfigVar(...args),
 
     getSetupStatus: vi.fn(
       () =>
@@ -211,12 +159,8 @@ vi.mock(
         }),
     ),
 
-    appExists: (
-      ...args: unknown[]
-    ) =>
-      appExists(
-        ...args,
-      ),
+    appExists: (...args: unknown[]) =>
+      appExists(...args),
   }),
 );
 
@@ -224,8 +168,7 @@ vi.mock(
   "../../../services/notify.js",
   () => ({
     notifyOwner: vi.fn(
-      () =>
-        Promise.resolve(),
+      () => Promise.resolve(),
     ),
   }),
 );
@@ -233,11 +176,9 @@ vi.mock(
 vi.mock(
   "../../../services/notifications.js",
   () => ({
-    createNotification:
-      vi.fn(
-        () =>
-          Promise.resolve(),
-      ),
+    createNotification: vi.fn(
+      () => Promise.resolve(),
+    ),
   }),
 );
 
@@ -245,8 +186,7 @@ vi.mock(
   "../../../services/botRefund.js",
   () => ({
     refundBotCost: vi.fn(
-      () =>
-        Promise.resolve(),
+      () => Promise.resolve(),
     ),
   }),
 );
@@ -258,50 +198,31 @@ import {
 } from "../../../lib/errors.js";
 
 function buildApp() {
-  const app =
-    express();
+  const app = express();
 
-  app.use(
-    express.json(),
-  );
+  app.use(express.json());
 
   app.use(
     "/api/bots",
     deployRouter,
   );
 
-  app.use(
-    errorHandler,
-  );
+  app.use(errorHandler);
 
   return app;
 }
 
 function fakeUser(
-  overrides: Record<
-    string,
-    unknown
-  > = {},
+  overrides: Record<string, unknown> = {},
 ) {
   return {
     _id: mockUserId,
-
-    /*
-     * Legacy persisted field.
-     *
-     * Free mode must never deduct it.
-     */
     txCoins: 0,
-
     usedFreeTrial: false,
-
     bots: [],
-
     save: vi.fn(
-      () =>
-        Promise.resolve(),
+      () => Promise.resolve(),
     ),
-
     ...overrides,
   };
 }
@@ -320,17 +241,10 @@ beforeEach(() => {
     "team-a",
   );
 
-  BotFindOne.mockResolvedValue(
-    null,
-  );
+  BotFindOne.mockResolvedValue(null);
 
-  /*
-   * The deployment tests use botName, so
-   * generateAppName() is not involved.
-   */
   BotFind.mockReturnValue({
-    lean: () =>
-      Promise.resolve([]),
+    lean: () => Promise.resolve([]),
   });
 
   BotDeleteOne.mockResolvedValue({
@@ -347,10 +261,7 @@ beforeEach(() => {
 
   BotCreate.mockImplementation(
     async (
-      doc: Record<
-        string,
-        unknown
-      >,
+      doc: Record<string, unknown>,
     ) => ({
       _id: "bot1",
       ...doc,
@@ -359,13 +270,6 @@ beforeEach(() => {
 
   deployBotApp.mockResolvedValue({
     success: true,
-
-    /*
-     * Keep setupId undefined in these tests.
-     *
-     * That prevents the production polling timer
-     * from being created during a unit test.
-     */
     setupId: undefined,
   });
 
@@ -373,9 +277,7 @@ beforeEach(() => {
     undefined,
   );
 
-  appExists.mockResolvedValue(
-    true,
-  );
+  appExists.mockResolvedValue(true);
 
   TransactionCreate.mockResolvedValue(
     undefined,
@@ -388,151 +290,112 @@ describe(
     it(
       "deploys a free trial bot",
       async () => {
-        const user =
-          fakeUser();
+        const user = fakeUser();
 
         UserFindById.mockResolvedValue(
           user,
         );
 
-        const res =
-          await request(
-            buildApp(),
+        const res = await request(
+          buildApp(),
+        )
+          .post(
+            "/api/bots/deploy",
           )
-            .post(
-              "/api/bots/deploy",
-            )
-            .send({
-              botName:
-                "gestonhost-trial-1",
+          .send({
+            botName:
+              "gestonhost-trial-1",
+            sessionVar:
+              "session-data",
+            isTrial: true,
+          });
 
-              sessionVar:
-                "session-data",
-
-              isTrial: true,
-            });
-
-        expect(
-          res.status,
-        ).toBe(200);
-
-        expect(
-          res.body.success,
-        ).toBe(true);
-
-        expect(
-          user.usedFreeTrial,
-        ).toBe(true);
-
-        expect(
-          user.txCoins,
-        ).toBe(0);
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(user.usedFreeTrial).toBe(true);
+        expect(user.txCoins).toBe(0);
 
         expect(
           TransactionCreate,
         ).toHaveBeenCalledWith(
           expect.objectContaining({
-            type:
-              "deploy",
-
-            txAmount:
-              0,
-
-            ksAmount:
-              0,
-
-            status:
-              "success",
+            type: "deploy",
+            txAmount: 0,
+            ksAmount: 0,
+            status: "success",
           }),
         );
 
         expect(
           deployBotApp,
-        ).toHaveBeenCalled();
-
-        expect(
-          deployBotApp.mock.calls[0],
-        ).toEqual([
+        ).toHaveBeenCalledWith(
           "gestonhost-trial-1",
           "team-a",
           "session-data",
           "pending",
           true,
-        ]);
+        );
       },
     );
 
     it(
       "does not require Coins for a normal bot deployment",
       async () => {
-        const user =
-          fakeUser({
-            txCoins: 0,
-          });
+        const user = fakeUser({
+          txCoins: 0,
+        });
 
         UserFindById.mockResolvedValue(
           user,
         );
 
-        const res =
-          await request(
-            buildApp(),
+        const res = await request(
+          buildApp(),
+        )
+          .post(
+            "/api/bots/deploy",
           )
-            .post(
-              "/api/bots/deploy",
-            )
-            .send({
-              botName:
-                "gestonhost-free-1",
+          .send({
+            botName:
+              "gestonhost-free-1",
+            sessionVar:
+              "session-data",
+            isTrial: false,
+            months: 1,
+          });
 
-              sessionVar:
-                "session-data",
-
-              isTrial: false,
-
-              months: 1,
-            });
-
-        expect(
-          res.status,
-        ).toBe(200);
-
-        expect(
-          res.body.success,
-        ).toBe(true);
-
-        expect(
-          user.txCoins,
-        ).toBe(0);
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(user.txCoins).toBe(0);
 
         expect(
           TransactionCreate,
         ).toHaveBeenCalledWith(
           expect.objectContaining({
-            type:
-              "deploy",
-
-            txAmount:
-              0,
-
-            ksAmount:
-              0,
-
-            status:
-              "success",
+            type: "deploy",
+            txAmount: 0,
+            ksAmount: 0,
+            status: "success",
           }),
         );
 
-        expect(
-          deployBotApp,
-        ).toHaveBeenCalledWith(
+        const call =
+          deployBotApp.mock.calls[0];
+
+        expect(call).toHaveLength(5);
+        expect(call[0]).toBe(
           "gestonhost-free-1",
-          "team-a",
-          "session-data",
-          "bot-" +
-            expect.any(String),
-          false,
         );
+        expect(call[1]).toBe("team-a");
+        expect(call[2]).toBe(
+          "session-data",
+        );
+        expect(call[3]).toEqual(
+          expect.stringMatching(
+            /^bot-\d+$/,
+          ),
+        );
+        expect(call[4]).toBe(false);
       },
     );
 
@@ -543,28 +406,21 @@ describe(
           fakeUser(),
         );
 
-        const res =
-          await request(
-            buildApp(),
+        const res = await request(
+          buildApp(),
+        )
+          .post(
+            "/api/bots/deploy",
           )
-            .post(
-              "/api/bots/deploy",
-            )
-            .send({
-              phoneNumber:
-                "0712345678",
+          .send({
+            phoneNumber:
+              "0712345678",
+            sessionVar:
+              "session-data",
+          });
 
-              sessionVar:
-                "session-data",
-            });
-
-        expect(
-          res.status,
-        ).toBe(400);
-
-        expect(
-          res.body.error,
-        ).toMatch(
+        expect(res.status).toBe(400);
+        expect(res.body.error).toMatch(
           /country code/i,
         );
 
@@ -585,40 +441,27 @@ describe(
           fakeUser(),
         );
 
-        BotFindOne.mockResolvedValue(
-          {
-            _id:
-              "existing",
+        BotFindOne.mockResolvedValue({
+          _id: "existing",
+          status: "running",
+        });
 
-            status:
-              "running",
-          },
-        );
-
-        const res =
-          await request(
-            buildApp(),
+        const res = await request(
+          buildApp(),
+        )
+          .post(
+            "/api/bots/deploy",
           )
-            .post(
-              "/api/bots/deploy",
-            )
-            .send({
-              botName:
-                "already-taken",
+          .send({
+            botName:
+              "already-taken",
+            sessionVar:
+              "session-data",
+            isTrial: true,
+          });
 
-              sessionVar:
-                "session-data",
-
-              isTrial: true,
-            });
-
-        expect(
-          res.status,
-        ).toBe(409);
-
-        expect(
-          res.body.error,
-        ).toMatch(
+        expect(res.status).toBe(409);
+        expect(res.body.error).toMatch(
           /already in use/i,
         );
 
@@ -643,30 +486,22 @@ describe(
           null,
         );
 
-        const res =
-          await request(
-            buildApp(),
+        const res = await request(
+          buildApp(),
+        )
+          .post(
+            "/api/bots/deploy",
           )
-            .post(
-              "/api/bots/deploy",
-            )
-            .send({
-              botName:
-                "gestonhost-free-2",
+          .send({
+            botName:
+              "gestonhost-free-2",
+            sessionVar:
+              "session-data",
+            isTrial: true,
+          });
 
-              sessionVar:
-                "session-data",
-
-              isTrial: true,
-            });
-
-        expect(
-          res.status,
-        ).toBe(500);
-
-        expect(
-          res.body.error,
-        ).toMatch(
+        expect(res.status).toBe(500);
+        expect(res.body.error).toMatch(
           /no available teams/i,
         );
 
@@ -683,45 +518,33 @@ describe(
     it(
       "returns 500 when the deployment provider fails",
       async () => {
-        const user =
-          fakeUser();
+        const user = fakeUser();
 
         UserFindById.mockResolvedValue(
           user,
         );
 
-        deployBotApp.mockResolvedValue(
-          {
-            success: false,
-            setupId:
-              undefined,
-          },
-        );
+        deployBotApp.mockResolvedValue({
+          success: false,
+          setupId: undefined,
+        });
 
-        const res =
-          await request(
-            buildApp(),
+        const res = await request(
+          buildApp(),
+        )
+          .post(
+            "/api/bots/deploy",
           )
-            .post(
-              "/api/bots/deploy",
-            )
-            .send({
-              botName:
-                "gestonhost-free-3",
+          .send({
+            botName:
+              "gestonhost-free-3",
+            sessionVar:
+              "session-data",
+            isTrial: true,
+          });
 
-              sessionVar:
-                "session-data",
-
-              isTrial: true,
-            });
-
-        expect(
-          res.status,
-        ).toBe(500);
-
-        expect(
-          res.body.error,
-        ).toMatch(
+        expect(res.status).toBe(500);
+        expect(res.body.error).toMatch(
           /failed to deploy/i,
         );
 
@@ -729,9 +552,7 @@ describe(
           BotCreate,
         ).not.toHaveBeenCalled();
 
-        expect(
-          user.txCoins,
-        ).toBe(0);
+        expect(user.txCoins).toBe(0);
 
         expect(
           TransactionCreate,
