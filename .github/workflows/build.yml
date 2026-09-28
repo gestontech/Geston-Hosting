@@ -31,7 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
 
       - name: Check Node and npm versions
         run: |
@@ -47,7 +46,7 @@ jobs:
       - name: Run lint
         run: npm run lint
 
-      - name: TypeScript and production build
+      - name: Production build
         env:
           NODE_ENV: production
           JWT_SECRET: ci-test-secret-not-for-production
@@ -66,23 +65,25 @@ jobs:
         run: |
           test -f dist/index.html
 
-          echo "Frontend build:"
-          du -sh dist
+          echo "========================================"
+          echo "FRONTEND BUILD"
+          echo "========================================"
 
-          echo "Frontend files:"
+          du -sh dist
           find dist -maxdepth 2 -type f | head -50
 
       - name: Verify backend build
         run: |
           test -f dist-server/index.js
 
-          echo "Backend build:"
-          du -sh dist-server
+          echo "========================================"
+          echo "BACKEND BUILD"
+          echo "========================================"
 
-          echo "Backend files:"
+          du -sh dist-server
           find dist-server -maxdepth 2 -type f | head -50
 
-      - name: Verify production start files
+      - name: Verify production files
         run: |
           test -f dist/index.html
           test -f dist-server/index.js
@@ -91,8 +92,8 @@ jobs:
           echo "========================================"
           echo "GESTON HOSTING BUILD VERIFIED"
           echo "========================================"
-          echo "Frontend: dist/index.html ✓"
-          echo "Backend:  dist-server/index.js ✓"
-          echo "Node:     $(node --version)"
-          echo "npm:      $(npm --version)"
+          echo "Frontend : dist/index.html      ✓"
+          echo "Backend  : dist-server/index.js ✓"
+          echo "Node     : $(node --version)"
+          echo "npm      : $(npm --version)"
           echo "========================================"
