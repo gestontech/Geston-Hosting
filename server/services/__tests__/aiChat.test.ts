@@ -60,20 +60,10 @@ vi.mock("../notify.js", () => ({
   ) => notifyOwnerRoutine(...args),
 }));
 
-const ownerGrantTxByEmail = vi.fn();
-const ownerSubtractTxByEmail = vi.fn();
 const ownerLookupUserByEmail = vi.fn();
 const ownerPlatformStats = vi.fn();
 
 vi.mock("../bot/ownerOps.js", () => ({
-  ownerGrantTxByEmail: (
-    ...args: unknown[]
-  ) => ownerGrantTxByEmail(...args),
-
-  ownerSubtractTxByEmail: (
-    ...args: unknown[]
-  ) => ownerSubtractTxByEmail(...args),
-
   ownerLookupUserByEmail: (
     ...args: unknown[]
   ) => ownerLookupUserByEmail(...args),
@@ -133,10 +123,7 @@ import {
 } from "../aiChat.js";
 
 function baseParsed(
-  overrides: Record<
-    string,
-    unknown
-  > = {},
+  overrides: Record<string, unknown> = {},
 ) {
   return {
     text: "Here's a normal reply.",
@@ -172,99 +159,155 @@ beforeEach(() => {
   formatMemoryForPrompt.mockReturnValue(
     "",
   );
+
+  notifyOwnerRoutine.mockResolvedValue(
+    undefined,
+  );
+
+  ownerLookupUserByEmail.mockResolvedValue(
+    {
+      ok: true,
+      email: "user@example.com",
+      username: "testuser",
+      bots: 0,
+      panels: 0,
+    },
+  );
+
+  ownerPlatformStats.mockResolvedValue(
+    {
+      ok: true,
+      users: 1,
+      activeBots: 0,
+      totalBots: 0,
+      panels: 0,
+      mode: "Free",
+    },
+  );
+
+  setDisabledServices.mockResolvedValue(
+    undefined,
+  );
+
+  setDisabledPaymentMethods.mockResolvedValue(
+    undefined,
+  );
+
+  unbanWaContact.mockResolvedValue(
+    {
+      ok: true,
+      message: "Unbanned",
+    },
+  );
 });
 
-describe("runAIChat — plain replies", () => {
-  it("returns the parsed text untouched when there are no markers", async () => {
-    parseAIReply.mockReturnValue(
-      baseParsed(),
+describe(
+  "runAIChat — plain replies",
+  () => {
+    it(
+      "returns the parsed text untouched when there are no markers",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed(),
+        );
+
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message: "hi",
+            isOwner: false,
+          });
+
+        expect(result.text).toBe(
+          "Here's a normal reply.",
+        );
+
+        expect(
+          result.requestLiveAgent,
+        ).toBe(false);
+
+        expect(
+          result.deployRequest,
+        ).toBeNull();
+      },
     );
 
-    const result = await runAIChat({
-      surface: "whatsapp",
-      message: "hi",
-      isOwner: false,
-    });
+    it(
+      "truncates the outgoing prompt input to 2000 chars",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed(),
+        );
 
-    expect(result.text).toBe(
-      "Here's a normal reply.",
+        const longMessage =
+          "a".repeat(3000);
+
+        await runAIChat({
+          surface: "whatsapp",
+          message: longMessage,
+          isOwner: false,
+        });
+
+        expect(
+          askAI.mock.calls[0][0].length,
+        ).toBeLessThanOrEqual(2000);
+      },
     );
-
-    expect(
-      result.requestLiveAgent,
-    ).toBe(false);
-
-    expect(
-      result.deployRequest,
-    ).toBeNull();
-  });
-
-  it("truncates the outgoing message to 2000 chars", async () => {
-    parseAIReply.mockReturnValue(
-      baseParsed(),
-    );
-
-    const longMessage =
-      "a".repeat(3000);
-
-    await runAIChat({
-      surface: "whatsapp",
-      message: longMessage,
-      isOwner: false,
-    });
-
-    expect(
-      askAI.mock.calls[0][0].length,
-    ).toBeLessThanOrEqual(2000);
-  });
-});
+  },
+);
 
 describe(
   "runAIChat — live agent handoff",
   () => {
-    it("notifies the owner via WhatsApp when the site surface requests a live agent", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          requestLiveAgent: true,
-          text: "Connecting you now.",
-        }),
-      );
+    it(
+      "notifies the owner on the site surface",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            requestLiveAgent: true,
+            text: "Connecting you now.",
+          }),
+        );
 
-      await runAIChat({
-        surface: "site",
-        message:
-          "let me talk to a human",
-        isOwner: false,
-        userLabel: "site:abc",
-      });
+        await runAIChat({
+          surface: "site",
+          message:
+            "let me talk to a human",
+          isOwner: false,
+          userLabel: "site:abc",
+        });
 
-      expect(
-        notifyOwnerRoutine,
-      ).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "Live agent requested",
-        ),
-      );
-    });
+        expect(
+          notifyOwnerRoutine,
+        ).toHaveBeenCalledWith(
+          expect.stringContaining(
+            "Live agent requested",
+          ),
+        );
+      },
+    );
 
-    it("does not notify for whatsapp surface", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          requestLiveAgent: true,
-        }),
-      );
+    it(
+      "does not notify the owner for WhatsApp handoff",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            requestLiveAgent: true,
+          }),
+        );
 
-      await runAIChat({
-        surface: "whatsapp",
-        message:
-          "talk to the owner",
-        isOwner: false,
-      });
+        await runAIChat({
+          surface: "whatsapp",
+          message:
+            "talk to the owner",
+          isOwner: false,
+        });
 
-      expect(
-        notifyOwnerRoutine,
-      ).not.toHaveBeenCalled();
-    });
+        expect(
+          notifyOwnerRoutine,
+        ).not.toHaveBeenCalled();
+      },
+    );
   },
 );
 
@@ -279,406 +322,540 @@ describe(
       months: 1,
     };
 
-    it("executes the deploy when isOwner is true", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          deployRequest:
-            deployMarker,
-          text: "On it.",
-        }),
-      );
+    it(
+      "executes deployment for the owner",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            deployRequest:
+              deployMarker,
+            text: "On it.",
+          }),
+        );
 
-      deployBotForAdmin.mockResolvedValue(
-        {
-          ok: true,
-          message:
-            "✅ Deployed myapp",
-        },
-      );
+        deployBotForAdmin.mockResolvedValue(
+          {
+            ok: true,
+            message:
+              "Deployed myapp",
+          },
+        );
 
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "deploy myapp",
-          isOwner: true,
-          userLabel: "wa:owner",
-        });
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "deploy myapp",
+            isOwner: true,
+            userLabel: "wa:owner",
+          });
 
-      expect(
-        deployBotForAdmin,
-      ).toHaveBeenCalledWith(
-        expect.objectContaining({
-          appName: "myapp",
-          sessionVar: "abc123",
-        }),
-      );
+        expect(
+          deployBotForAdmin,
+        ).toHaveBeenCalledWith(
+          expect.objectContaining({
+            appName: "myapp",
+            sessionVar: "abc123",
+          }),
+        );
 
-      expect(result.text).toContain(
-        "Deployed myapp",
-      );
-    });
+        expect(
+          result.text,
+        ).toContain(
+          "Deployed myapp",
+        );
+      },
+    );
 
-    it("never calls deployBotForAdmin when isOwner is false", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          deployRequest:
-            deployMarker,
-        }),
-      );
+    it(
+      "does not deploy for non-owner users",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            deployRequest:
+              deployMarker,
+          }),
+        );
 
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "deploy myapp",
-          isOwner: false,
-        });
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "deploy myapp",
+            isOwner: false,
+          });
 
-      expect(
-        deployBotForAdmin,
-      ).not.toHaveBeenCalled();
+        expect(
+          deployBotForAdmin,
+        ).not.toHaveBeenCalled();
 
-      expect(result.text).toBe(
-        "Here's a normal reply.",
-      );
-    });
+        expect(
+          result.text,
+        ).toBe(
+          "Here's a normal reply.",
+        );
+      },
+    );
 
-    it("returns a safe failure message if deployBotForAdmin throws", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          deployRequest:
-            deployMarker,
-        }),
-      );
+    it(
+      "handles unexpected deployment errors safely",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            deployRequest:
+              deployMarker,
+          }),
+        );
 
-      deployBotForAdmin.mockRejectedValue(
-        new Error("Heroku down"),
-      );
+        deployBotForAdmin.mockRejectedValue(
+          new Error("Heroku down"),
+        );
 
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "deploy myapp",
-          isOwner: true,
-        });
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "deploy myapp",
+            isOwner: true,
+          });
 
-      expect(result.text).toMatch(
-        /Deploy failed unexpectedly/,
-      );
-    });
+        expect(
+          result.text,
+        ).toMatch(
+          /Deploy failed unexpectedly/i,
+        );
+      },
+    );
 
-    it("returns the provider error when deploy fails cleanly", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          deployRequest:
-            deployMarker,
-        }),
-      );
+    it(
+      "returns the provider error when deployment fails cleanly",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            deployRequest:
+              deployMarker,
+          }),
+        );
 
-      deployBotForAdmin.mockResolvedValue(
-        {
-          ok: false,
-          error:
-            "No available teams",
-        },
-      );
+        deployBotForAdmin.mockResolvedValue(
+          {
+            ok: false,
+            error:
+              "No available teams",
+          },
+        );
 
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "deploy myapp",
-          isOwner: true,
-        });
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "deploy myapp",
+            isOwner: true,
+          });
 
-      expect(result.text).toContain(
-        "No available teams",
-      );
-    });
+        expect(
+          result.text,
+        ).toContain(
+          "No available teams",
+        );
+      },
+    );
   },
 );
 
 describe(
   "runAIChat — owner admin actions",
   () => {
-    it("executes a grant action when isOwner is true", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          ownerAdminRequest: {
-            action: "grant",
+    it(
+      "executes a user lookup for the owner",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            ownerAdminRequest: {
+              action: "lookup",
+              email:
+                "user@example.com",
+            },
+          }),
+        );
+
+        ownerLookupUserByEmail.mockResolvedValue(
+          {
+            ok: true,
             email:
-              "buyer@example.com",
-            amount: 10,
+              "user@example.com",
+            username:
+              "testuser",
+            bots: 2,
+            panels: 1,
           },
-        }),
-      );
+        );
 
-      ownerGrantTxByEmail.mockResolvedValue(
-        {
-          ok: true,
-          message:
-            "Granted 10 Coins",
-        },
-      );
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "lookup user@example.com",
+            isOwner: true,
+          });
 
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "add 10 tx to buyer@example.com",
-          isOwner: true,
-        });
+        expect(
+          ownerLookupUserByEmail,
+        ).toHaveBeenCalledWith(
+          "user@example.com",
+        );
 
-      expect(
-        ownerGrantTxByEmail,
-      ).toHaveBeenCalledWith(
-        "buyer@example.com",
-        10,
-        expect.any(String),
-      );
+        expect(
+          result.text,
+        ).toContain(
+          "user@example.com",
+        );
+      },
+    );
 
-      expect(result.text).toContain(
-        "Granted 10 Coins",
-      );
-    });
+    it(
+      "executes platform stats for the owner",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            ownerAdminRequest: {
+              action: "stats",
+            },
+          }),
+        );
 
-    it("never executes an admin action when isOwner is false", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          ownerAdminRequest: {
-            action: "grant",
-            email:
-              "buyer@example.com",
-            amount: 999999,
+        ownerPlatformStats.mockResolvedValue(
+          {
+            ok: true,
+            users: 10,
+            activeBots: 4,
+            totalBots: 8,
+            panels: 3,
+            mode: "Free",
           },
-        }),
-      );
+        );
 
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "add 999999 tx",
-          isOwner: false,
-        });
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "show platform stats",
+            isOwner: true,
+          });
 
-      expect(
-        ownerGrantTxByEmail,
-      ).not.toHaveBeenCalled();
+        expect(
+          ownerPlatformStats,
+        ).toHaveBeenCalled();
 
-      expect(result.text).toBe(
-        "Here's a normal reply.",
-      );
-    });
+        expect(
+          result.text,
+        ).toContain("Free");
+      },
+    );
 
-    it("lists flags for the flags action", async () => {
-      getDisabledServices.mockResolvedValue(
-        ["panels"],
-      );
+    it(
+      "does not execute owner actions for normal users",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            ownerAdminRequest: {
+              action: "stats",
+            },
+          }),
+        );
 
-      getDisabledPaymentMethods.mockResolvedValue(
-        [],
-      );
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "show stats",
+            isOwner: false,
+          });
 
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          ownerAdminRequest: {
-            action: "flags",
+        expect(
+          ownerPlatformStats,
+        ).not.toHaveBeenCalled();
+
+        expect(
+          ownerLookupUserByEmail,
+        ).not.toHaveBeenCalled();
+
+        expect(
+          result.text,
+        ).toBe(
+          "Here's a normal reply.",
+        );
+      },
+    );
+
+    it(
+      "lists service flags",
+      async () => {
+        getDisabledServices.mockResolvedValue(
+          ["panels"],
+        );
+
+        getDisabledPaymentMethods.mockResolvedValue(
+          [],
+        );
+
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            ownerAdminRequest: {
+              action: "flags",
+            },
+          }),
+        );
+
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message: "flags",
+            isOwner: true,
+          });
+
+        expect(
+          result.text,
+        ).toContain(
+          "panels: DISABLED",
+        );
+      },
+    );
+
+    it(
+      "disables a valid service",
+      async () => {
+        getDisabledServices.mockResolvedValue(
+          [],
+        );
+
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            ownerAdminRequest: {
+              action: "disable",
+              key: "boost",
+            },
+          }),
+        );
+
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "disable boost",
+            isOwner: true,
+          });
+
+        expect(
+          setDisabledServices,
+        ).toHaveBeenCalledWith([
+          "boost",
+        ]);
+
+        expect(
+          result.text,
+        ).toContain(
+          "boost is now DISABLED",
+        );
+      },
+    );
+
+    it(
+      "rejects an unknown service key",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            ownerAdminRequest: {
+              action: "disable",
+              key:
+                "not-a-real-service",
+            },
+          }),
+        );
+
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "disable nonsense",
+            isOwner: true,
+          });
+
+        expect(
+          setDisabledServices,
+        ).not.toHaveBeenCalled();
+
+        expect(
+          result.text,
+        ).toContain(
+          "Usage key",
+        );
+      },
+    );
+
+    it(
+      "unbans a WhatsApp contact",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            ownerAdminRequest: {
+              action: "unban",
+              phone:
+                "+254 711 222 333",
+            },
+          }),
+        );
+
+        unbanWaContact.mockResolvedValue(
+          {
+            ok: true,
+            message: "Unbanned",
           },
-        }),
-      );
+        );
 
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message: "flags",
-          isOwner: true,
-        });
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "unban +254 711 222 333",
+            isOwner: true,
+          });
 
-      expect(result.text).toContain(
-        "panels: DISABLED",
-      );
-    });
+        expect(
+          unbanWaContact,
+        ).toHaveBeenCalledWith(
+          "254711222333",
+          null,
+        );
 
-    it("disables a valid service key", async () => {
-      getDisabledServices.mockResolvedValue(
-        [],
-      );
+        expect(
+          result.text,
+        ).toContain(
+          "Unbanned",
+        );
+      },
+    );
 
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          ownerAdminRequest: {
-            action: "disable",
-            key: "boost",
-          },
-        }),
-      );
+    it(
+      "handles admin action failures safely",
+      async () => {
+        ownerLookupUserByEmail.mockRejectedValue(
+          new Error("db down"),
+        );
 
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "disable boost",
-          isOwner: true,
-        });
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            ownerAdminRequest: {
+              action: "lookup",
+              email:
+                "user@example.com",
+            },
+          }),
+        );
 
-      expect(
-        setDisabledServices,
-      ).toHaveBeenCalledWith([
-        "boost",
-      ]);
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "lookup user@example.com",
+            isOwner: true,
+          });
 
-      expect(result.text).toContain(
-        "boost is now DISABLED",
-      );
-    });
+        expect(
+          result.text,
+        ).toContain(
+          "Action failed",
+        );
+      },
+    );
 
-    it("rejects an unknown service key", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          ownerAdminRequest: {
-            action: "disable",
-            key: "not-a-real-service",
-          },
-        }),
-      );
+    it(
+      "does not perform financial operations in free mode",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            ownerAdminRequest: {
+              action: "grant",
+              email:
+                "user@example.com",
+              amount: 100,
+            },
+          }),
+        );
 
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "disable nonsense",
-          isOwner: true,
-        });
+        const result =
+          await runAIChat({
+            surface: "whatsapp",
+            message:
+              "grant 100 Coins",
+            isOwner: true,
+          });
 
-      expect(
-        setDisabledServices,
-      ).not.toHaveBeenCalled();
-
-      expect(result.text).toContain(
-        "Usage key",
-      );
-    });
-
-    it("runs unban with a cleaned phone number", async () => {
-      unbanWaContact.mockResolvedValue(
-        {
-          ok: true,
-          message: "Unbanned",
-        },
-      );
-
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          ownerAdminRequest: {
-            action: "unban",
-            phone:
-              "+254 711 222 333",
-          },
-        }),
-      );
-
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "unban +254 711 222 333",
-          isOwner: true,
-        });
-
-      expect(
-        unbanWaContact,
-      ).toHaveBeenCalledWith(
-        "254711222333",
-        null,
-      );
-
-      expect(result.text).toContain(
-        "Unbanned",
-      );
-    });
-
-    it("returns a safe error if the admin action throws", async () => {
-      ownerLookupUserByEmail.mockRejectedValue(
-        new Error("db down"),
-      );
-
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          ownerAdminRequest: {
-            action: "lookup",
-            email:
-              "buyer@example.com",
-          },
-        }),
-      );
-
-      const result =
-        await runAIChat({
-          surface: "whatsapp",
-          message:
-            "lookup buyer@example.com",
-          isOwner: true,
-        });
-
-      expect(result.text).toContain(
-        "Action failed",
-      );
-    });
+        expect(
+          result.text,
+        ).toMatch(
+          /free mode|no longer available|disabled/i,
+        );
+      },
+    );
   },
 );
 
 describe(
   "runAIChat — conversation memory",
   () => {
-    it("appends both the user message and assistant reply", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed({
-          text: "Sure thing.",
-        }),
-      );
+    it(
+      "stores both the user message and assistant reply",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed({
+            text: "Sure thing.",
+          }),
+        );
 
-      await runAIChat({
-        surface: "whatsapp",
-        message: "hello",
-        isOwner: false,
-        userLabel:
+        await runAIChat({
+          surface: "whatsapp",
+          message: "hello",
+          isOwner: false,
+          userLabel:
+            "wa:2547xxxx",
+        });
+
+        expect(
+          appendMemory,
+        ).toHaveBeenCalledWith(
           "wa:2547xxxx",
-      });
+          "user",
+          "hello",
+        );
 
-      expect(
-        appendMemory,
-      ).toHaveBeenCalledWith(
-        "wa:2547xxxx",
-        "user",
-        "hello",
-      );
+        expect(
+          appendMemory,
+        ).toHaveBeenCalledWith(
+          "wa:2547xxxx",
+          "assistant",
+          "Sure thing.",
+        );
+      },
+    );
 
-      expect(
-        appendMemory,
-      ).toHaveBeenCalledWith(
-        "wa:2547xxxx",
-        "assistant",
-        "Sure thing.",
-      );
-    });
+    it(
+      "does not store memory without a user label",
+      async () => {
+        parseAIReply.mockReturnValue(
+          baseParsed(),
+        );
 
-    it("does not append memory when userLabel is absent", async () => {
-      parseAIReply.mockReturnValue(
-        baseParsed(),
-      );
+        await runAIChat({
+          surface: "whatsapp",
+          message: "hello",
+          isOwner: false,
+        });
 
-      await runAIChat({
-        surface: "whatsapp",
-        message: "hello",
-        isOwner: false,
-      });
-
-      expect(
-        appendMemory,
-      ).not.toHaveBeenCalled();
-    });
+        expect(
+          appendMemory,
+        ).not.toHaveBeenCalled();
+      },
+    );
   },
 );
