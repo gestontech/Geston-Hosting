@@ -2,46 +2,94 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches:
+      - main
+      - master
+
   pull_request:
-    branches: [main, master]
+    branches:
+      - main
+      - master
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build-and-test:
+    name: Build and Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22.x]
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24
           cache: npm
+
+      - name: Check versions
+        run: |
+          node --version
+          npm --version
+
       - name: Install dependencies
-        run: npm install
+        run: npm install --no-audit --no-fund
+
       - name: Lint
         run: npm run lint
-      - name: Typecheck and build
-        env:
-          JWT_SECRET: ci-test-secret-not-for-production
-          ADMIN_EMAIL: ci-admin@example.com
-          MONGODB_URI: mongodb://localhost:27017/geston-hosting-ci
-        run: npm run build
+
       - name: Test
         run: npm test
-      - name: Audit production dependencies
+
+      - name: Production build
+        env:
+          NODE_ENV: production
+          JWT_SECRET: ci-test-secret-not-for-production
+          SESSION_SECRET: ci-session-secret-not-for-production
+          ADMIN_EMAIL: ci-admin@example.com
+          ADMIN_USERNAME: ci-admin
+          ADMIN_PASSWORD: ci-admin-password-not-for-production
+          MONGODB_URI: mongodb://localhost:27017/geston-hosting-ci
+          APP_URL: https://hosting.gestontech.online
+          CLIENT_URL: https://hosting.gestontech.online
+          SITE_URL: https://hosting.gestontech.online
+          FRONTEND_ORIGIN: https://hosting.gestontech.online
+        run: npm run build
+
+      - name: Verify build
+        run: |
+          test -f dist/index.html
+          test -f dist-server/index.js
+
+          echo "Frontend:"
+          du -sh dist
+
+          echo "Backend:"
+          du -sh dist-server
+
+      - name: Production dependency audit
         run: npm audit --omit=dev --audit-level=high
 
   audit:
+    name: Dependency Audit
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 24
           cache: npm
-      - run: npm install
-      - name: Fail on high/critical vulnerabilities
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Check production vulnerabilities
         run: npm audit --omit=dev --audit-level=high
