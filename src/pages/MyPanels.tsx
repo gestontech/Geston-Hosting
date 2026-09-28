@@ -489,9 +489,9 @@ export function MyPanels() {
                     panelEmail?: string;
                   }).panelEmail || "";
 
-                const expiresAt = new Date(
-                  panel.expiresAt,
-                );
+                const expiresAt = panel.expiresAt
+                  ? new Date(panel.expiresAt)
+                  : new Date(Number.NaN);
 
                 const isExpired =
                   Number.isNaN(expiresAt.getTime()) ||
@@ -516,8 +516,7 @@ export function MyPanels() {
                             </h3>
 
                             <p className="text-xs text-muted-foreground truncate">
-                              {panelEmail ||
-                                user.email}
+                              {panelEmail || user.email}
                             </p>
                           </div>
                         </div>
@@ -529,9 +528,7 @@ export function MyPanels() {
                               : "text-green-400 bg-green-500/10 border-green-500/20"
                           }`}
                         >
-                          {isExpired
-                            ? "Expiré"
-                            : "Actif"}
+                          {isExpired ? "Expiré" : "Actif"}
                         </span>
                       </div>
 
@@ -547,9 +544,7 @@ export function MyPanels() {
                                 {panelUsername}
                               </span>
 
-                              <CopyBtn
-                                text={panelUsername}
-                              />
+                              <CopyBtn text={panelUsername} />
                             </div>
                           </div>
                         )}
@@ -565,9 +560,7 @@ export function MyPanels() {
                                 {panelEmail}
                               </span>
 
-                              <CopyBtn
-                                text={panelEmail}
-                              />
+                              <CopyBtn text={panelEmail} />
                             </div>
                           </div>
                         )}
@@ -578,9 +571,7 @@ export function MyPanels() {
                           </span>
 
                           <span className="font-medium">
-                            {Number.isNaN(
-                              expiresAt.getTime(),
-                            )
+                            {Number.isNaN(expiresAt.getTime())
                               ? "—"
                               : expiresAt.toLocaleDateString(
                                   "fr-FR",
@@ -609,9 +600,7 @@ export function MyPanels() {
                             onClick={() =>
                               handleRenew(panelId)
                             }
-                            disabled={
-                              renewingId === panelId
-                            }
+                            disabled={renewingId === panelId}
                             className="h-9 text-xs border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
                           >
                             {renewingId === panelId ? (
