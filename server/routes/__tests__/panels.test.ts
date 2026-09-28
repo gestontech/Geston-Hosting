@@ -16,9 +16,24 @@ import type {
   NextFunction,
 } from "express";
 
-const mockUserId =
-  "507f1f77bcf86cd799439011";
+const mockUserId = "507f1f77bcf86cd799439011";
 
+const mockAdminUser = {
+  _id: mockUserId,
+  email: "admin@example.com",
+  username: "admin",
+};
+
+const mockNormalUser = {
+  _id: mockUserId,
+  email: "user@example.com",
+  username: "user",
+};
+
+/*
+ * Authentication is not the subject of these tests.
+ * Always inject a deterministic authenticated user.
+ */
 vi.mock("../../middleware/auth.js", () => ({
   authGuard: (
     req: Request,
@@ -43,24 +58,58 @@ vi.mock("../../middleware/banCheck.js", () => ({
 }));
 
 /*
- * The panel router checks service feature flags.
- * Keeping this mock synchronous/resolved prevents the error
- * handling tests from hanging while the real feature-flag
- * implementation is not under test here.
+ * The router checks whether the panels service is disabled.
+ *
+ * IMPORTANT:
+ * Never allow this test suite to call the real feature flag
+ * implementation because that implementation accesses MongoDB
+ * through AppSettings.
  */
 vi.mock("../../lib/featureFlags.js", () => ({
+  getDisabledServices: vi.fn().mockResolvedValue([]),
+  getDisabledPaymentMethods: vi.fn().mockResolvedValue([]),
   isServiceDisabled: vi.fn().mockResolvedValue(false),
+  isPaymentMethodDisabled: vi.fn().mockResolvedValue(false),
+  setDisabledServices: vi.fn().mockResolvedValue(undefined),
+  setDisabledPaymentMethods: vi.fn().mockResolvedValue(undefined),
+  requirePaymentMethod: vi.fn(
+    () => (
+      _req: Request,
+      _res: Response,
+      next: NextFunction,
+    ) => next(),
+  ),
+}));
+
+/*
+ * Defensive AppSettings mock.
+ *
+ * This prevents any accidental import path/cache interaction
+ * from opening a real Mongoose operation during this unit test.
+ */
+vi.mock("../../models/AppSettings.js", () => ({
+  getSetting: vi.fn().mockResolvedValue([]),
+  setSetting: vi.fn().mockResolvedValue(undefined),
 }));
 
 const PanelPlanFind = vi.fn();
 const PanelPlanCountDocuments = vi.fn();
 const PanelPlanFindByIdAndDelete = vi.fn();
+const PanelPlanCreate = vi.fn();
 
 const PanelFind = vi.fn();
 const PanelFindOne = vi.fn();
 const PanelFindById = vi.fn();
+const PanelFindByIdAndDelete = vi.fn();
+const PanelCreate = vi.fn();
 
+const UserFind = vi.fn();
 const UserFindById = vi.fn();
+
+const TransactionCreate = vi.fn();
+
+const NotifyOwner = vi.fn(() => Promise.resolve());
+const CreateNotification = vi.fn(() => Promise.resolve());
 
 vi.mock("../../models/PanelPlan.js", () => ({
   PanelPlan: {
@@ -72,7 +121,8 @@ vi.mock("../../models/PanelPlan.js", () => ({
     countDocuments: (...args: unknown[]) =>
       PanelPlanCountDocuments(...args),
 
-    create: vi.fn(),
+    create: (...args: unknown[]) =>
+      PanelPlanCreate(...args),
 
     findByIdAndDelete: (...args: unknown[]) =>
       PanelPlanFindByIdAndDelete(...args),
@@ -90,15 +140,18 @@ vi.mock("../../models/Panel.js", () => ({
     findById: (...args: unknown[]) =>
       PanelFindById(...args),
 
-    findByIdAndDelete: vi.fn(),
+    findByIdAndDelete: (...args: unknown[]) =>
+      PanelFindByIdAndDelete(...args),
 
-    create: vi.fn(),
+    create: (...args: unknown[]) =>
+      PanelCreate(...args),
   },
 }));
 
 vi.mock("../../models/User.js", () => ({
   User: {
-    find: vi.fn(),
+    find: (...args: unknown[]) =>
+      UserFind(...args),
 
     findById: (...args: unknown[]) =>
       UserFindById(...args),
@@ -107,18 +160,19 @@ vi.mock("../../models/User.js", () => ({
 
 vi.mock("../../models/Transaction.js", () => ({
   Transaction: {
-    create: vi.fn(),
+    create: (...args: unknown[]) =>
+      TransactionCreate(...args),
   },
 }));
 
 vi.mock("../../services/notify.js", () => ({
-  notifyOwner: vi.fn(() => Promise.resolve()),
+  notifyOwner: (...args: unknown[]) =>
+    NotifyOwner(...args),
 }));
 
 vi.mock("../../services/notifications.js", () => ({
-  createNotification: vi.fn(() =>
-    Promise.resolve(),
-  ),
+  createNotification: (...args: unknown[]) =>
+    CreateNotification(...args),
 }));
 
 vi.mock("../../services/pterodactyl.js", () => ({
@@ -179,13 +233,22 @@ function buildApp() {
 beforeEach(() => {
   vi.clearAllMocks();
 
+  /*
+   * Admin authentication lookup.
+   *
+   * adminAuth() executes:
+   *
+   *   User.findById(...).lean()
+   */
   UserFindById.mockReturnValue({
     lean: () =>
-      Promise.resolve({
-        email: "admin@example.com",
-      }),
+      Promise.resolve(mockAdminUser),
   });
 });
+
+/* -------------------------------------------------------------------------- */
+/* GET /api/panels/plans                                                       */
+/* -------------------------------------------------------------------------- */
 
 describe("GET /api/panels/plans", () => {
   it("returns a structured 500 when the database call fails", async () => {
@@ -210,6 +273,10 @@ describe("GET /api/panels/plans", () => {
   });
 });
 
+/* -------------------------------------------------------------------------- */
+/* GET /api/panels/my                                                          */
+/* -------------------------------------------------------------------------- */
+
 describe("GET /api/panels/my", () => {
   it("returns a structured 500 when the database call fails", async () => {
     PanelFind.mockReturnValue({
@@ -233,6 +300,10 @@ describe("GET /api/panels/my", () => {
   });
 });
 
+/* -------------------------------------------------------------------------- */
+/* DELETE /api/panels/my/:id                                                   */
+/* -------------------------------------------------------------------------- */
+
 describe("DELETE /api/panels/my/:id", () => {
   it("returns a structured 500 when the database call fails", async () => {
     PanelFindOne.mockRejectedValue(
@@ -252,6 +323,10 @@ describe("DELETE /api/panels/my/:id", () => {
     });
   });
 });
+
+/* -------------------------------------------------------------------------- */
+/* GET /api/panels/admin/all                                                    */
+/* -------------------------------------------------------------------------- */
 
 describe("GET /api/panels/admin/all", () => {
   it("returns a structured 500 when the database call fails", async () => {
@@ -281,6 +356,10 @@ describe("GET /api/panels/admin/all", () => {
   });
 });
 
+/* -------------------------------------------------------------------------- */
+/* DELETE /api/panels/admin/panel/:id                                           */
+/* -------------------------------------------------------------------------- */
+
 describe("DELETE /api/panels/admin/panel/:id", () => {
   it("returns a structured 500 when the database call fails", async () => {
     PanelFindById.mockRejectedValue(
@@ -305,6 +384,10 @@ describe("DELETE /api/panels/admin/panel/:id", () => {
     });
   });
 });
+
+/* -------------------------------------------------------------------------- */
+/* POST /api/panels/admin/plans                                                 */
+/* -------------------------------------------------------------------------- */
 
 describe("POST /api/panels/admin/plans", () => {
   it("returns a structured 500 when the database call fails", async () => {
@@ -332,6 +415,10 @@ describe("POST /api/panels/admin/plans", () => {
     });
   });
 });
+
+/* -------------------------------------------------------------------------- */
+/* DELETE /api/panels/admin/plans/:id                                           */
+/* -------------------------------------------------------------------------- */
 
 describe("DELETE /api/panels/admin/plans/:id", () => {
   it("returns a structured 500 when the database call fails", async () => {
