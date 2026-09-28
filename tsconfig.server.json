@@ -8,8 +8,18 @@
     "skipLibCheck": true,
     "outDir": "./dist-server",
     "rootDir": "./server",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "sourceMap": true
   },
-  "include": ["server/**/*"],
-  "exclude": ["node_modules", "dist", "dist-server"]
+  "include": [
+    "server/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-server",
+    "server/**/__tests__/**",
+    "server/**/*.test.ts",
+    "server/**/*.spec.ts"
+  ]
 }
