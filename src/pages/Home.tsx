@@ -10,10 +10,26 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useNavLoader } from "@/App";
 import {
-  ArrowRight, Moon, Sun, Menu, X, ChevronRight, ChevronLeft,
-  Bot, Server, TrendingUp, Sparkles, MessageCircle, Code2,
-  ShieldCheck, Rocket, UserPlus, MousePointerClick, Wallet,
-  Gauge, Lock, Headphones,
+  ArrowRight,
+  Moon,
+  Sun,
+  Menu,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  Bot,
+  Server,
+  TrendingUp,
+  Sparkles,
+  MessageCircle,
+  Code2,
+  ShieldCheck,
+  Rocket,
+  UserPlus,
+  MousePointerClick,
+  Gauge,
+  Lock,
+  Headphones,
 } from "lucide-react";
 import { BotChatButtonsWithNote } from "@/components/BotChatButtons";
 import { SiteIntro } from "@/components/SiteIntro";
@@ -23,12 +39,18 @@ function useTheme() {
   const [theme, setTheme] = useState<"dark" | "light">(() =>
     (localStorage.getItem("theme") as "dark" | "light") || "dark"
   );
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.classList.toggle("light", theme === "light");
     localStorage.setItem("theme", theme);
   }, [theme]);
-  return { theme, toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")) };
+
+  return {
+    theme,
+    toggle: () =>
+      setTheme((t) => (t === "dark" ? "light" : "dark")),
+  };
 }
 
 function BrandMark({ size = 32 }: { size?: number }) {
@@ -61,6 +83,7 @@ function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -70,12 +93,18 @@ function Reveal({
       },
       { threshold: 0.15 }
     );
+
     io.observe(el);
+
     return () => io.disconnect();
   }, []);
 
   const base =
-    variant === "left" ? "tx-reveal-left" : variant === "right" ? "tx-reveal-right" : "tx-reveal";
+    variant === "left"
+      ? "tx-reveal-left"
+      : variant === "right"
+        ? "tx-reveal-right"
+        : "tx-reveal";
 
   return (
     <div
@@ -93,10 +122,10 @@ const HERO_SLIDES = [
     key: "bots",
     badge: "Bots WhatsApp",
     title: "Déployez Geston-MD en quelques minutes",
-    body: "Essai gratuit disponible. Associez la session, choisissez un forfait, et le bot est en ligne sur Heroku.",
+    body: "Associez votre session, choisissez votre bot et lancez le déploiement gratuitement sur Heroku.",
     meta: [
       { label: "Config", value: "~3 min" },
-      { label: "Essai", value: "Disponible" },
+      { label: "Déploiement", value: "Gratuit" },
       { label: "Hébergeur", value: "Heroku" },
     ],
     accent: "lime" as const,
@@ -105,12 +134,12 @@ const HERO_SLIDES = [
   {
     key: "panels",
     badge: "Pterodactyl",
-    title: "Des panels qui se configurent tout seuls",
-    body: "Payez une fois et obtenez RAM, disque et CPU alloués automatiquement — aucun ticket requis.",
+    title: "Des panels qui se configurent automatiquement",
+    body: "Obtenez vos ressources RAM, disque et CPU avec une configuration automatique et gratuite.",
     meta: [
       { label: "Livraison", value: "Auto" },
       { label: "Panel", value: "Ptero" },
-      { label: "Support", value: "24/7" },
+      { label: "Accès", value: "Gratuit" },
     ],
     accent: "sky" as const,
     icon: Server,
@@ -118,12 +147,12 @@ const HERO_SLIDES = [
   {
     key: "boost",
     badge: "Croissance sociale",
-    title: "Boosts à prix local",
-    body: "Forfaits Instagram, TikTok, YouTube et Twitch, commandés depuis le même compte que vos bots.",
+    title: "Boosts sociaux accessibles gratuitement",
+    body: "Découvrez les services Instagram, TikTok, YouTube et Twitch depuis votre compte Geston Hosting.",
     meta: [
       { label: "Plateformes", value: "4+" },
       { label: "Livraison", value: "Progressive" },
-      { label: "Payer avec", value: "Coins" },
+      { label: "Accès", value: "Gratuit" },
     ],
     accent: "pink" as const,
     icon: TrendingUp,
@@ -132,7 +161,7 @@ const HERO_SLIDES = [
     key: "chat",
     badge: "Bot de support",
     title: "Assistant WhatsApp",
-    body: "Posez vos questions sur les prix, le déploiement ou votre compte à tout moment. Le bot est une IA — utilisez Contact pour parler à une personne.",
+    body: "Posez vos questions sur les services, le déploiement ou votre compte à tout moment. Le bot est une IA — utilisez Contact pour parler à une personne.",
     meta: [
       { label: "WhatsApp", value: "En ligne" },
       { label: "Horaires", value: "24/7" },
@@ -150,12 +179,18 @@ function HeroShowcase() {
 
   useEffect(() => {
     if (paused) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % count), 4200);
+
+    const t = setInterval(
+      () => setIndex((i) => (i + 1) % count),
+      4200
+    );
+
     return () => clearInterval(t);
   }, [paused, count]);
 
   const slide = HERO_SLIDES[index];
   const Icon = slide.icon;
+
   const accentBorder =
     slide.accent === "sky"
       ? "border-sky-500/25"
@@ -164,6 +199,7 @@ function HeroShowcase() {
         : slide.accent === "teal"
           ? "border-teal-500/25"
           : "border-lime-500/25";
+
   const accentText =
     slide.accent === "sky"
       ? "text-sky-400"
@@ -172,6 +208,7 @@ function HeroShowcase() {
         : slide.accent === "teal"
           ? "text-teal-400"
           : "text-lime-400";
+
   const accentBg =
     slide.accent === "sky"
       ? "bg-sky-500/10"
@@ -191,22 +228,42 @@ function HeroShowcase() {
         className={`tx-card-tilt tx-float rounded-2xl border ${accentBorder} bg-card/80 backdrop-blur-sm p-5 shadow-xl shadow-black/10 min-h-[280px] flex flex-col`}
       >
         <div className="flex items-center justify-between mb-4">
-          <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide ${accentText}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${accentText.replace("text-", "bg-")}`} />
+          <span
+            className={`inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide ${accentText}`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${accentText.replace(
+                "text-",
+                "bg-"
+              )}`}
+            />
             {slide.badge}
           </span>
-          <div className={`w-9 h-9 rounded-xl ${accentBg} flex items-center justify-center`}>
+
+          <div
+            className={`w-9 h-9 rounded-xl ${accentBg} flex items-center justify-center`}
+          >
             <Icon className={`w-4.5 h-4.5 ${accentText}`} />
           </div>
         </div>
 
-        <h3 className="text-lg font-bold tracking-tight mb-2 leading-snug">{slide.title}</h3>
-        <p className="text-sm text-muted-foreground mb-5 flex-1 leading-relaxed">{slide.body}</p>
+        <h3 className="text-lg font-bold tracking-tight mb-2 leading-snug">
+          {slide.title}
+        </h3>
+
+        <p className="text-sm text-muted-foreground mb-5 flex-1 leading-relaxed">
+          {slide.body}
+        </p>
 
         <div className="grid grid-cols-3 gap-2 mb-4">
           {slide.meta.map((m) => (
-            <div key={m.label} className="rounded-lg bg-muted/50 px-2.5 py-2">
-              <p className="text-[10px] text-muted-foreground leading-tight">{m.label}</p>
+            <div
+              key={m.label}
+              className="rounded-lg bg-muted/50 px-2.5 py-2"
+            >
+              <p className="text-[10px] text-muted-foreground leading-tight">
+                {m.label}
+              </p>
               <p className="text-sm font-bold mt-0.5">{m.value}</p>
             </div>
           ))}
@@ -226,11 +283,14 @@ function HeroShowcase() {
         <button
           type="button"
           aria-label="Diapositive précédente"
-          onClick={() => setIndex((i) => (i - 1 + count) % count)}
+          onClick={() =>
+            setIndex((i) => (i - 1 + count) % count)
+          }
           className="p-1.5 rounded-lg border border-border hover:bg-muted transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
+
         <div className="flex gap-1.5">
           {HERO_SLIDES.map((s, i) => (
             <button
@@ -239,11 +299,14 @@ function HeroShowcase() {
               aria-label={`Afficher ${s.badge}`}
               onClick={() => setIndex(i)}
               className={`h-1.5 rounded-full transition-all ${
-                i === index ? "w-6 bg-lime-400" : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                i === index
+                  ? "w-6 bg-lime-400"
+                  : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
               }`}
             />
           ))}
         </div>
+
         <button
           type="button"
           aria-label="Diapositive suivante"
@@ -261,23 +324,23 @@ const FEATURES = [
   {
     icon: Bot,
     title: "Bots WhatsApp",
-    desc: "Lancez Geston-MD sur Heroku avec un essai gratuit, pour tester avant de payer.",
+    desc: "Lancez Geston-MD sur Heroku avec un déploiement gratuit et une configuration automatisée.",
     link: "/services/bots",
     cta: "Explorer les bots",
   },
   {
     icon: Server,
     title: "Panels Pterodactyl",
-    desc: "Panels de jeux et d'applications avec configuration automatique dès le paiement confirmé.",
+    desc: "Panels de jeux et d'applications avec configuration automatique et accès gratuit.",
     link: "/services/panels",
     cta: "Voir les panels",
   },
   {
     icon: TrendingUp,
     title: "Boost réseaux sociaux",
-    desc: "Instagram, TikTok, YouTube et Twitch, avec prix locaux et livraison progressive.",
+    desc: "Instagram, TikTok, YouTube et Twitch avec des services accessibles gratuitement.",
     link: "/services/boosting",
-    cta: "Voir les forfaits",
+    cta: "Voir les services",
   },
   {
     icon: Sparkles,
@@ -306,22 +369,22 @@ const STEPS = [
   {
     icon: UserPlus,
     title: "Créez un compte",
-    desc: "Inscription gratuite. Aucune carte requise pour ouvrir le tableau de bord.",
+    desc: "Inscription gratuite. Aucune carte bancaire requise pour ouvrir le tableau de bord.",
   },
   {
     icon: MousePointerClick,
     title: "Choisissez un service",
-    desc: "Bots, panels ou forfaits sociaux — selon vos besoins.",
+    desc: "Bots, panels ou services sociaux selon vos besoins.",
   },
   {
     icon: Rocket,
-    title: "Payez et lancez",
-    desc: "La plupart des bots et panels se configurent automatiquement en quelques minutes.",
+    title: "Lancez votre service",
+    desc: "Les bots et panels sont configurés automatiquement en quelques minutes.",
   },
   {
     icon: ShieldCheck,
     title: "Gérez tout ici",
-    desc: "Suivez vos services, rechargez vos Coins et obtenez de l'aide depuis un seul endroit.",
+    desc: "Suivez vos services et obtenez de l'aide depuis un seul endroit.",
   },
 ];
 
@@ -329,17 +392,12 @@ const BENEFITS = [
   {
     icon: Gauge,
     title: "Configuration rapide",
-    desc: "Les commandes sont configurées automatiquement dès la confirmation du paiement — pas d'attente.",
+    desc: "Les services sont configurés automatiquement pour réduire au maximum le temps d'attente.",
   },
   {
     icon: Lock,
     title: "Votre compte reste le vôtre",
-    desc: "Identifiants chiffrés et gestion de session à chaque connexion, pour que bots et panels restent privés.",
-  },
-  {
-    icon: Wallet,
-    title: "Un seul solde pour tout",
-    desc: "Rechargez vos Coins une fois et dépensez-les sur les bots, panels ou boosts sans ressaisir vos infos de paiement.",
+    desc: "Identifiants protégés et gestion de session à chaque connexion, pour que bots et panels restent privés.",
   },
   {
     icon: Headphones,
@@ -351,19 +409,19 @@ const BENEFITS = [
 const FAQS = [
   {
     q: "La discussion WhatsApp est-elle une vraie personne ?",
-    a: "Non. Ce sont des assistants IA pour les prix, déploiements et problèmes courants. Pour une personne, utilisez Contacter le support ou demandez à l'IA de vous connecter à un agent.",
+    a: "Non. Ce sont des assistants IA pour les services, les déploiements et les problèmes courants. Pour une personne, utilisez Contacter le support ou demandez à l'IA de vous connecter à un agent.",
   },
   {
     q: "Le déploiement est-il rapide ?",
-    a: "Les bots et panels sont configurés automatiquement. La plupart des commandes sont en ligne quelques minutes après confirmation du paiement.",
+    a: "Les bots et panels sont configurés automatiquement. La plupart des services sont disponibles quelques minutes après le lancement.",
   },
   {
     q: "Le boost sur les réseaux sociaux est-il sûr ?",
-    a: "Nous utilisons une livraison progressive conçue pour paraître organique. Tout boost comporte un certain risque vis-à-vis de la plateforme, et nous le précisons avant votre commande.",
+    a: "Nous utilisons une livraison progressive conçue pour limiter les variations brutales. Tout service de boost comporte toutefois un certain risque vis-à-vis des règles de la plateforme concernée.",
   },
   {
-    q: "Quels moyens de paiement acceptez-vous ?",
-    a: "Carte via Paystack et Coins sur toute la plateforme. La page Recharger liste les options disponibles dans votre région.",
+    q: "Les services sont-ils payants ?",
+    a: "Non. Les services disponibles sur Geston Hosting fonctionnent gratuitement. Aucun paiement ni recharge de Coins n'est nécessaire.",
   },
 ];
 
@@ -382,18 +440,25 @@ export default function Home() {
   const { user } = useAuth();
   const { navigateWithLoader } = useNavLoader();
   const { theme, toggle: toggleTheme } = useTheme();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    window.addEventListener("scroll", onScroll, {
+      passive: true,
+    });
+
+    return () =>
+      window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
     <div className="tx-home min-h-screen bg-background relative overflow-x-hidden">
       <SiteIntro />
+
       <TechBackground accent="132,204,22" />
 
       <div
@@ -422,7 +487,9 @@ export default function Home() {
             onClick={() => navigateWithLoader("/")}
           >
             <BrandMark size={28} />
-            <span className="font-semibold text-[15px]">Geston Hosting</span>
+            <span className="font-semibold text-[15px]">
+              Geston Hosting
+            </span>
           </button>
 
           <nav className="hidden lg:flex items-center gap-1">
@@ -445,8 +512,13 @@ export default function Home() {
               className="p-2 rounded-md hover:bg-muted"
               aria-label="Changer de thème"
             >
-              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {theme === "dark" ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
             </button>
+
             {!user && (
               <Button
                 size="sm"
@@ -457,20 +529,34 @@ export default function Home() {
                 Connexion
               </Button>
             )}
+
             <Button
               size="sm"
               className="hidden sm:inline-flex bg-lime-500 text-lime-950 hover:bg-lime-400"
-              onClick={() => navigateWithLoader(user ? "/dashboard" : "/signup")}
+              onClick={() =>
+                navigateWithLoader(
+                  user ? "/dashboard" : "/signup"
+                )
+              }
             >
-              {user ? "Tableau de bord" : "Créer un compte gratuit"}
+              {user
+                ? "Tableau de bord"
+                : "Créer un compte gratuit"}
             </Button>
+
             <button
               type="button"
               className="lg:hidden p-2 rounded-md hover:bg-muted"
-              onClick={() => setMobileMenuOpen((o) => !o)}
+              onClick={() =>
+                setMobileMenuOpen((o) => !o)
+              }
               aria-label="Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>
@@ -491,6 +577,7 @@ export default function Home() {
                 <ChevronRight className="w-4 h-4 opacity-40" />
               </button>
             ))}
+
             <div className="flex gap-2 pt-2">
               {!user && (
                 <Button
@@ -504,14 +591,19 @@ export default function Home() {
                   Connexion
                 </Button>
               )}
+
               <Button
                 className="flex-1 bg-lime-500 text-lime-950 hover:bg-lime-400"
                 onClick={() => {
-                  navigateWithLoader(user ? "/dashboard" : "/signup");
+                  navigateWithLoader(
+                    user ? "/dashboard" : "/signup"
+                  );
                   setMobileMenuOpen(false);
                 }}
               >
-                {user ? "Tableau de bord" : "Inscription gratuite"}
+                {user
+                  ? "Tableau de bord"
+                  : "Inscription gratuite"}
               </Button>
             </div>
           </div>
@@ -525,29 +617,43 @@ export default function Home() {
               <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-5 leading-[1.08]">
                 Bots WhatsApp, panels et croissance sociale — sous un seul compte
               </h1>
+
               <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-xl">
-                Déployez des bots, achetez des panels Pterodactyl et commandez des boosts sans changer de site.
-                Payez une fois, puis gérez tout depuis votre tableau de bord.
+                Déployez des bots, créez des panels Pterodactyl et utilisez les services sociaux gratuitement depuis un seul compte.
               </p>
+
               <div className="flex flex-col sm:flex-row gap-3 mb-10">
                 <Button
                   size="lg"
                   className="sm:min-w-[190px] bg-lime-500 text-lime-950 hover:bg-lime-400 shadow-lg shadow-lime-500/20"
-                  onClick={() => navigateWithLoader(user ? "/dashboard" : "/signup")}
+                  onClick={() =>
+                    navigateWithLoader(
+                      user ? "/dashboard" : "/signup"
+                    )
+                  }
                 >
-                  {user ? "Ouvrir le tableau de bord" : "Créer un compte gratuit"}
+                  {user
+                    ? "Ouvrir le tableau de bord"
+                    : "Créer un compte gratuit"}
+
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
+
                 <Button
                   size="lg"
                   variant="outline"
-                  onClick={() => navigateWithLoader(user ? "/dashboard" : "/login")}
+                  onClick={() =>
+                    navigateWithLoader(
+                      user ? "/dashboard" : "/login"
+                    )
+                  }
                 >
-                  {user ? "Retour au tableau de bord" : "Connexion"}
+                  {user ? "Tableau de bord" : "Connexion"}
                 </Button>
               </div>
+
               <p className="text-xs text-muted-foreground">
-                Inscription gratuite · Solde Coins pour bots, panels & boosts · Support IA sur WhatsApp
+                Inscription gratuite · Bots, panels & services sociaux · Support IA sur WhatsApp
               </p>
             </Reveal>
 
@@ -560,24 +666,37 @@ export default function Home() {
         <section className="border-y border-border/60 bg-muted/20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16">
             <Reveal>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Ce que vous pouvez faire</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+                Ce que vous pouvez faire
+              </h2>
+
               <p className="text-muted-foreground mb-8 max-w-2xl">
-                Tout fonctionne sous un seul compte Geston Hosting — bots, panels, boosts et support.
+                Tout fonctionne sous un seul compte Geston Hosting — bots, panels, services sociaux et support.
               </p>
             </Reveal>
+
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {FEATURES.map((f, i) => (
                 <Reveal key={f.title} delay={i * 40}>
                   <button
                     type="button"
-                    onClick={() => navigateWithLoader(f.link)}
+                    onClick={() =>
+                      navigateWithLoader(f.link)
+                    }
                     className="tx-card-tilt w-full text-left rounded-xl border border-border bg-card p-5 hover:border-lime-500/40 transition-colors h-full"
                   >
                     <div className="w-10 h-10 rounded-lg bg-lime-500/10 flex items-center justify-center mb-3">
                       <f.icon className="w-5 h-5 text-lime-500" />
                     </div>
-                    <h3 className="font-semibold mb-1.5">{f.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{f.desc}</p>
+
+                    <h3 className="font-semibold mb-1.5">
+                      {f.title}
+                    </h3>
+
+                    <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                      {f.desc}
+                    </p>
+
                     <span className="text-sm font-medium text-lime-600 dark:text-lime-400 inline-flex items-center gap-1">
                       {f.cta}
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -591,9 +710,15 @@ export default function Home() {
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16">
           <Reveal>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Comment ça marche</h2>
-            <p className="text-muted-foreground mb-8 max-w-xl">Quatre étapes de l'inscription à un service en ligne.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+              Comment ça marche
+            </h2>
+
+            <p className="text-muted-foreground mb-8 max-w-xl">
+              Quatre étapes de l'inscription à un service en ligne.
+            </p>
           </Reveal>
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {STEPS.map((s, i) => (
               <Reveal key={s.title} delay={i * 50}>
@@ -602,12 +727,19 @@ export default function Home() {
                     <span className="text-xs font-bold text-lime-600 dark:text-lime-400 tabular-nums">
                       0{i + 1}
                     </span>
+
                     <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
                       <s.icon className="w-4 h-4" />
                     </div>
                   </div>
-                  <h3 className="font-semibold mb-1">{s.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+
+                  <h3 className="font-semibold mb-1">
+                    {s.title}
+                  </h3>
+
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {s.desc}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -617,19 +749,31 @@ export default function Home() {
         <section className="border-y border-border/60 bg-muted/20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16">
             <Reveal>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Pourquoi nos clients restent</h2>
-              <p className="text-muted-foreground mb-8 max-w-xl">Des raisons concrètes, pas des slogans.</p>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+                Pourquoi nos clients restent
+              </h2>
+
+              <p className="text-muted-foreground mb-8 max-w-xl">
+                Des raisons concrètes, pas des slogans.
+              </p>
             </Reveal>
-            <div className="grid sm:grid-cols-2 gap-4">
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {BENEFITS.map((b, i) => (
                 <Reveal key={b.title} delay={i * 40}>
                   <div className="rounded-xl border border-border bg-card p-5 flex gap-4">
                     <div className="w-10 h-10 rounded-lg bg-lime-500/10 flex items-center justify-center shrink-0">
                       <b.icon className="w-5 h-5 text-lime-500" />
                     </div>
+
                     <div>
-                      <h3 className="font-semibold mb-1">{b.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
+                      <h3 className="font-semibold mb-1">
+                        {b.title}
+                      </h3>
+
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {b.desc}
+                      </p>
                     </div>
                   </div>
                 </Reveal>
@@ -641,21 +785,36 @@ export default function Home() {
         <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16">
           <div className="grid lg:grid-cols-2 gap-10 items-start">
             <Reveal>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Parlez au support</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+                Parlez au support
+              </h2>
+
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Le bot WhatsApp répond aux questions de prix, déploiement et compte à toute heure.
-                Pour une personne, utilisez Contact.
+                Le bot WhatsApp répond aux questions sur les services, le déploiement et votre compte à toute heure. Pour une personne, utilisez Contact.
               </p>
+
               <BotChatButtonsWithNote />
             </Reveal>
+
             <Reveal delay={60}>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">FAQ</h2>
-              <Accordion type="single" collapsible className="w-full">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
+                FAQ
+              </h2>
+
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full"
+              >
                 {FAQS.map((f, i) => (
-                  <AccordionItem key={i} value={`faq-${i}`}>
+                  <AccordionItem
+                    key={i}
+                    value={`faq-${i}`}
+                  >
                     <AccordionTrigger className="text-left text-sm sm:text-base">
                       {f.q}
                     </AccordionTrigger>
+
                     <AccordionContent className="text-muted-foreground text-sm leading-relaxed">
                       {f.a}
                     </AccordionContent>
@@ -672,19 +831,35 @@ export default function Home() {
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
                 Prêt quand vous l'êtes
               </h2>
+
               <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-                Ouvrez un compte gratuitement, rechargez quand vous avez besoin d'un service, et gérez bots, panels et boosts en un seul endroit.
+                Ouvrez un compte gratuitement et gérez vos bots, panels et services sociaux en un seul endroit.
               </p>
+
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
                   size="lg"
                   className="bg-lime-500 text-lime-950 hover:bg-lime-400"
-                  onClick={() => navigateWithLoader(user ? "/dashboard" : "/signup")}
+                  onClick={() =>
+                    navigateWithLoader(
+                      user ? "/dashboard" : "/signup"
+                    )
+                  }
                 >
-                  {user ? "Aller au tableau de bord" : "Créer un compte gratuit"}
+                  {user
+                    ? "Aller au tableau de bord"
+                    : "Créer un compte gratuit"}
+
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => navigateWithLoader("/contact")}>
+
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() =>
+                    navigateWithLoader("/contact")
+                  }
+                >
                   Contacter le support
                 </Button>
               </div>
@@ -697,8 +872,11 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <BrandMark size={22} />
-            <span className="text-sm font-medium">Geston Hosting</span>
+            <span className="text-sm font-medium">
+              Geston Hosting
+            </span>
           </div>
+
           <p className="text-xs text-muted-foreground text-center sm:text-right">
             © {new Date().getFullYear()} Geston Hosting · Bots, panels & outils de croissance
           </p>
