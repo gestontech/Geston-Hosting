@@ -6,11 +6,13 @@ on:
       - main
       - master
       - develop
+
   pull_request:
     branches:
       - main
       - master
       - develop
+
   workflow_dispatch:
 
 permissions:
@@ -29,6 +31,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
 
       - name: Check Node and npm versions
         run: |
@@ -39,32 +42,57 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Run tests
-        run: npm test --if-present
+        run: npm test
 
-      - name: TypeScript check and production build
+      - name: Run lint
+        run: npm run lint
+
+      - name: TypeScript and production build
+        env:
+          NODE_ENV: production
+          JWT_SECRET: ci-test-secret-not-for-production
+          SESSION_SECRET: ci-session-secret-not-for-production
+          ADMIN_EMAIL: ci-admin@example.com
+          ADMIN_USERNAME: ci-admin
+          ADMIN_PASSWORD: ci-admin-password-not-for-production
+          MONGODB_URI: mongodb://localhost:27017/geston-hosting-ci
+          APP_URL: https://hosting.gestontech.online
+          CLIENT_URL: https://hosting.gestontech.online
+          SITE_URL: https://hosting.gestontech.online
+          FRONTEND_ORIGIN: https://hosting.gestontech.online
         run: npm run build
 
-      - name: Verify build output
+      - name: Verify frontend build
         run: |
-          echo "========================================"
-          echo "Geston Hosting build verification"
-          echo "========================================"
+          test -f dist/index.html
 
-          if [ -d "dist" ]; then
-            echo "✓ Frontend build: dist/"
-            du -sh dist
-          else
-            echo "✗ Frontend build directory dist/ not found"
-            exit 1
-          fi
+          echo "Frontend build:"
+          du -sh dist
 
-          if [ -d "dist-server" ]; then
-            echo "✓ Server build: dist-server/"
-            du -sh dist-server
-          else
-            echo "✗ Server build directory dist-server/ not found"
-            exit 1
-          fi
+          echo "Frontend files:"
+          find dist -maxdepth 2 -type f | head -50
+
+      - name: Verify backend build
+        run: |
+          test -f dist-server/index.js
+
+          echo "Backend build:"
+          du -sh dist-server
+
+          echo "Backend files:"
+          find dist-server -maxdepth 2 -type f | head -50
+
+      - name: Verify production start files
+        run: |
+          test -f dist/index.html
+          test -f dist-server/index.js
 
           echo ""
-          echo "✓ Build verification completed successfully."
+          echo "========================================"
+          echo "GESTON HOSTING BUILD VERIFIED"
+          echo "========================================"
+          echo "Frontend: dist/index.html ✓"
+          echo "Backend:  dist-server/index.js ✓"
+          echo "Node:     $(node --version)"
+          echo "npm:      $(npm --version)"
+          echo "========================================"
