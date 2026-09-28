@@ -13,7 +13,10 @@ async function resolveServiceIds(order: {
   providerServiceId: number;
   providerCode: string;
   serviceName: string;
-}): Promise<{ service_id: number; provider: string }> {
+}): Promise<{
+  service_id: number;
+  provider: string;
+}> {
   let serviceId = order.providerServiceId;
   let provider = order.providerCode;
 
@@ -21,7 +24,7 @@ async function resolveServiceIds(order: {
     const cached = await listCachedServices();
 
     const byId = cached.find(
-      (service) => service.providerId === serviceId
+      (service) => service.providerId === serviceId,
     );
 
     if (byId) {
@@ -39,7 +42,7 @@ async function resolveServiceIds(order: {
       const byName =
         cached.find(
           (service) =>
-            service.name.toLowerCase().trim() === name
+            service.name.toLowerCase().trim() === name,
         ) ||
         cached.find(
           (service) =>
@@ -47,8 +50,8 @@ async function resolveServiceIds(order: {
               .toLowerCase()
               .includes(name) ||
             name.includes(
-              service.name.toLowerCase()
-            )
+              service.name.toLowerCase(),
+            ),
         );
 
       if (byName) {
@@ -69,23 +72,21 @@ async function resolveServiceIds(order: {
   };
 }
 
-/**
- * Traite une commande de boost gratuite.
- *
- * Il n'existe aucun paiement dans ce flux.
- */
-export async function fulfillBoostOrder(
-  boostOrderId: string
+async function placeBoostOrder(
+  boostOrderId: string,
 ): Promise<void> {
   const order = await BoostOrder.findById(
-    boostOrderId
+    boostOrderId,
   );
 
-  if (!order) return;
+  if (!order) {
+    return;
+  }
 
   if (
     order.status === "completed" ||
-    order.status === "cancelled"
+    order.status === "failed" ||
+    order.status === "refunded"
   ) {
     return;
   }
@@ -109,11 +110,11 @@ export async function fulfillBoostOrder(
 
       if (
         /not found|not priced|invalid service|unknown service/i.test(
-          message
+          message,
         )
       ) {
         await syncBoostCatalogue().catch(
-          () => {}
+          () => undefined,
         );
 
         ids = await resolveServiceIds(order);
@@ -146,7 +147,7 @@ export async function fulfillBoostOrder(
 
     order.status = normalizeBoostStatus(
       result.status,
-      "pending"
+      "pending",
     );
 
     order.updatedAt = new Date();
@@ -157,18 +158,18 @@ export async function fulfillBoostOrder(
       order.userId,
       "boost",
       "Commande de boost créée",
-      `Votre commande de ${order.quantity} ${order.serviceName} est maintenant ${order.status}.`
+      `Votre commande de ${order.quantity} ${order.serviceName} est maintenant ${order.status}.`,
     );
 
     const owner = await User.findById(
-      order.userId
+      order.userId,
     )
       .select("email username")
       .lean()
       .catch(() => null);
 
     notifyOwner(
-      `📈 *Boost gratuit créé*\n\n` +
+      `📈 *Boost créé*\n\n` +
         `Commande: \`${order._id}\`\n` +
         `Utilisateur: \`${owner?.email || order.userId}\` (@${owner?.username || "n/a"})\n` +
         `Service: \`${order.serviceName}\`\n` +
@@ -176,8 +177,8 @@ export async function fulfillBoostOrder(
         `Quantité: ${order.quantity}\n` +
         `Lien: ${order.link}\n` +
         `Provider order: \`${order.providerOrderId || "n/a"}\`\n` +
-        `Statut: ${order.status}`
-    ).catch(() => {});
+        `Statut: ${order.status}`,
+    ).catch(() => undefined);
   } catch (error) {
     const message =
       error instanceof Error
@@ -193,18 +194,18 @@ export async function fulfillBoostOrder(
       order.userId,
       "boost",
       "Commande de boost en attente",
-      `Votre commande gratuite de ${order.quantity} ${order.serviceName} est en attente de traitement.`
+      `Votre commande de ${order.quantity} ${order.serviceName} est en attente de traitement.`,
     );
 
     const owner = await User.findById(
-      order.userId
+      order.userId,
     )
       .select("email username")
       .lean()
       .catch(() => null);
 
     notifyOwner(
-      `⚠️ *Boost gratuit à traiter manuellement*\n\n` +
+      `⚠️ *Boost à traiter manuellement*\n\n` +
         `Le fournisseur n'a pas pu créer automatiquement la commande.\n\n` +
         `Commande: \`${order._id}\`\n` +
         `Utilisateur: \`${owner?.email || order.userId}\` (@${owner?.username || "n/a"})\n` +
@@ -212,7 +213,54 @@ export async function fulfillBoostOrder(
         `Quantité: ${order.quantity}\n` +
         `Lien: ${order.link}\n` +
         `Raison: ${message}\n` +
-        `Statut: *pending*`
-    ).catch(() => {});
+        `Statut: *pending*`,
+    ).catch(() => undefined);
   }
+}
+
+/**
+ * Flux principal utilisé par les nouvelles commandes gratuites.
+ */
+export async function fulfillBoostOrder(
+  boostOrderId: string,
+): Promise<void> {
+  await placeBoostOrder(boostOrderId);
+}
+
+/**
+ * Compatibilité avec les anciennes routes de paiement.
+ *
+ * Les anciennes commandes payantes peuvent encore appeler cette
+ * fonction après confirmation du paiement.
+ *
+ * Le paiement est confirmé par la route/provider appelant cette
+ * fonction. Ici, on ne tente jamais de confirmer le paiement
+ * auprès du fournisseur de paiement.
+ */
+export async function fulfillPaidBoostOrder(
+  boostOrderId: string,
+): Promise<void> {
+  const order = await BoostOrder.findById(
+    boostOrderId,
+  );
+
+  if (!order) {
+    return;
+  }
+
+  if (
+    order.status === "completed" ||
+    order.status === "failed" ||
+    order.status === "refunded"
+  ) {
+    return;
+  }
+
+  if (order.status === "awaiting_payment") {
+    order.status = "pending";
+    order.updatedAt = new Date();
+    await order.save();
+  }
+
+  await placeBoostOrder(boostOrderId);
 }
