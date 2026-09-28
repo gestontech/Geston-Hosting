@@ -70,10 +70,9 @@ export function Deploy() {
   const trialHidden = trialParam === "false";
 
   const [isTrial, setIsTrial] = useState(
-    () => trialLocked && !trialHidden
+    () => trialLocked && !trialHidden,
   );
 
-  const [months, setMonths] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const getSessionRef = useRef<HTMLDivElement>(null);
@@ -100,7 +99,7 @@ export function Deploy() {
     if (sanitizeName(nameTrimmed).length < 5) {
       showToast(
         "Le nom doit contenir au moins 5 lettres (a-z)",
-        "error"
+        "error",
       );
       return;
     }
@@ -110,7 +109,7 @@ export function Deploy() {
     if (!trimmedSession) {
       showToast(
         "L'ID de session est requis — obtenez-le à l'étape 1 ci-dessus",
-        "error"
+        "error",
       );
 
       getSessionRef.current?.scrollIntoView({
@@ -131,7 +130,7 @@ export function Deploy() {
         sessionVar: trimmedSession,
         isTrial: effectiveIsTrial,
         device,
-        months: effectiveIsTrial ? 1 : months,
+        months: 1,
       });
 
       if (res.success) {
@@ -139,7 +138,7 @@ export function Deploy() {
           effectiveIsTrial
             ? "Bot d'essai déployé gratuitement !"
             : "Bot déployé gratuitement ! Construction en ~2 minutes...",
-          "success"
+          "success",
         );
 
         const finalName =
@@ -150,7 +149,7 @@ export function Deploy() {
           JSON.stringify({
             appName: finalName,
             startTime: Date.now(),
-          })
+          }),
         );
 
         await refreshUser();
@@ -159,13 +158,13 @@ export function Deploy() {
       } else {
         showToast(
           res.error || "Échec du déploiement du bot",
-          "error"
+          "error",
         );
       }
     } catch {
       showToast(
         "Échec du déploiement du bot",
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);
@@ -200,6 +199,7 @@ export function Deploy() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           <div className="flex items-center h-14 gap-3">
             <button
+              type="button"
               onClick={() =>
                 navigateWithLoader("/services/bots")
               }
@@ -223,7 +223,6 @@ export function Deploy() {
       </nav>
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 relative z-[1] space-y-5 pb-24">
-
         {!trialHidden && (
           <button
             type="button"
@@ -392,8 +391,8 @@ export function Deploy() {
                 setBotName(
                   e.target.value.replace(
                     /[^a-zA-Z0-9]/g,
-                    ""
-                  )
+                    "",
+                  ),
                 )
               }
               maxLength={20}
