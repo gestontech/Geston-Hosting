@@ -1,0 +1,61 @@
+name: Geston Hosting - Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  android-debug:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build web application
+        env:
+          JWT_SECRET: ci-test-secret-not-for-production
+          ADMIN_EMAIL: ci-admin@example.com
+          MONGODB_URI: mongodb://localhost:27017/geston-hosting-ci
+        run: npm run build
+
+      - name: Initialize Capacitor Android
+        run: npx cap add android
+
+      - name: Synchronize Capacitor
+        run: npx cap sync android
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: geston-hosting-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
