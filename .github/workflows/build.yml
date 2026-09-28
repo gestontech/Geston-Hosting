@@ -1,0 +1,63 @@
+name: Geston Hosting - Build Check
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Verify Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Check Node and npm versions
+        run: |
+          node --version
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test --if-present
+
+      - name: Build application
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          echo "Build terminé avec succès."
+          if [ -d "dist" ]; then
+            echo "✓ Dossier dist trouvé"
+            du -sh dist
+          elif [ -d "build" ]; then
+            echo "✓ Dossier build trouvé"
+            du -sh build
+          elif [ -d "public" ]; then
+            echo "✓ Dossier public trouvé"
+            du -sh public
+          else
+            echo "⚠ Aucun dossier dist/build/public détecté."
+            echo "Le build npm s'est néanmoins terminé avec succès."
+          fi
