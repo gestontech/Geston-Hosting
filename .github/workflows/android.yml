@@ -2,6 +2,7 @@ name: Geston Hosting - Android
 
 on:
   workflow_dispatch:
+
   push:
     branches:
       - main
@@ -15,25 +16,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24.x
+          node-version: 24
+          cache: npm
+
+      - name: Check Node
+        run: node --version
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --no-audit --no-fund
 
       - name: Build web application
         env:
+          NODE_ENV: production
           JWT_SECRET: ci-test-secret-not-for-production
+          SESSION_SECRET: ci-session-secret-not-for-production
           ADMIN_EMAIL: ci-admin@example.com
+          ADMIN_USERNAME: ci-admin
+          ADMIN_PASSWORD: ci-admin-password-not-for-production
           MONGODB_URI: mongodb://localhost:27017/geston-hosting-ci
+          APP_URL: https://hosting.gestontech.online
+          CLIENT_URL: https://hosting.gestontech.online
+          SITE_URL: https://hosting.gestontech.online
+          FRONTEND_ORIGIN: https://hosting.gestontech.online
         run: npm run build
 
-      - name: Initialize Capacitor Android
+      - name: Verify web build
+        run: |
+          test -f dist/index.html
+          test -f dist-server/index.js
+
+      - name: Install Capacitor Android
         run: npx cap add android
 
       - name: Synchronize Capacitor
@@ -51,6 +69,11 @@ jobs:
       - name: Build Debug APK
         working-directory: android
         run: ./gradlew assembleDebug
+
+      - name: Verify APK
+        run: |
+          test -f android/app/build/outputs/apk/debug/app-debug.apk
+          ls -lh android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
