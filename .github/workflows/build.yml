@@ -18,16 +18,20 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: geston-hosting-build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    name: Verify Build
+    name: Verify Production Build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -49,58 +53,35 @@ jobs:
       - name: Production build
         env:
           NODE_ENV: production
-
           JWT_SECRET: ci-test-secret-not-for-production
           SESSION_SECRET: ci-session-secret-not-for-production
-
           ADMIN_EMAIL: ci-admin@example.com
           ADMIN_USERNAME: ci-admin
           ADMIN_PASSWORD: ci-admin-password-not-for-production
-
           MONGODB_URI: mongodb://localhost:27017/geston-hosting-ci
-
           APP_URL: https://hosting.gestontech.online
           CLIENT_URL: https://hosting.gestontech.online
           SITE_URL: https://hosting.gestontech.online
           FRONTEND_ORIGIN: https://hosting.gestontech.online
-
         run: npm run build
 
-      - name: Verify frontend build
+      - name: Verify frontend
         run: |
           test -f dist/index.html
+          echo "Frontend build verified."
 
-          echo "========================================"
-          echo "FRONTEND BUILD"
-          echo "========================================"
-
-          du -sh dist
-          find dist -maxdepth 2 -type f | head -50
-
-      - name: Verify backend build
+      - name: Verify backend
         run: |
           test -f dist-server/index.js
+          echo "Backend build verified."
 
-          echo "========================================"
-          echo "BACKEND BUILD"
-          echo "========================================"
-
-          du -sh dist-server
-          find dist-server -maxdepth 2 -type f | head -50
-
-      - name: Verify production files
+      - name: Verify production output
         run: |
-          test -f dist/index.html
-          test -f dist-server/index.js
-
-          echo ""
           echo "========================================"
           echo "GESTON HOSTING BUILD VERIFIED"
           echo "========================================"
-
-          echo "Frontend : dist/index.html      ✓"
-          echo "Backend  : dist-server/index.js ✓"
+          echo "Frontend : dist/index.html"
+          echo "Backend  : dist-server/index.js"
           echo "Node     : $(node --version)"
           echo "npm      : $(npm --version)"
-
           echo "========================================"
