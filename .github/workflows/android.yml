@@ -1,22 +1,22 @@
-name: Geston Hosting - Android
+name: Geston Hosting - Android Release
 
 on:
-  workflow_dispatch:
-
   push:
     branches:
       - main
+
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: geston-hosting-android
+  group: geston-hosting-android-release
   cancel-in-progress: true
 
 jobs:
-  android-debug:
-    name: Build Android APK
+  android-release:
+    name: Build signed APK + AAB
     runs-on: ubuntu-latest
 
     steps:
@@ -51,12 +51,12 @@ jobs:
           FRONTEND_ORIGIN: https://hosting.gestontech.online
         run: npm run build
 
-      - name: Verify web application
+      - name: Verify web build
         run: |
           test -f dist/index.html
           test -f dist-server/index.js
 
-      - name: Install Capacitor Android
+      - name: Generate Android project
         run: npx cap add android
 
       - name: Synchronize Capacitor
@@ -71,18 +71,118 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build Debug APK
-        working-directory: android
-        run: ./gradlew assembleDebug
-
-      - name: Verify APK
+      - name: Check Android signing secrets
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          test -f android/app/build/outputs/apk/debug/app-debug.apk
-          ls -lh android/app/build/outputs/apk/debug/app-debug.apk
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          test -n "$ANDROID_KEYSTORE_PASSWORD"
+          test -n "$ANDROID_KEY_ALIAS"
+          test -n "$ANDROID_KEY_PASSWORD"
 
-      - name: Upload APK
+      - name: Install release keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/release.jks
+          test -s android/release.jks
+
+      - name: Configure Android release signing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("android/app/build.gradle")
+          content = path.read_text()
+
+          signing_config = """
+              signingConfigs {
+                  release {
+                      storeFile file("../release.jks")
+                      storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                      keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                  }
+              }
+          """
+
+          if "signingConfigs {" not in content:
+              content = content.replace(
+                  "android {",
+                  "android {" + signing_config,
+                  1
+              )
+
+          if "signingConfig signingConfigs.release" not in content:
+              build_types = content.find("buildTypes {")
+              if build_types == -1:
+                  raise SystemExit(
+                      "Impossible de trouver buildTypes dans android/app/build.gradle"
+                  )
+
+              release_index = content.find("release {", build_types)
+              if release_index == -1:
+                  raise SystemExit(
+                      "Impossible de trouver le buildType release."
+                  )
+
+              insert_position = release_index + len("release {")
+
+              content = (
+                  content[:insert_position]
+                  + "\n            signingConfig signingConfigs.release"
+                  + content[insert_position:]
+              )
+
+          path.write_text(content)
+          PY
+
+      - name: Make Gradle executable
+        run: chmod +x android/gradlew
+
+      - name: Build signed APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
+
+      - name: Build signed AAB
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease
+
+      - name: Verify release outputs
+        run: |
+          test -f android/app/build/outputs/apk/release/app-release.apk
+          test -f android/app/build/outputs/bundle/release/app-release.aab
+
+          echo "========================================"
+          echo "GESTON HOSTING ANDROID RELEASE"
+          echo "========================================"
+
+          ls -lh android/app/build/outputs/apk/release/app-release.apk
+          ls -lh android/app/build/outputs/bundle/release/app-release.aab
+
+          echo "========================================"
+
+      - name: Upload Android release artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: geston-hosting-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: geston-hosting-android-release
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+
+      - name: Remove signing material
+        if: always()
+        run: |
+          rm -f android/release.jks
