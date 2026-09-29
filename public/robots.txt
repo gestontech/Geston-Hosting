@@ -1,4 +1,22 @@
 User-agent: *
 Allow: /
 
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /profile
+Disallow: /deploy
+Disallow: /mybots
+Disallow: /mypanels
+Disallow: /services/panels/mypanels
+Disallow: /services/panels/purchasepanel
+Disallow: /services/boosting
+Disallow: /developers
+Disallow: /report-bug
+Disallow: /login
+Disallow: /signup
+Disallow: /auth/
+Disallow: /reset-password
+Disallow: /topup
+
 Sitemap: https://hosting.gestontech.online/sitemap.xml
