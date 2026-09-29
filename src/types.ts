@@ -12,12 +12,6 @@ export interface User {
   currency?: string;
   currencySet?: boolean;
 
-  /**
-   * Google Play application licence.
-   *
-   * These fields are populated by the backend after
-   * Play Integrity verification.
-   */
   hasAppLicense?: boolean;
   appLicenseStatus?:
     | "unknown"
