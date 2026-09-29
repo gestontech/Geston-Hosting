@@ -23,7 +23,7 @@ const LICENSE_CACHE_MS =
   Number(
     process.env.PLAY_LICENSE_CACHE_MS
   ) ||
-  7 * 24 * 60 * 60 * 1000;
+  24 * 60 * 60 * 1000;
 
 function isAdminUser(
   user: IUser
@@ -32,18 +32,25 @@ function isAdminUser(
     (
       process.env.ADMIN_EMAIL ||
       ""
-    ).toLowerCase();
+    ).trim().toLowerCase();
+
+  if (!adminEmail) {
+    return false;
+  }
 
   return (
-    !!adminEmail &&
-    user.email.toLowerCase() ===
-      adminEmail
+    user.email.trim().toLowerCase() ===
+    adminEmail
   );
 }
 
 export function hasValidAppLicense(
   user: IUser
 ): boolean {
+  /*
+   * The configured administrator is allowed to use
+   * the service without a Google Play licence.
+   */
   if (isAdminUser(user)) {
     return true;
   }
@@ -61,27 +68,38 @@ export function hasValidAppLicense(
     return false;
   }
 
-  return (
-    Date.now() -
-      user.appLicenseVerifiedAt.getTime() <=
-    LICENSE_CACHE_MS
-  );
+  const verifiedAt =
+    user.appLicenseVerifiedAt.getTime();
+
+  if (!Number.isFinite(verifiedAt)) {
+    return false;
+  }
+
+  const age =
+    Date.now() - verifiedAt;
+
+  if (age < 0) {
+    return false;
+  }
+
+  return age <= LICENSE_CACHE_MS;
 }
 
 function shouldSkipPaidCheck(
   req: Request
 ): boolean {
   /*
-   * /me must remain available so the frontend can know
-   * that the authenticated user exists but is not licensed yet.
+   * /me is intentionally accessible to an authenticated
+   * but not-yet-licensed user so the application can
+   * determine its current licence state.
    */
   if (req.path === "/me") {
     return true;
   }
 
   /*
-   * The Play licence handshake must be possible before
-   * the user is licensed.
+   * The Google Play licence handshake must be accessible
+   * before the licence has been verified.
    */
   if (
     req.path === "/play-license" ||
@@ -104,7 +122,7 @@ export async function authGuard(
     const token =
       req.cookies?.token ||
       req.headers.authorization?.replace(
-        "Bearer ",
+        /^Bearer\s+/i,
         ""
       );
 
@@ -115,12 +133,20 @@ export async function authGuard(
       return;
     }
 
-    const decoded = jwt.verify(
-      token,
-      JWT_SECRET
-    ) as {
-      userId: string;
-    };
+    const decoded =
+      jwt.verify(
+        token,
+        JWT_SECRET
+      ) as {
+        userId?: string;
+      };
+
+    if (!decoded?.userId) {
+      res.status(401).json({
+        error: "Invalid token",
+      });
+      return;
+    }
 
     const user =
       await User.findById(
@@ -137,11 +163,16 @@ export async function authGuard(
     req.user =
       user as unknown as IUser;
 
+    /*
+     * Everything except the licence handshake and /me
+     * requires a valid application licence.
+     *
+     * The administrator is explicitly exempted by
+     * hasValidAppLicense().
+     */
     if (
       !shouldSkipPaidCheck(req) &&
-      !hasValidAppLicense(
-        req.user
-      )
+      !hasValidAppLicense(req.user)
     ) {
       res.status(403).json({
         error:
