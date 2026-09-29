@@ -56,8 +56,15 @@ jobs:
           test -f dist/index.html
           test -f dist-server/index.js
 
+          echo "Web build verified successfully."
+
       - name: Generate Android project
         run: npx cap add android
+
+      - name: Verify Android project
+        run: |
+          test -f android/gradlew
+          test -f android/app/build.gradle
 
       - name: Synchronize Capacitor
         run: npx cap sync android
@@ -78,24 +85,75 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          test -n "$ANDROID_KEYSTORE_BASE64"
-          test -n "$ANDROID_KEYSTORE_PASSWORD"
-          test -n "$ANDROID_KEY_ALIAS"
-          test -n "$ANDROID_KEY_PASSWORD"
+          missing=0
+
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::error::Missing GitHub secret: ANDROID_KEYSTORE_BASE64"
+            missing=1
+          fi
+
+          if [ -z "$ANDROID_KEYSTORE_PASSWORD" ]; then
+            echo "::error::Missing GitHub secret: ANDROID_KEYSTORE_PASSWORD"
+            missing=1
+          fi
+
+          if [ -z "$ANDROID_KEY_ALIAS" ]; then
+            echo "::error::Missing GitHub secret: ANDROID_KEY_ALIAS"
+            missing=1
+          fi
+
+          if [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "::error::Missing GitHub secret: ANDROID_KEY_PASSWORD"
+            missing=1
+          fi
+
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::Android release signing cannot continue until all four signing secrets are configured."
+            exit 1
+          fi
+
+          echo "All Android signing secrets are present."
 
       - name: Install release keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/release.jks
-          test -s android/release.jks
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/release.jks
+
+          if [ ! -s android/release.jks ]; then
+            echo "::error::The decoded Android keystore is empty."
+            exit 1
+          fi
+
+          file android/release.jks
+
+      - name: Validate release keystore
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          keytool -list \
+            -keystore android/release.jks \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            >/dev/null
+
+          echo "Android release keystore is valid."
 
       - name: Configure Android release signing
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
           path = Path("android/app/build.gradle")
+
+          if not path.exists():
+              raise SystemExit(
+                  "android/app/build.gradle was not generated."
+              )
+
           content = path.read_text()
 
           signing_config = """
@@ -110,6 +168,11 @@ jobs:
           """
 
           if "signingConfigs {" not in content:
+              if "android {" not in content:
+                  raise SystemExit(
+                      "Impossible de trouver le bloc android dans android/app/build.gradle."
+                  )
+
               content = content.replace(
                   "android {",
                   "android {" + signing_config,
@@ -117,13 +180,18 @@ jobs:
               )
 
           if "signingConfig signingConfigs.release" not in content:
-              build_types = content.find("buildTypes {")
-              if build_types == -1:
+              build_types_index = content.find("buildTypes {")
+
+              if build_types_index == -1:
                   raise SystemExit(
-                      "Impossible de trouver buildTypes dans android/app/build.gradle"
+                      "Impossible de trouver buildTypes dans android/app/build.gradle."
                   )
 
-              release_index = content.find("release {", build_types)
+              release_index = content.find(
+                  "release {",
+                  build_types_index
+              )
+
               if release_index == -1:
                   raise SystemExit(
                       "Impossible de trouver le buildType release."
@@ -138,7 +206,17 @@ jobs:
               )
 
           path.write_text(content)
+
+          print("Android release signing configured.")
           PY
+
+      - name: Verify Android signing configuration
+        run: |
+          grep -q "signingConfigs" android/app/build.gradle
+          grep -q "signingConfigs.release" android/app/build.gradle
+          test -s android/release.jks
+
+          echo "Android signing configuration verified."
 
       - name: Make Gradle executable
         run: chmod +x android/gradlew
@@ -149,7 +227,7 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --stacktrace
 
       - name: Build signed AAB
         working-directory: android
@@ -157,7 +235,7 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew bundleRelease
+        run: ./gradlew bundleRelease --stacktrace
 
       - name: Verify release outputs
         run: |
@@ -171,6 +249,8 @@ jobs:
           ls -lh android/app/build/outputs/apk/release/app-release.apk
           ls -lh android/app/build/outputs/bundle/release/app-release.aab
 
+          echo "========================================"
+          echo "APK and AAB successfully generated."
           echo "========================================"
 
       - name: Upload Android release artifacts
@@ -186,3 +266,9 @@ jobs:
         if: always()
         run: |
           rm -f android/release.jks
+
+          if [ -f android/release.jks ]; then
+            echo "::warning::Android release keystore could not be removed."
+          else
+            echo "Android release signing material removed."
+          fi
