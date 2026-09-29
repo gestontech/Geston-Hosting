@@ -20,7 +20,11 @@ const UserSchema = new mongoose.Schema({
   googleId: { type: String, unique: true, sparse: true },
   githubUsername: { type: String, default: "" },
   avatarUrl: { type: String, default: "" },
-  authProvider: { type: String, enum: ["local", "github", "google"], default: "local" },
+  authProvider: {
+    type: String,
+    enum: ["local", "github", "google"],
+    default: "local",
+  },
   isModerator: { type: Boolean, default: false },
   currency: { type: String, default: "KES" },
   currencySet: { type: Boolean, default: false },
@@ -31,6 +35,39 @@ const UserSchema = new mongoose.Schema({
   apiKeyCreatedAt: { type: Date },
   apiKeyLastUsedAt: { type: Date },
   apiCallCount: { type: Number, default: 0 },
+
+  /*
+   * Google Play application licence.
+   *
+   * These fields are updated only after the backend verifies
+   * a Google Play Integrity token with Google's servers.
+   */
+  appLicenseStatus: {
+    type: String,
+    enum: ["unknown", "licensed", "unlicensed"],
+    default: "unknown",
+    index: true,
+  },
+
+  appLicenseVerifiedAt: {
+    type: Date,
+    default: null,
+    index: true,
+  },
+
+  /*
+   * One-time Play Integrity nonce.
+   * Used only during the verification handshake.
+   */
+  playIntegrityNonce: {
+    type: String,
+    default: "",
+  },
+
+  playIntegrityNonceExpiresAt: {
+    type: Date,
+    default: null,
+  },
 });
 
 export const User = mongoose.model("User", UserSchema);
@@ -67,4 +104,9 @@ export interface IUser {
   apiKeyCreatedAt?: Date;
   apiKeyLastUsedAt?: Date;
   apiCallCount?: number;
+
+  appLicenseStatus?: "unknown" | "licensed" | "unlicensed";
+  appLicenseVerifiedAt?: Date | null;
+  playIntegrityNonce?: string;
+  playIntegrityNonceExpiresAt?: Date | null;
 }
