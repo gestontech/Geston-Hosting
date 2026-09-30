@@ -1,4 +1,4 @@
-name: Geston Hosting - Liquid Glass Menus
+name: Geston Hosting - Liquid Glass Side Menus
 
 on:
   workflow_dispatch:
@@ -10,11 +10,12 @@ permissions:
   contents: write
 
 jobs:
-  liquid-glass-menus:
+  liquid-glass-side-menus:
+    name: Apply and verify Liquid Glass menus
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -28,29 +29,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Apply light Liquid Glass menu styles
+      - name: Update light Liquid Glass menu styles
         shell: bash
         run: |
           python3 <<'PY'
           from pathlib import Path
 
-          css_path = Path("src/index.css")
-          css = css_path.read_text(encoding="utf-8")
+          path = Path("src/index.css")
 
-          marker_start = "/* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS START */"
-          marker_end = "/* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS END */"
+          if not path.exists():
+              raise SystemExit("ERROR: src/index.css not found")
 
-          if marker_start in css and marker_end in css:
-              print("Light Liquid Glass menu styles already present.")
-              raise SystemExit(0)
+          css = path.read_text(encoding="utf-8")
 
-          block = r'''
+          start = "/* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS START */"
+          end = "/* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS END */"
+
+          # Remove an old version of this exact block if it already exists.
+          if start in css and end in css:
+              before = css.split(start, 1)[0]
+              after = css.split(end, 1)[1]
+              css = before.rstrip() + "\n" + after.lstrip()
+
+          block = r"""
           /* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS START */
 
           /*
-           * Menus latéraux Client + Admin.
+           * Client + Admin
+           * Même panneau Liquid Glass.
            * Mode clair uniquement.
-           * Le mode sombre existant n'est pas modifié.
+           *
+           * Le mode sombre existant n'est volontairement pas modifié.
            */
 
           html.light .geston-menu-glass {
@@ -61,7 +70,8 @@ jobs:
                 rgba(255, 255, 255, 0.34)
               ) !important;
 
-            border-right-color: rgba(255, 255, 255, 0.72) !important;
+            border-right-color:
+              rgba(255, 255, 255, 0.72) !important;
 
             box-shadow:
               8px 0 34px rgba(15, 23, 42, 0.08),
@@ -74,7 +84,15 @@ jobs:
             -webkit-backdrop-filter:
               blur(34px)
               saturate(175%);
+
+            color:
+              hsl(222 30% 12%);
           }
+
+          /*
+           * Options utilisant geston-menu-option.
+           * Le rendu reste identique entre Client et Admin.
+           */
 
           html.light .geston-menu-option {
             background:
@@ -84,13 +102,18 @@ jobs:
                 rgba(255, 255, 255, 0.16)
               ) !important;
 
-            border: 1px solid rgba(255, 255, 255, 0.48) !important;
+            border:
+              1px solid rgba(255, 255, 255, 0.48) !important;
 
             box-shadow:
               0 4px 14px rgba(15, 23, 42, 0.035),
               inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
 
-            color: hsl(222 30% 12%) !important;
+            color:
+              hsl(222 30% 12%) !important;
+
+            text-shadow:
+              none;
 
             backdrop-filter:
               blur(22px)
@@ -113,13 +136,35 @@ jobs:
               0 6px 18px rgba(15, 23, 42, 0.055),
               inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
 
-            color: hsl(222 30% 8%) !important;
+            color:
+              hsl(222 30% 8%) !important;
           }
 
-          html.light .geston-menu-glass .border-border,
-          html.light .geston-menu-glass .border-border\/50 {
-            border-color: rgba(255, 255, 255, 0.48) !important;
+          html.light .geston-menu-option svg {
+            color:
+              currentColor !important;
+
+            opacity:
+              0.95;
           }
+
+          /*
+           * Séparateurs et informations du menu.
+           */
+
+          html.light .geston-menu-glass .border-border {
+            border-color:
+              rgba(255, 255, 255, 0.48) !important;
+          }
+
+          html.light .geston-menu-glass .text-muted-foreground {
+            color:
+              hsl(215 16% 38%) !important;
+          }
+
+          /*
+           * Bloc utilisateur du menu Client.
+           */
 
           html.light .geston-menu-glass .bg-muted\/50 {
             background:
@@ -129,12 +174,17 @@ jobs:
                 rgba(255, 255, 255, 0.18)
               ) !important;
 
-            border-color: rgba(255, 255, 255, 0.48) !important;
+            border-color:
+              rgba(255, 255, 255, 0.48) !important;
 
             box-shadow:
               inset 0 1px 0 rgba(255, 255, 255, 0.72),
               0 4px 14px rgba(15, 23, 42, 0.035);
           }
+
+          /*
+           * Menu mobile.
+           */
 
           html.light .geston-mobile-menu {
             background:
@@ -144,7 +194,8 @@ jobs:
                 rgba(255, 255, 255, 0.34)
               ) !important;
 
-            border-top-color: rgba(255, 255, 255, 0.72) !important;
+            border-top-color:
+              rgba(255, 255, 255, 0.72) !important;
 
             box-shadow:
               0 -10px 34px rgba(15, 23, 42, 0.08),
@@ -160,30 +211,40 @@ jobs:
           }
 
           /* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS END */
-          '''
+          """
 
           css = css.rstrip() + "\n\n" + block.strip() + "\n"
-          css_path.write_text(css, encoding="utf-8")
 
-          print("Light Liquid Glass side-menu styles applied.")
+          path.write_text(css, encoding="utf-8")
+
+          print("Light Liquid Glass side-menu styles updated successfully.")
           PY
 
-      - name: Verify CSS marker
-        run: |
-          grep -q "GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS START" src/index.css
-          grep -q "GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS END" src/index.css
-          echo "CSS verification passed."
-
-      - name: Build application
-        run: npm run build
-
-      - name: Commit and push changes
+      - name: Verify required menu classes
         shell: bash
         run: |
-          git status --short
+          grep -q "html.light .geston-menu-glass" src/index.css
+          grep -q "html.light .geston-menu-option" src/index.css
+          grep -q "html.light .geston-mobile-menu" src/index.css
 
+          echo "Required Liquid Glass menu selectors found."
+
+      - name: Verify dark mode was not modified by this action
+        shell: bash
+        run: |
+          grep -q "html.dark .geston-menu-option" src/index.css
+          grep -q "html.dark .liquid-glass" src/index.css
+
+          echo "Existing dark-mode selectors are still present."
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit only after successful build
+        shell: bash
+        run: |
           if git diff --quiet -- src/index.css; then
-            echo "No CSS changes to commit."
+            echo "No changes detected."
             exit 0
           fi
 
@@ -191,5 +252,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add src/index.css
-          git commit -m "Improve light Liquid Glass side menus"
+          git commit -m "Match light Liquid Glass side menus"
+
           git push origin HEAD:main
