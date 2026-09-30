@@ -1,21 +1,18 @@
-name: Geston Hosting - Liquid Glass Side Menus
+name: Geston Hosting - Client Menu Admin Style
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: write
 
 jobs:
-  liquid-glass-side-menus:
-    name: Apply and verify Liquid Glass menus
+  client-menu:
+    name: Update Client lateral menu only
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -29,221 +26,166 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Update light Liquid Glass menu styles
+      - name: Modify Client menu only
         shell: bash
         run: |
           python3 <<'PY'
           from pathlib import Path
 
-          path = Path("src/index.css")
+          path = Path("src/pages/MyPanels.tsx")
 
           if not path.exists():
-              raise SystemExit("ERROR: src/index.css not found")
+              raise SystemExit("ERROR: src/pages/MyPanels.tsx not found")
 
-          css = path.read_text(encoding="utf-8")
+          content = path.read_text(encoding="utf-8")
 
-          start = "/* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS START */"
-          end = "/* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS END */"
+          old_account = '''<div className="mb-5 p-3 rounded-xl bg-muted/50 border border-border/50">
+            <p className="text-xs text-muted-foreground mb-0.5">'''
 
-          # Remove an old version of this exact block if it already exists.
-          if start in css and end in css:
-              before = css.split(start, 1)[0]
-              after = css.split(end, 1)[1]
-              css = before.rstrip() + "\n" + after.lstrip()
+          new_account = '''<div className="mb-5 p-3 rounded-xl bg-transparent border-0">
+            <p className="text-xs text-muted-foreground mb-0.5">'''
 
-          block = r"""
-          /* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS START */
+          if old_account not in content:
+              raise SystemExit(
+                  "ERROR: Client account menu block was not found. "
+                  "No modification was made."
+              )
 
-          /*
-           * Client + Admin
-           * Même panneau Liquid Glass.
-           * Mode clair uniquement.
-           *
-           * Le mode sombre existant n'est volontairement pas modifié.
-           */
+          content = content.replace(old_account, new_account, 1)
 
-          html.light .geston-menu-glass {
-            background:
-              linear-gradient(
-                145deg,
-                rgba(255, 255, 255, 0.72),
-                rgba(255, 255, 255, 0.34)
-              ) !important;
+          old_panels = '''className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-muted text-foreground"'''
 
-            border-right-color:
-              rgba(255, 255, 255, 0.72) !important;
+          new_panels = '''className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg geston-client-menu-option text-sm font-medium text-muted-foreground hover:text-foreground transition-all"'''
 
-            box-shadow:
-              8px 0 34px rgba(15, 23, 42, 0.08),
-              inset -1px 0 0 rgba(255, 255, 255, 0.78);
+          if old_panels not in content:
+              raise SystemExit(
+                  "ERROR: Client Panels menu option was not found. "
+                  "No modification was made."
+              )
 
-            backdrop-filter:
-              blur(34px)
-              saturate(175%);
+          content = content.replace(old_panels, new_panels, 1)
 
-            -webkit-backdrop-filter:
-              blur(34px)
-              saturate(175%);
+          old_admin = '''className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"'''
 
-            color:
-              hsl(222 30% 12%);
-          }
+          new_admin = '''className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg geston-client-menu-option text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"'''
 
-          /*
-           * Options utilisant geston-menu-option.
-           * Le rendu reste identique entre Client et Admin.
-           */
+          if old_admin not in content:
+              raise SystemExit(
+                  "ERROR: Client Admin Panel menu option was not found. "
+                  "No modification was made."
+              )
 
-          html.light .geston-menu-option {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.42),
-                rgba(255, 255, 255, 0.16)
-              ) !important;
+          content = content.replace(old_admin, new_admin, 1)
 
-            border:
-              1px solid rgba(255, 255, 255, 0.48) !important;
+          path.write_text(content, encoding="utf-8")
 
-            box-shadow:
-              0 4px 14px rgba(15, 23, 42, 0.035),
-              inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
-
-            color:
-              hsl(222 30% 12%) !important;
-
-            text-shadow:
-              none;
-
-            backdrop-filter:
-              blur(22px)
-              saturate(165%);
-
-            -webkit-backdrop-filter:
-              blur(22px)
-              saturate(165%);
-          }
-
-          html.light .geston-menu-option:hover {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.62),
-                rgba(255, 255, 255, 0.26)
-              ) !important;
-
-            box-shadow:
-              0 6px 18px rgba(15, 23, 42, 0.055),
-              inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
-
-            color:
-              hsl(222 30% 8%) !important;
-          }
-
-          html.light .geston-menu-option svg {
-            color:
-              currentColor !important;
-
-            opacity:
-              0.95;
-          }
-
-          /*
-           * Séparateurs et informations du menu.
-           */
-
-          html.light .geston-menu-glass .border-border {
-            border-color:
-              rgba(255, 255, 255, 0.48) !important;
-          }
-
-          html.light .geston-menu-glass .text-muted-foreground {
-            color:
-              hsl(215 16% 38%) !important;
-          }
-
-          /*
-           * Bloc utilisateur du menu Client.
-           */
-
-          html.light .geston-menu-glass .bg-muted\/50 {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.44),
-                rgba(255, 255, 255, 0.18)
-              ) !important;
-
-            border-color:
-              rgba(255, 255, 255, 0.48) !important;
-
-            box-shadow:
-              inset 0 1px 0 rgba(255, 255, 255, 0.72),
-              0 4px 14px rgba(15, 23, 42, 0.035);
-          }
-
-          /*
-           * Menu mobile.
-           */
-
-          html.light .geston-mobile-menu {
-            background:
-              linear-gradient(
-                145deg,
-                rgba(255, 255, 255, 0.72),
-                rgba(255, 255, 255, 0.34)
-              ) !important;
-
-            border-top-color:
-              rgba(255, 255, 255, 0.72) !important;
-
-            box-shadow:
-              0 -10px 34px rgba(15, 23, 42, 0.08),
-              inset 0 1px 0 rgba(255, 255, 255, 0.78);
-
-            backdrop-filter:
-              blur(34px)
-              saturate(175%);
-
-            -webkit-backdrop-filter:
-              blur(34px)
-              saturate(175%);
-          }
-
-          /* GESTON HOSTING — LIGHT LIQUID GLASS SIDE MENUS END */
-          """
-
-          css = css.rstrip() + "\n\n" + block.strip() + "\n"
-
-          path.write_text(css, encoding="utf-8")
-
-          print("Light Liquid Glass side-menu styles updated successfully.")
+          print("Client menu JSX updated successfully.")
+          print("Admin menu was not modified.")
           PY
 
-      - name: Verify required menu classes
+      - name: Add Client-only menu styling
         shell: bash
         run: |
-          grep -q "html.light .geston-menu-glass" src/index.css
-          grep -q "html.light .geston-menu-option" src/index.css
-          grep -q "html.light .geston-mobile-menu" src/index.css
+          python3 <<'PY'
+          from pathlib import Path
 
-          echo "Required Liquid Glass menu selectors found."
+          path = Path("src/pages/MyPanels.tsx")
+          content = path.read_text(encoding="utf-8")
 
-      - name: Verify dark mode was not modified by this action
+          marker = "export function MyPanels() {"
+
+          if marker not in content:
+              raise SystemExit(
+                  "ERROR: MyPanels component marker not found."
+              )
+
+          style_block = r'''
+          const clientMenuStyle = `
+            .geston-client-menu-option {
+              background: transparent !important;
+              border: 0 !important;
+              outline: none !important;
+              box-shadow: none !important;
+            }
+
+            .geston-client-menu-option:hover {
+              background: rgba(255, 255, 255, 0.075) !important;
+              border: 0 !important;
+              box-shadow: none !important;
+            }
+
+            html.light .geston-client-menu-option {
+              background: transparent !important;
+              border: 0 !important;
+              outline: none !important;
+              box-shadow: none !important;
+              color: hsl(222 30% 12%) !important;
+            }
+
+            html.light .geston-client-menu-option:hover {
+              background: rgba(0, 0, 0, 0.055) !important;
+              border: 0 !important;
+              box-shadow: none !important;
+              color: hsl(222 30% 8%) !important;
+            }
+          `;
+          '''
+
+          if "const clientMenuStyle = `" not in content:
+              content = content.replace(
+                  marker,
+                  style_block.strip() + "\n\n" + marker,
+                  1
+              )
+
+          # Inject the style once inside the returned component.
+          return_marker = "return ("
+
+          if return_marker not in content:
+              raise SystemExit(
+                  "ERROR: MyPanels return block not found."
+              )
+
+          if "<style>{clientMenuStyle}</style>" not in content:
+              content = content.replace(
+                  return_marker,
+                  return_marker + '\n    <style>{clientMenuStyle}</style>',
+                  1
+              )
+
+          path.write_text(content, encoding="utf-8")
+
+          print("Client-only menu CSS added.")
+          print("No global menu CSS was changed.")
+          PY
+
+      - name: Verify Admin file was not changed
         shell: bash
         run: |
-          grep -q "html.dark .geston-menu-option" src/index.css
-          grep -q "html.dark .liquid-glass" src/index.css
+          git diff --exit-code -- src/pages/Admin.tsx
 
-          echo "Existing dark-mode selectors are still present."
+          echo "Admin.tsx is unchanged."
+
+      - name: Verify only the intended Client file changed
+        shell: bash
+        run: |
+          changed="$(git diff --name-only)"
+
+          if [ -n "$changed" ] && [ "$changed" != "src/pages/MyPanels.tsx" ]; then
+            echo "ERROR: Unexpected files changed:"
+            echo "$changed"
+            exit 1
+          fi
+
+          echo "Only MyPanels.tsx is modified."
 
       - name: Build
         run: npm run build
 
-      - name: Commit only after successful build
+      - name: Commit after successful build
         shell: bash
         run: |
-          if git diff --quiet -- src/index.css; then
+          if git diff --quiet -- src/pages/MyPanels.tsx; then
             echo "No changes detected."
             exit 0
           fi
@@ -251,7 +193,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add src/index.css
-          git commit -m "Match light Liquid Glass side menus"
-
+          git add src/pages/MyPanels.tsx
+          git commit -m "Match client lateral menu with admin style"
           git push origin HEAD:main
