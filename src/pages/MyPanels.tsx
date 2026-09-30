@@ -318,8 +318,8 @@ export function MyPanels() {
         </div>
 
         <div className="p-4 flex flex-col h-[calc(100%-65px)] overflow-y-auto">
-          {/* Compte utilisateur : aucun cadre */}
-          <div className="mb-5 p-3 rounded-xl bg-transparent border-0">
+          {/* INFORMATIONS UTILISATEUR SANS CARTE */}
+          <div className="mb-5 px-3 py-2">
             <p className="text-xs text-muted-foreground mb-0.5">
               Connecté en tant que
             </p>
@@ -339,7 +339,7 @@ export function MyPanels() {
             </div>
           </div>
 
-          {/* OPTIONS DU MENU : SANS CADRES INDIVIDUELS */}
+          {/* OPTIONS SANS CARTES INDIVIDUELLES */}
           <nav className="sidebar-glass-list flex-1">
             {navItems.map((item) => (
               <button
