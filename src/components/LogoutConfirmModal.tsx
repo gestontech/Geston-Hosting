@@ -22,7 +22,7 @@ export function LogoutConfirmModal({ isOpen, onClose, onConfirm, loading = false
             Annuler
           </Button>
           <Button
-  className="flex-1 bg-black text-white hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/85"
+  className="flex-1 bg-black hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/85 text-black dark:text-white"
   onClick={onConfirm}
   disabled={loading}
 >
