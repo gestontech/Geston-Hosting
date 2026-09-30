@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   update-logout-text:
-    name: Modifier uniquement le texte du bouton Déconnexion
+    name: Modifier uniquement le texte Déconnexion
     runs-on: ubuntu-latest
 
     steps:
@@ -39,19 +39,18 @@ jobs:
 
           text = path.read_text(encoding="utf-8")
 
-          button_pattern = re.compile(
+          pattern = re.compile(
               r"<Button\b[^>]*>[\s\S]*?</Button>",
               re.MULTILINE
           )
 
-          matches = list(button_pattern.finditer(text))
+          matches = list(pattern.finditer(text))
 
           target = None
 
           for match in matches:
               block = match.group(0)
 
-              # Cible uniquement le bouton de confirmation.
               if (
                   "onClick={onConfirm}" in block
                   and "Déconnexion" in block
@@ -66,26 +65,40 @@ jobs:
 
           old = target.group(0)
 
-          # Modifier UNIQUEMENT les couleurs du texte.
-          new = re.sub(
+          class_match = re.search(
               r'className="([^"]*)"',
-              lambda m: (
-                  'className="' +
-                  re.sub(
-                      r'\btext-(?:white|black|foreground)\b',
-                      '',
-                      m.group(1)
-                  ).strip() +
-                  ' text-black dark:text-white"'
-              ),
-              old,
-              count=1
+              old
           )
 
-          if new == old:
+          if class_match is None:
               raise SystemExit(
-                  "ERREUR : impossible de modifier uniquement la couleur du texte."
+                  "ERREUR : className du bouton introuvable."
               )
+
+          old_classes = class_match.group(1)
+
+          # Conserver absolument toutes les classes existantes,
+          # sauf les anciennes classes de couleur du texte.
+          new_classes = re.sub(
+              r'(^|\s)text-(?:white|black|foreground)(?=\s|$)',
+              '',
+              old_classes
+          )
+
+          new_classes = re.sub(
+              r'\s+',
+              ' ',
+              new_classes
+          ).strip()
+
+          # Ajouter uniquement les couleurs de texte demandées.
+          new_classes += " text-black dark:text-white"
+
+          new = (
+              old[:class_match.start(1)]
+              + new_classes
+              + old[class_match.end(1):]
+          )
 
           text = text[:target.start()] + new + text[target.end():]
 
@@ -96,71 +109,112 @@ jobs:
           print("✓ Mode clair : texte noir.")
           print("✓ Mode sombre : texte blanc.")
 
-      - name: Vérifier précisément la modification
+      - name: Vérifier la modification
         shell: python
         run: |
           from pathlib import Path
           import re
+          import subprocess
 
           path = Path("src/components/LogoutConfirmModal.tsx")
-          text = path.read_text(encoding="utf-8")
+          current = path.read_text(encoding="utf-8")
 
-          button_pattern = re.compile(
+          pattern = re.compile(
               r"<Button\b[^>]*>[\s\S]*?</Button>",
               re.MULTILINE
           )
 
-          buttons = [m.group(0) for m in button_pattern.finditer(text)]
+          buttons = [m.group(0) for m in pattern.finditer(current)]
 
-          confirmation_buttons = [
+          targets = [
               b for b in buttons
-              if "onClick={onConfirm}" in b and "Déconnexion" in b
+              if "onClick={onConfirm}" in b
+              and "Déconnexion" in b
           ]
 
-          if len(confirmation_buttons) != 1:
+          if len(targets) != 1:
               raise SystemExit(
-                  f"ERREUR : {len(confirmation_buttons)} bouton(s) trouvé(s), 1 attendu."
+                  f"ERREUR : {len(targets)} bouton(s) de confirmation trouvé(s)."
               )
 
-          button = confirmation_buttons[0]
+          button = targets[0]
 
           if "text-black" not in button:
-              raise SystemExit(
-                  "ERREUR : text-black absent du bouton."
-              )
+              raise SystemExit("ERREUR : text-black absent.")
 
           if "dark:text-white" not in button:
-              raise SystemExit(
-                  "ERREUR : dark:text-white absent du bouton."
-              )
-
-          # Vérifier qu'aucune couleur de fond n'a été ajoutée/modifiée
-          # par cette opération.
-          if "bg-black" in button or "bg-white" in button:
-              raise SystemExit(
-                  "ERREUR : une couleur de fond a été ajoutée au bouton."
-              )
+              raise SystemExit("ERREUR : dark:text-white absent.")
 
           if 'onClick={onConfirm}' not in button:
-              raise SystemExit(
-                  "ERREUR : onConfirm a été modifié."
-              )
+              raise SystemExit("ERREUR : onConfirm modifié.")
 
           if '"Déconnexion"' not in button:
+              raise SystemExit("ERREUR : Déconnexion absent.")
+
+          # Vérifier que Annuler est toujours présent.
+          if 'onClick={onClose}' not in current:
+              raise SystemExit("ERREUR : Annuler/onClose modifié.")
+
+          if "Annuler" not in current:
+              raise SystemExit("ERREUR : Annuler supprimé.")
+
+          # Vérifier qu'aucune classe de fond n'a été ajoutée
+          # ou supprimée par rapport au commit de départ.
+          old = subprocess.check_output(
+              [
+                  "git",
+                  "show",
+                  "HEAD:src/components/LogoutConfirmModal.tsx"
+              ],
+              text=True
+          )
+
+          old_matches = list(pattern.finditer(old))
+          old_targets = [
+              m.group(0)
+              for m in old_matches
+              if "onClick={onConfirm}" in m.group(0)
+              and "Déconnexion" in m.group(0)
+          ]
+
+          if len(old_targets) != 1:
               raise SystemExit(
-                  "ERREUR : texte Déconnexion absent."
+                  "ERREUR : impossible d'identifier le bouton original."
               )
 
-          if 'onClick={onClose}' not in text or "Annuler" not in text:
+          old_button = old_targets[0]
+
+          old_class = re.search(
+              r'className="([^"]*)"',
+              old_button
+          )
+
+          new_class = re.search(
+              r'className="([^"]*)"',
+              button
+          )
+
+          if not old_class or not new_class:
               raise SystemExit(
-                  "ERREUR : bouton Annuler modifié ou supprimé."
+                  "ERREUR : impossible de comparer les classes."
               )
 
-          print("✓ Mode clair : texte noir.")
-          print("✓ Mode sombre : texte blanc.")
-          print("✓ Fond du bouton non modifié.")
-          print("✓ Déconnexion conservé.")
+          def background_classes(value):
+              return sorted(
+                  c for c in value.split()
+                  if c.startswith("bg-")
+              )
+
+          if background_classes(old_class.group(1)) != background_classes(new_class.group(1)):
+              raise SystemExit(
+                  "ERREUR : les classes de fond du bouton ont été modifiées."
+              )
+
+          print("✓ Texte noir en mode clair.")
+          print("✓ Texte blanc en mode sombre.")
+          print("✓ Fond du bouton strictement conservé.")
           print("✓ Annuler conservé.")
+          print("✓ onConfirm conservé.")
           print("✓ Aucun autre bouton ciblé.")
 
       - name: Installer les dépendances
@@ -175,7 +229,6 @@ jobs:
           git config user.email "gestonvandael15@gmail.com"
 
       - name: Enregistrer et pousser
-        shell: bash
         run: |
           git add src/components/LogoutConfirmModal.tsx
 
