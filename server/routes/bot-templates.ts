@@ -16,6 +16,9 @@ const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").toLowerCase();
 export const DEFAULT_GESTON_MD_LOGO =
   "https://hosting.gestontech.online/logo/icon.png";
 
+export const DEFAULT_KNIGHTBOT_MD_LOGO =
+  "https://raw.githubusercontent.com/mruniquehacker/Knightbot-MD/main/assets/bot_image.jpg";
+
 interface AdminReq extends Request {
   user?: IUser;
 }
@@ -69,9 +72,40 @@ export async function fetchAppJson(repoUrl: string): Promise<{ imageUrl: string 
   }
 }
 
-function withLogo<T extends Record<string, unknown> & { imageUrl?: string; isDefault?: boolean }>(
+function withLogo<T extends Record<string, unknown> & {
+  imageUrl?: string;
+  isDefault?: boolean;
+  githubRepo?: string;
+}>(
   t: T
 ): T & { imageUrl: string } {
+  const url = String(t.imageUrl || "").trim();
+
+  if (url) {
+    return { ...t, imageUrl: url };
+  }
+
+  const repo = String(t.githubRepo || "").toLowerCase();
+
+  if (repo.includes("mruniquehacker/knightbot-md")) {
+    return {
+      ...t,
+      imageUrl: DEFAULT_KNIGHTBOT_MD_LOGO,
+    };
+  }
+
+  if (t.isDefault) {
+    return {
+      ...t,
+      imageUrl: DEFAULT_GESTON_MD_LOGO,
+    };
+  }
+
+  return {
+    ...t,
+    imageUrl: "",
+  };
+}
   const url = String(t.imageUrl || "").trim();
   if (url) return { ...t, imageUrl: url };
   if (t.isDefault) return { ...t, imageUrl: DEFAULT_GESTON_MD_LOGO };
