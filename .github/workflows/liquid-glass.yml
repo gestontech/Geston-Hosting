@@ -1,4 +1,4 @@
-name: Replace Theme With Liquid Glass
+name: Apply Liquid Glass Theme
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   liquid-glass:
-    name: Replace old visual theme safely
+    name: Replace visual theme with Liquid Glass
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Replace old theme with Liquid Glass
+      - name: Replace Liquid Glass theme
         shell: bash
         run: |
           python3 <<'PY'
@@ -36,112 +36,16 @@ jobs:
           path = Path("src/index.css")
           css = path.read_text(encoding="utf-8")
 
-          # ---------------------------------------------------------
-          # 1. Supprimer uniquement les anciennes couches Liquid Glass
-          #    générées par cette Action si elles existent déjà.
-          # ---------------------------------------------------------
+          START = "/* GESTON HOSTING — LIQUID GLASS THEME */"
+          END = "/* END LIQUID GLASS THEME */"
 
-          css = re.sub(
-              r"/\* GESTON HOSTING — GLOBAL LIQUID GLASS START \*/.*?/\* GESTON HOSTING — GLOBAL LIQUID GLASS END \*/",
-              "",
-              css,
-              flags=re.DOTALL,
+          # Supprime uniquement l'ancien bloc Liquid Glass.
+          pattern = re.compile(
+              re.escape(START) + r".*?" + re.escape(END),
+              re.DOTALL,
           )
 
-          # ---------------------------------------------------------
-          # 2. Supprimer l'ancien bloc SYSTEM THEME + LIQUID GLASS
-          #    ajouté précédemment à la fin du fichier.
-          # ---------------------------------------------------------
-
-          css = re.sub(
-              r"/\* =========================================================\s*"
-              r"GESTON HOSTING — SYSTEM THEME\s*"
-              r"========================================================= \*/.*?"
-              r"@media \(prefers-reduced-motion: reduce\) \{\s*"
-              r"\.liquid-glass,.*?"
-              r"\}\s*$",
-              "",
-              css,
-              flags=re.DOTALL,
-          )
-
-          # ---------------------------------------------------------
-          # 3. Remplacer les variables visuelles de base.
-          #    La structure et les fonctionnalités restent intactes.
-          # ---------------------------------------------------------
-
-          light_theme = """  :root {
-            --background: 210 25% 96%;
-            --foreground: 222 30% 12%;
-            --card: 0 0% 100%;
-            --card-foreground: 222 30% 12%;
-            --popover: 0 0% 100%;
-            --popover-foreground: 222 30% 12%;
-            --primary: 142 71% 45%;
-            --primary-foreground: 0 0% 100%;
-            --secondary: 210 20% 92%;
-            --secondary-foreground: 222 30% 12%;
-            --muted: 210 18% 92%;
-            --muted-foreground: 215 16% 45%;
-            --accent: 210 20% 92%;
-            --accent-foreground: 222 30% 12%;
-            --destructive: 0 72% 51%;
-            --destructive-foreground: 0 0% 100%;
-            --border: 210 20% 86%;
-            --input: 210 20% 86%;
-            --ring: 142 71% 45%;
-            --radius: 0.75rem;
-            --sidebar-background: 210 25% 97%;
-            --sidebar-foreground: 222 30% 12%;
-            --sidebar-primary: 142 71% 45%;
-            --sidebar-primary-foreground: 0 0% 100%;
-            --sidebar-accent: 210 20% 92%;
-            --sidebar-accent-foreground: 222 30% 12%;
-            --sidebar-border: 210 20% 86%;
-            --sidebar-ring: 142 71% 45%;
-          }"""
-
-          dark_theme = """  .dark {
-            --background: 222 30% 7%;
-            --foreground: 0 0% 98%;
-            --card: 222 25% 11%;
-            --card-foreground: 0 0% 98%;
-            --popover: 222 25% 11%;
-            --popover-foreground: 0 0% 98%;
-            --primary: 142 71% 45%;
-            --primary-foreground: 0 0% 100%;
-            --secondary: 222 20% 16%;
-            --secondary-foreground: 0 0% 98%;
-            --muted: 222 20% 16%;
-            --muted-foreground: 215 15% 68%;
-            --accent: 222 20% 17%;
-            --accent-foreground: 0 0% 98%;
-            --destructive: 0 63% 42%;
-            --destructive-foreground: 0 0% 98%;
-            --border: 222 18% 24%;
-            --input: 222 18% 24%;
-            --ring: 142 71% 45%;
-            --sidebar-background: 222 25% 9%;
-            --sidebar-foreground: 0 0% 98%;
-            --sidebar-primary: 142 71% 45%;
-            --sidebar-primary-foreground: 0 0% 100%;
-            --sidebar-accent: 222 20% 16%;
-            --sidebar-accent-foreground: 0 0% 98%;
-            --sidebar-border: 222 18% 24%;
-            --sidebar-ring: 142 71% 45%;
-          }"""
-
-          css = re.sub(
-              r"  :root \{.*?\n  \}\n\n  \.dark \{.*?\n  \}",
-              light_theme + "\n\n" + dark_theme,
-              css,
-              count=1,
-              flags=re.DOTALL,
-          )
-
-          # ---------------------------------------------------------
-          # 4. Ajouter une seule couche Liquid Glass globale.
-          # ---------------------------------------------------------
+          css = pattern.sub("", css).rstrip()
 
           liquid_glass = r"""
           /* =========================================================
@@ -158,6 +62,22 @@ jobs:
 
           html.dark {
             color-scheme: dark;
+          }
+
+          html,
+          body {
+            background:
+              radial-gradient(
+                circle at 15% 10%,
+                rgba(80, 200, 140, 0.14),
+                transparent 35%
+              ),
+              radial-gradient(
+                circle at 85% 20%,
+                rgba(100, 180, 255, 0.12),
+                transparent 35%
+              ),
+              hsl(var(--background));
           }
 
           @layer components {
@@ -193,57 +113,7 @@ jobs:
             }
           }
 
-          /* ---------------------------------------------------------
-             Application globale
-             --------------------------------------------------------- */
-
-          html,
-          body {
-            background:
-              radial-gradient(
-                circle at 15% 10%,
-                rgba(142, 230, 180, 0.16),
-                transparent 35%
-              ),
-              radial-gradient(
-                circle at 85% 20%,
-                rgba(100, 180, 255, 0.12),
-                transparent 35%
-              ),
-              hsl(var(--background));
-          }
-
-          html.light body {
-            background:
-              radial-gradient(
-                circle at 15% 10%,
-                rgba(80, 200, 140, 0.14),
-                transparent 35%
-              ),
-              radial-gradient(
-                circle at 85% 20%,
-                rgba(100, 180, 255, 0.12),
-                transparent 35%
-              ),
-              hsl(var(--background));
-          }
-
-          html.dark body {
-            background:
-              radial-gradient(
-                circle at 15% 10%,
-                rgba(80, 180, 140, 0.10),
-                transparent 35%
-              ),
-              radial-gradient(
-                circle at 85% 20%,
-                rgba(70, 130, 220, 0.10),
-                transparent 35%
-              ),
-              hsl(var(--background));
-          }
-
-          /* Champs non encore convertis individuellement */
+          /* Surfaces qui n'utilisent pas encore .liquid-glass */
           input,
           textarea,
           select {
@@ -270,7 +140,6 @@ jobs:
             border-color: rgba(255, 255, 255, 0.78);
           }
 
-          /* Menus, popovers et fenêtres */
           [role="dialog"],
           [role="menu"],
           [role="listbox"],
@@ -307,10 +176,19 @@ jobs:
           path.write_text(css, encoding="utf-8")
           PY
 
-      - name: Verify CSS
+      - name: Verify Liquid Glass
+        shell: bash
         run: |
-          test -s src/index.css
-          grep -q "LIQUID GLASS THEME" src/index.css
+          grep -q "GESTON HOSTING — LIQUID GLASS THEME" src/index.css
+          grep -q "END LIQUID GLASS THEME" src/index.css
+
+          count_start=$(grep -c "GESTON HOSTING — LIQUID GLASS THEME" src/index.css)
+          count_end=$(grep -c "END LIQUID GLASS THEME" src/index.css)
+
+          test "$count_start" -eq 1
+          test "$count_end" -eq 1
+
+          echo "Liquid Glass block verified."
 
       - name: Check formatting
         run: git diff --check
@@ -321,7 +199,10 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: Commit only after successful build
+      - name: Show changes
+        run: git diff --stat
+
+      - name: Commit and push
         shell: bash
         run: |
           if git diff --quiet; then
@@ -333,5 +214,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add src/index.css
-          git commit -m "Replace old theme with Liquid Glass"
+          git commit -m "Replace theme with Liquid Glass"
           git push origin main
