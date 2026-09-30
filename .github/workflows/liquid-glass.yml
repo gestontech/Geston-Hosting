@@ -1,4 +1,4 @@
-name: Apply Liquid Glass Theme
+name: Replace Theme With Liquid Glass
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   liquid-glass:
-    name: Apply Liquid Glass safely
+    name: Replace old visual theme safely
     runs-on: ubuntu-latest
 
     steps:
@@ -26,149 +26,312 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Backup index.css
+      - name: Replace old theme with Liquid Glass
+        shell: bash
         run: |
-          cp src/index.css /tmp/index.css.backup
+          python3 <<'PY'
+          from pathlib import Path
+          import re
 
-      - name: Add global Liquid Glass layer
+          path = Path("src/index.css")
+          css = path.read_text(encoding="utf-8")
+
+          # ---------------------------------------------------------
+          # 1. Supprimer uniquement les anciennes couches Liquid Glass
+          #    générées par cette Action si elles existent déjà.
+          # ---------------------------------------------------------
+
+          css = re.sub(
+              r"/\* GESTON HOSTING — GLOBAL LIQUID GLASS START \*/.*?/\* GESTON HOSTING — GLOBAL LIQUID GLASS END \*/",
+              "",
+              css,
+              flags=re.DOTALL,
+          )
+
+          # ---------------------------------------------------------
+          # 2. Supprimer l'ancien bloc SYSTEM THEME + LIQUID GLASS
+          #    ajouté précédemment à la fin du fichier.
+          # ---------------------------------------------------------
+
+          css = re.sub(
+              r"/\* =========================================================\s*"
+              r"GESTON HOSTING — SYSTEM THEME\s*"
+              r"========================================================= \*/.*?"
+              r"@media \(prefers-reduced-motion: reduce\) \{\s*"
+              r"\.liquid-glass,.*?"
+              r"\}\s*$",
+              "",
+              css,
+              flags=re.DOTALL,
+          )
+
+          # ---------------------------------------------------------
+          # 3. Remplacer les variables visuelles de base.
+          #    La structure et les fonctionnalités restent intactes.
+          # ---------------------------------------------------------
+
+          light_theme = """  :root {
+            --background: 210 25% 96%;
+            --foreground: 222 30% 12%;
+            --card: 0 0% 100%;
+            --card-foreground: 222 30% 12%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222 30% 12%;
+            --primary: 142 71% 45%;
+            --primary-foreground: 0 0% 100%;
+            --secondary: 210 20% 92%;
+            --secondary-foreground: 222 30% 12%;
+            --muted: 210 18% 92%;
+            --muted-foreground: 215 16% 45%;
+            --accent: 210 20% 92%;
+            --accent-foreground: 222 30% 12%;
+            --destructive: 0 72% 51%;
+            --destructive-foreground: 0 0% 100%;
+            --border: 210 20% 86%;
+            --input: 210 20% 86%;
+            --ring: 142 71% 45%;
+            --radius: 0.75rem;
+            --sidebar-background: 210 25% 97%;
+            --sidebar-foreground: 222 30% 12%;
+            --sidebar-primary: 142 71% 45%;
+            --sidebar-primary-foreground: 0 0% 100%;
+            --sidebar-accent: 210 20% 92%;
+            --sidebar-accent-foreground: 222 30% 12%;
+            --sidebar-border: 210 20% 86%;
+            --sidebar-ring: 142 71% 45%;
+          }"""
+
+          dark_theme = """  .dark {
+            --background: 222 30% 7%;
+            --foreground: 0 0% 98%;
+            --card: 222 25% 11%;
+            --card-foreground: 0 0% 98%;
+            --popover: 222 25% 11%;
+            --popover-foreground: 0 0% 98%;
+            --primary: 142 71% 45%;
+            --primary-foreground: 0 0% 100%;
+            --secondary: 222 20% 16%;
+            --secondary-foreground: 0 0% 98%;
+            --muted: 222 20% 16%;
+            --muted-foreground: 215 15% 68%;
+            --accent: 222 20% 17%;
+            --accent-foreground: 0 0% 98%;
+            --destructive: 0 63% 42%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 222 18% 24%;
+            --input: 222 18% 24%;
+            --ring: 142 71% 45%;
+            --sidebar-background: 222 25% 9%;
+            --sidebar-foreground: 0 0% 98%;
+            --sidebar-primary: 142 71% 45%;
+            --sidebar-primary-foreground: 0 0% 100%;
+            --sidebar-accent: 222 20% 16%;
+            --sidebar-accent-foreground: 0 0% 98%;
+            --sidebar-border: 222 18% 24%;
+            --sidebar-ring: 142 71% 45%;
+          }"""
+
+          css = re.sub(
+              r"  :root \{.*?\n  \}\n\n  \.dark \{.*?\n  \}",
+              light_theme + "\n\n" + dark_theme,
+              css,
+              count=1,
+              flags=re.DOTALL,
+          )
+
+          # ---------------------------------------------------------
+          # 4. Ajouter une seule couche Liquid Glass globale.
+          # ---------------------------------------------------------
+
+          liquid_glass = r"""
+          /* =========================================================
+             GESTON HOSTING — LIQUID GLASS THEME
+             ========================================================= */
+
+          html {
+            color-scheme: light dark;
+          }
+
+          html.light {
+            color-scheme: light;
+          }
+
+          html.dark {
+            color-scheme: dark;
+          }
+
+          @layer components {
+
+            .liquid-glass {
+              background:
+                linear-gradient(
+                  135deg,
+                  rgba(255, 255, 255, 0.16),
+                  rgba(255, 255, 255, 0.05)
+                );
+              border: 1px solid rgba(255, 255, 255, 0.16);
+              box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.18);
+              backdrop-filter: blur(24px) saturate(150%);
+              -webkit-backdrop-filter: blur(24px) saturate(150%);
+            }
+
+            .liquid-glass-subtle {
+              background:
+                linear-gradient(
+                  135deg,
+                  rgba(255, 255, 255, 0.12),
+                  rgba(255, 255, 255, 0.035)
+                );
+              border: 1px solid rgba(255, 255, 255, 0.13);
+              box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+              backdrop-filter: blur(20px) saturate(145%);
+              -webkit-backdrop-filter: blur(20px) saturate(145%);
+            }
+          }
+
+          /* ---------------------------------------------------------
+             Application globale
+             --------------------------------------------------------- */
+
+          html,
+          body {
+            background:
+              radial-gradient(
+                circle at 15% 10%,
+                rgba(142, 230, 180, 0.16),
+                transparent 35%
+              ),
+              radial-gradient(
+                circle at 85% 20%,
+                rgba(100, 180, 255, 0.12),
+                transparent 35%
+              ),
+              hsl(var(--background));
+          }
+
+          html.light body {
+            background:
+              radial-gradient(
+                circle at 15% 10%,
+                rgba(80, 200, 140, 0.14),
+                transparent 35%
+              ),
+              radial-gradient(
+                circle at 85% 20%,
+                rgba(100, 180, 255, 0.12),
+                transparent 35%
+              ),
+              hsl(var(--background));
+          }
+
+          html.dark body {
+            background:
+              radial-gradient(
+                circle at 15% 10%,
+                rgba(80, 180, 140, 0.10),
+                transparent 35%
+              ),
+              radial-gradient(
+                circle at 85% 20%,
+                rgba(70, 130, 220, 0.10),
+                transparent 35%
+              ),
+              hsl(var(--background));
+          }
+
+          /* Champs non encore convertis individuellement */
+          input,
+          textarea,
+          select {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.12),
+                rgba(255, 255, 255, 0.04)
+              );
+            border-color: rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(18px) saturate(140%);
+            -webkit-backdrop-filter: blur(18px) saturate(140%);
+          }
+
+          html.light input,
+          html.light textarea,
+          html.light select {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.78),
+                rgba(255, 255, 255, 0.42)
+              );
+            border-color: rgba(255, 255, 255, 0.78);
+          }
+
+          /* Menus, popovers et fenêtres */
+          [role="dialog"],
+          [role="menu"],
+          [role="listbox"],
+          [data-radix-popper-content-wrapper] > * {
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+          }
+
+          @supports not (backdrop-filter: blur(1px)) {
+            .liquid-glass,
+            .liquid-glass-subtle {
+              background: hsl(var(--card));
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .liquid-glass,
+            .liquid-glass-subtle,
+            input,
+            textarea,
+            select {
+              backdrop-filter: none;
+              -webkit-backdrop-filter: none;
+            }
+          }
+
+          /* =========================================================
+             END LIQUID GLASS THEME
+             ========================================================= */
+          """
+
+          css = css.rstrip() + "\n\n" + liquid_glass.strip() + "\n"
+
+          path.write_text(css, encoding="utf-8")
+          PY
+
+      - name: Verify CSS
         run: |
-          cat >> src/index.css <<'EOF'
+          test -s src/index.css
+          grep -q "LIQUID GLASS THEME" src/index.css
 
-/* =========================================================
-   GESTON HOSTING — GLOBAL LIQUID GLASS
-   ========================================================= */
-
-@layer components {
-
-  /* Surfaces principales */
-  .glass-surface {
-    background:
-      linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.16),
-        rgba(255, 255, 255, 0.05)
-      );
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-  }
-
-  /* Champs et contrôles */
-  input,
-  textarea,
-  select {
-    background:
-      linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.12),
-        rgba(255, 255, 255, 0.04)
-      );
-    border-color: rgba(255, 255, 255, 0.16);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-  }
-
-  /* Surfaces communes */
-  [role="dialog"],
-  [role="menu"],
-  [role="listbox"],
-  [data-radix-popper-content-wrapper] > *,
-  [data-slot="card"],
-  [data-slot="popover-content"],
-  [data-slot="dropdown-menu-content"],
-  [data-slot="sheet-content"],
-  [data-slot="drawer-content"] {
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-  }
-}
-
-/* =========================================================
-   LIGHT MODE
-   ========================================================= */
-
-html.light .glass-surface,
-html.light input,
-html.light textarea,
-html.light select,
-html.light [role="dialog"],
-html.light [role="menu"],
-html.light [role="listbox"] {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.78),
-      rgba(255, 255, 255, 0.42)
-    );
-  border-color: rgba(255, 255, 255, 0.78);
-  box-shadow:
-    0 8px 32px rgba(31, 38, 135, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-
-/* =========================================================
-   DARK MODE
-   ========================================================= */
-
-html.dark .glass-surface,
-html.dark input,
-html.dark textarea,
-html.dark select,
-html.dark [role="dialog"],
-html.dark [role="menu"],
-html.dark [role="listbox"] {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.11),
-      rgba(255, 255, 255, 0.035)
-    );
-  border-color: rgba(255, 255, 255, 0.13);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-/* =========================================================
-   ACCESSIBILITÉ
-   ========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-  .glass-surface,
-  input,
-  textarea,
-  select,
-  [role="dialog"],
-  [role="menu"],
-  [role="listbox"] {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-}
-EOF
-
-      - name: Check TypeScript
-        run: npx tsc -b
-
-      - name: Build production
-        run: npm run build
-
-      - name: Check Git diff
+      - name: Check formatting
         run: git diff --check
 
-      - name: Commit only if build succeeds
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: TypeScript check
+        run: npx tsc -b
 
+      - name: Production build
+        run: npm run build
+
+      - name: Commit only after successful build
+        shell: bash
+        run: |
           if git diff --quiet; then
-            echo "No changes to commit."
+            echo "No changes detected."
             exit 0
           fi
 
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add src/index.css
-          git commit -m "Apply global Liquid Glass theme"
+          git commit -m "Replace old theme with Liquid Glass"
           git push origin main
