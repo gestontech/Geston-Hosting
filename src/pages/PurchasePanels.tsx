@@ -44,9 +44,56 @@ import {
 } from "lucide-react";
 
 function useTheme() {
+  const getSystemTheme = (): "dark" | "light" =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+
   const [theme, setTheme] = useState<"dark" | "light">(
-    () => (localStorage.getItem("theme") as "dark" | "light") || "dark"
+    getSystemTheme
   );
+
+  useEffect(() => {
+    const media = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    );
+
+    const applySystemTheme = () => {
+      const nextTheme: "dark" | "light" = media.matches
+        ? "dark"
+        : "light";
+
+      setTheme(nextTheme);
+
+      document.documentElement.classList.toggle(
+        "dark",
+        nextTheme === "dark"
+      );
+
+      document.documentElement.classList.toggle(
+        "light",
+        nextTheme === "light"
+      );
+
+      document.documentElement.style.colorScheme = nextTheme;
+    };
+
+    applySystemTheme();
+
+    media.addEventListener("change", applySystemTheme);
+
+    return () => {
+      media.removeEventListener("change", applySystemTheme);
+    };
+  }, []);
+
+  return {
+    theme,
+    toggle: () => {
+      // Le thème du téléphone reste prioritaire.
+    },
+  };
+}
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
