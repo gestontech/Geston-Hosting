@@ -216,6 +216,13 @@ jobs:
           test -n "$ANDROID_KEY_ALIAS"
           test -n "$ANDROID_KEY_PASSWORD"
 
+                - name: Verify Google Play target SDK
+        working-directory: android
+        shell: bash
+        run: |
+          grep -n "targetSdkVersion 36" app/build.gradle
+          grep -n "compileSdkVersion 36" app/build.gradle
+
       - name: Build signed Android App Bundle
         working-directory: android
         env:
