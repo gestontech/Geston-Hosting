@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   liquid-glass:
-    name: Replace visual theme with Liquid Glass
+    name: Apply Liquid Glass safely
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Replace Liquid Glass theme
+      - name: Replace only the visual theme
         shell: bash
         run: |
           python3 <<'PY'
@@ -36,17 +36,44 @@ jobs:
           path = Path("src/index.css")
           css = path.read_text(encoding="utf-8")
 
-          START = "/* GESTON HOSTING — LIQUID GLASS THEME */"
-          END = "/* END LIQUID GLASS THEME */"
-
-          # Supprime uniquement l'ancien bloc Liquid Glass.
-          pattern = re.compile(
-              re.escape(START) + r".*?" + re.escape(END),
+          # Supprimer un éventuel bloc créé par une ancienne version
+          # de cette Action.
+          managed_pattern = re.compile(
+              r"/\*\s*GESTON HOSTING — GLOBAL LIQUID GLASS START\s*\*/"
+              r".*?"
+              r"/\*\s*GESTON HOSTING — GLOBAL LIQUID GLASS END\s*\*/",
               re.DOTALL,
           )
 
-          css = pattern.sub("", css).rstrip()
+          css = managed_pattern.sub("", css)
 
+          # Supprimer l'ancien bloc Liquid Glass uniquement lorsqu'il
+          # possède sa structure complète de début et de fin.
+          legacy_pattern = re.compile(
+              r"/\*\s*=+\s*"
+              r"GESTON HOSTING — LIQUID GLASS THEME"
+              r"\s*=+\s*\*/"
+              r".*?"
+              r"/\*\s*=+\s*"
+              r"END LIQUID GLASS THEME"
+              r"\s*=+\s*\*/",
+              re.DOTALL,
+          )
+
+          matches = list(legacy_pattern.finditer(css))
+
+          if len(matches) > 1:
+              raise SystemExit(
+                  "ERREUR: plusieurs anciens blocs Liquid Glass détectés. "
+                  "Aucun changement ne sera poussé."
+              )
+
+          if matches:
+              css = legacy_pattern.sub("", css)
+
+          css = css.rstrip()
+
+          # Bloc Liquid Glass unique et officiel.
           liquid_glass = r"""
           /* =========================================================
              GESTON HOSTING — LIQUID GLASS THEME
@@ -113,7 +140,6 @@ jobs:
             }
           }
 
-          /* Surfaces qui n'utilisent pas encore .liquid-glass */
           input,
           textarea,
           select {
@@ -171,24 +197,22 @@ jobs:
              ========================================================= */
           """
 
-          css = css.rstrip() + "\n\n" + liquid_glass.strip() + "\n"
+          css = css + "\n\n" + liquid_glass.strip() + "\n"
 
           path.write_text(css, encoding="utf-8")
           PY
 
-      - name: Verify Liquid Glass
+      - name: Verify exactly one Liquid Glass theme
         shell: bash
         run: |
-          grep -q "GESTON HOSTING — LIQUID GLASS THEME" src/index.css
-          grep -q "END LIQUID GLASS THEME" src/index.css
+          start_count=$(grep -c "GESTON HOSTING — LIQUID GLASS THEME" src/index.css || true)
+          end_count=$(grep -c "END LIQUID GLASS THEME" src/index.css || true)
 
-          count_start=$(grep -c "GESTON HOSTING — LIQUID GLASS THEME" src/index.css)
-          count_end=$(grep -c "END LIQUID GLASS THEME" src/index.css)
+          echo "Liquid Glass start: $start_count"
+          echo "Liquid Glass end: $end_count"
 
-          test "$count_start" -eq 1
-          test "$count_end" -eq 1
-
-          echo "Liquid Glass block verified."
+          test "$start_count" -eq 1
+          test "$end_count" -eq 1
 
       - name: Check formatting
         run: git diff --check
@@ -202,11 +226,11 @@ jobs:
       - name: Show changes
         run: git diff --stat
 
-      - name: Commit and push
+      - name: Commit and push only if everything passed
         shell: bash
         run: |
           if git diff --quiet; then
-            echo "No changes detected."
+            echo "Aucun changement."
             exit 0
           fi
 
@@ -214,5 +238,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add src/index.css
-          git commit -m "Replace theme with Liquid Glass"
+          git commit -m "Apply Liquid Glass theme"
           git push origin main
