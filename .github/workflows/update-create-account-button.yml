@@ -8,139 +8,123 @@ permissions:
 
 jobs:
   update-button:
-    name: Bouton Créer un compte Liquid Glass
+    name: Bouton Créer un compte
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Récupérer le dépôt
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Configurer Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Find Create Account button
-        shell: bash
-        run: |
-          echo "Recherche du bouton Créer un compte..."
-
-          grep -Rni \
-            --include="*.tsx" \
-            --include="*.jsx" \
-            --include="*.ts" \
-            --include="*.js" \
-            "Créer un compte" src || true
-
-      - name: Apply Liquid Glass button style
+      - name: Modifier Home.tsx
         shell: python
         run: |
           from pathlib import Path
-          import re
 
-          root = Path("src")
+          path = Path("src/pages/Home.tsx")
 
-          files = list(root.rglob("*.tsx")) + list(root.rglob("*.jsx"))
+          if not path.exists():
+              raise SystemExit("ERREUR : src/pages/Home.tsx introuvable.")
 
-          for path in files:
-              text = path.read_text(encoding="utf-8")
+          text = path.read_text(encoding="utf-8")
+          original = text
 
-              if "Créer un compte" not in text:
-                  continue
+          # Boutons principaux "Créer un compte"
+          text = text.replace(
+              "bg-lime-500 text-lime-950 hover:bg-lime-400 shadow-lg shadow-lime-500/20",
+              "bg-emerald-500/20 dark:bg-emerald-400/15 "
+              "backdrop-blur-xl "
+              "border border-emerald-400/30 dark:border-emerald-300/25 "
+              "shadow-lg shadow-emerald-500/10 "
+              "text-black dark:text-white "
+              "hover:bg-emerald-500/25 dark:hover:bg-emerald-400/20 "
+              "hover:border-emerald-400/40 dark:hover:border-emerald-300/35 "
+              "transition-all duration-200"
+          )
 
-              original = text
+          # Bouton "Créer un compte" dans le header
+          text = text.replace(
+              "bg-lime-500 text-lime-950 hover:bg-lime-400",
+              "bg-emerald-500/20 dark:bg-emerald-400/15 "
+              "backdrop-blur-xl "
+              "border border-emerald-400/30 dark:border-emerald-300/25 "
+              "shadow-sm shadow-emerald-500/10 "
+              "text-black dark:text-white "
+              "hover:bg-emerald-500/25 dark:hover:bg-emerald-400/20 "
+              "hover:border-emerald-400/40 dark:hover:border-emerald-300/35 "
+              "transition-all duration-200"
+          )
 
-              # Ajoute les classes de base uniquement lorsqu'un bouton
-              # contient déjà le texte "Créer un compte".
-              pattern = re.compile(
-                  r'(<button\b[^>]*className=["\'])([^"\']*)(["\'][^>]*>)(\s*Créer un compte\s*)(</button>)',
-                  re.MULTILINE
+          # Bouton mobile
+          text = text.replace(
+              "flex-1 bg-lime-500 text-lime-950 hover:bg-lime-400",
+              "flex-1 bg-emerald-500/20 dark:bg-emerald-400/15 "
+              "backdrop-blur-xl "
+              "border border-emerald-400/30 dark:border-emerald-300/25 "
+              "shadow-sm shadow-emerald-500/10 "
+              "text-black dark:text-white "
+              "hover:bg-emerald-500/25 dark:hover:bg-emerald-400/20 "
+              "hover:border-emerald-400/40 dark:hover:border-emerald-300/35 "
+              "transition-all duration-200"
+          )
+
+          if text == original:
+              raise SystemExit(
+                  "ERREUR : aucune modification détectée dans Home.tsx."
               )
 
-              def replace_button(match):
-                  prefix = match.group(1)
-                  classes = match.group(2)
-                  middle = match.group(3)
-                  label = match.group(4)
-                  closing = match.group(5)
+          path.write_text(text, encoding="utf-8")
 
-                  additions = [
-                      "bg-emerald-500/20",
-                      "dark:bg-emerald-400/15",
-                      "backdrop-blur-xl",
-                      "border",
-                      "border-emerald-400/30",
-                      "dark:border-emerald-300/25",
-                      "shadow-sm",
-                      "shadow-emerald-500/10",
-                      "text-black",
-                      "dark:text-white",
-                      "transition-all",
-                      "duration-200",
-                      "hover:bg-emerald-500/25",
-                      "dark:hover:bg-emerald-400/20",
-                      "hover:border-emerald-400/40",
-                      "dark:hover:border-emerald-300/35",
-                  ]
+          print("✓ Home.tsx modifié.")
 
-                  existing = classes.split()
-
-                  for item in additions:
-                      if item not in existing:
-                          existing.append(item)
-
-                  new_classes = " ".join(existing)
-
-                  return (
-                      prefix
-                      + new_classes
-                      + middle
-                      + label
-                      + closing
-                  )
-
-              updated = pattern.sub(replace_button, text)
-
-              if updated != original:
-                  path.write_text(updated, encoding="utf-8")
-                  print(f"Modifié : {path}")
-
-      - name: Verify theme classes
+      - name: Vérifier le style Liquid Glass
         shell: bash
         run: |
-          echo "Vérification du bouton..."
+          echo "Vérification..."
 
-          if grep -Rni \
-            --include="*.tsx" \
-            --include="*.jsx" \
-            "dark:text-white" \
-            src; then
-            echo "✓ Texte clair/sombre détecté."
-          else
-            echo "⚠ Aucun bouton correspondant trouvé."
+          if ! grep -q "bg-emerald-500/20" src/pages/Home.tsx; then
+            echo "ERREUR : couleur verte Liquid Glass absente."
+            exit 1
           fi
 
-      - name: Install dependencies
-        run: |
-          npm ci
+          if ! grep -q "backdrop-blur-xl" src/pages/Home.tsx; then
+            echo "ERREUR : effet Liquid Glass absent."
+            exit 1
+          fi
 
-      - name: Build
-        run: |
-          npm run build
+          if ! grep -q "text-black dark:text-white" src/pages/Home.tsx; then
+            echo "ERREUR : couleurs du texte clair/sombre absentes."
+            exit 1
+          fi
 
-      - name: Commit changes
+          echo "✓ Vert léger détecté."
+          echo "✓ Liquid Glass détecté."
+          echo "✓ Mode clair : texte noir."
+          echo "✓ Mode sombre : texte blanc."
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Vérifier le build
+        run: npm run build
+
+      - name: Enregistrer et pousser
         shell: bash
         run: |
-          git add src
+          git add src/pages/Home.tsx
 
           if git diff --cached --quiet; then
-            echo "Aucune modification à enregistrer."
+            echo "Aucune modification à pousser."
             exit 0
           fi
 
-          git commit -m "Update create account Liquid Glass button"
+          git commit -m "Style create account button with Liquid Glass"
           git push origin main
