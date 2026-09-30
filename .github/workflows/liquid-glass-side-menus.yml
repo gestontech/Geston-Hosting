@@ -8,11 +8,11 @@ permissions:
 
 jobs:
   client-menu:
-    name: Update Client lateral menu only
+    name: Client lateral menu only
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -39,154 +39,119 @@ jobs:
 
           content = path.read_text(encoding="utf-8")
 
-          old_account = '''<div className="mb-5 p-3 rounded-xl bg-muted/50 border border-border/50">
-            <p className="text-xs text-muted-foreground mb-0.5">'''
+          # ---------------------------------------------------------
+          # 1. Supprimer le cadre autour du bloc utilisateur Client
+          # ---------------------------------------------------------
 
-          new_account = '''<div className="mb-5 p-3 rounded-xl bg-transparent border-0">
-            <p className="text-xs text-muted-foreground mb-0.5">'''
+          old = 'className="mb-5 p-3 rounded-xl bg-muted/50 border border-border/50"'
+          new = 'className="mb-5 p-3 rounded-xl bg-transparent border-0"'
 
-          if old_account not in content:
+          if old not in content:
               raise SystemExit(
-                  "ERROR: Client account menu block was not found. "
-                  "No modification was made."
+                  "ERROR: Client user block not found. "
+                  "Nothing was changed."
               )
 
-          content = content.replace(old_account, new_account, 1)
+          content = content.replace(old, new, 1)
 
-          old_panels = '''className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-muted text-foreground"'''
+          # ---------------------------------------------------------
+          # 2. Faire de "Panels" une option normale comme Admin
+          # ---------------------------------------------------------
 
-          new_panels = '''className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg geston-client-menu-option text-sm font-medium text-muted-foreground hover:text-foreground transition-all"'''
+          old = (
+              'className="w-full flex items-center justify-between '
+              'px-3 py-2.5 rounded-lg text-sm font-medium '
+              'bg-muted text-foreground"'
+          )
 
-          if old_panels not in content:
+          new = (
+              'className="w-full flex items-center justify-between '
+              'px-3 py-2.5 rounded-lg geston-menu-option text-sm '
+              'font-medium text-muted-foreground '
+              'hover:bg-white/10 hover:text-foreground transition-all"'
+          )
+
+          if old not in content:
               raise SystemExit(
-                  "ERROR: Client Panels menu option was not found. "
-                  "No modification was made."
+                  "ERROR: Client Panels option not found. "
+                  "Nothing was changed."
               )
 
-          content = content.replace(old_panels, new_panels, 1)
+          content = content.replace(old, new, 1)
 
-          old_admin = '''className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"'''
+          # ---------------------------------------------------------
+          # 3. Donner à Admin Panel le même comportement d'option
+          # ---------------------------------------------------------
 
-          new_admin = '''className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg geston-client-menu-option text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"'''
+          old = (
+              'className="w-full flex items-center justify-between '
+              'px-3 py-2.5 rounded-lg text-sm font-medium '
+              'text-amber-400 hover:bg-amber-500/10 transition-all"'
+          )
 
-          if old_admin not in content:
+          new = (
+              'className="w-full flex items-center justify-between '
+              'px-3 py-2.5 rounded-lg geston-menu-option text-sm '
+              'font-medium text-amber-400 '
+              'hover:bg-amber-500/10 transition-all"'
+          )
+
+          if old not in content:
               raise SystemExit(
-                  "ERROR: Client Admin Panel menu option was not found. "
-                  "No modification was made."
+                  "ERROR: Client Admin Panel option not found. "
+                  "Nothing was changed."
               )
 
-          content = content.replace(old_admin, new_admin, 1)
+          content = content.replace(old, new, 1)
 
           path.write_text(content, encoding="utf-8")
 
-          print("Client menu JSX updated successfully.")
-          print("Admin menu was not modified.")
+          print("Client menu updated successfully.")
           PY
 
-      - name: Add Client-only menu styling
+      - name: Verify Admin was not modified
         shell: bash
         run: |
-          python3 <<'PY'
-          from pathlib import Path
-
-          path = Path("src/pages/MyPanels.tsx")
-          content = path.read_text(encoding="utf-8")
-
-          marker = "export function MyPanels() {"
-
-          if marker not in content:
-              raise SystemExit(
-                  "ERROR: MyPanels component marker not found."
-              )
-
-          style_block = r'''
-          const clientMenuStyle = `
-            .geston-client-menu-option {
-              background: transparent !important;
-              border: 0 !important;
-              outline: none !important;
-              box-shadow: none !important;
-            }
-
-            .geston-client-menu-option:hover {
-              background: rgba(255, 255, 255, 0.075) !important;
-              border: 0 !important;
-              box-shadow: none !important;
-            }
-
-            html.light .geston-client-menu-option {
-              background: transparent !important;
-              border: 0 !important;
-              outline: none !important;
-              box-shadow: none !important;
-              color: hsl(222 30% 12%) !important;
-            }
-
-            html.light .geston-client-menu-option:hover {
-              background: rgba(0, 0, 0, 0.055) !important;
-              border: 0 !important;
-              box-shadow: none !important;
-              color: hsl(222 30% 8%) !important;
-            }
-          `;
-          '''
-
-          if "const clientMenuStyle = `" not in content:
-              content = content.replace(
-                  marker,
-                  style_block.strip() + "\n\n" + marker,
-                  1
-              )
-
-          # Inject the style once inside the returned component.
-          return_marker = "return ("
-
-          if return_marker not in content:
-              raise SystemExit(
-                  "ERROR: MyPanels return block not found."
-              )
-
-          if "<style>{clientMenuStyle}</style>" not in content:
-              content = content.replace(
-                  return_marker,
-                  return_marker + '\n    <style>{clientMenuStyle}</style>',
-                  1
-              )
-
-          path.write_text(content, encoding="utf-8")
-
-          print("Client-only menu CSS added.")
-          print("No global menu CSS was changed.")
-          PY
-
-      - name: Verify Admin file was not changed
-        shell: bash
-        run: |
-          git diff --exit-code -- src/pages/Admin.tsx
-
-          echo "Admin.tsx is unchanged."
-
-      - name: Verify only the intended Client file changed
-        shell: bash
-        run: |
-          changed="$(git diff --name-only)"
-
-          if [ -n "$changed" ] && [ "$changed" != "src/pages/MyPanels.tsx" ]; then
-            echo "ERROR: Unexpected files changed:"
-            echo "$changed"
+          if git diff --quiet -- src/pages/Admin.tsx; then
+            echo "OK: Admin.tsx was not modified."
+          else
+            echo "ERROR: Admin.tsx was modified."
+            git diff -- src/pages/Admin.tsx
             exit 1
           fi
 
-          echo "Only MyPanels.tsx is modified."
+      - name: Verify global CSS was not modified
+        shell: bash
+        run: |
+          if git diff --quiet -- src/index.css; then
+            echo "OK: index.css was not modified."
+          else
+            echo "ERROR: index.css was modified."
+            git diff -- src/index.css
+            exit 1
+          fi
+
+      - name: Verify only Client file changed
+        shell: bash
+        run: |
+          files="$(git diff --name-only)"
+
+          if [ "$files" != "src/pages/MyPanels.tsx" ]; then
+            echo "ERROR: Unexpected files changed:"
+            echo "$files"
+            exit 1
+          fi
+
+          echo "OK: Only src/pages/MyPanels.tsx was changed."
 
       - name: Build
         run: npm run build
 
-      - name: Commit after successful build
+      - name: Commit and push
         shell: bash
         run: |
           if git diff --quiet -- src/pages/MyPanels.tsx; then
-            echo "No changes detected."
+            echo "No changes to commit."
             exit 0
           fi
 
