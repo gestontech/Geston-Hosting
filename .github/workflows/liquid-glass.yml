@@ -1,0 +1,174 @@
+name: Apply Liquid Glass Theme
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  liquid-glass:
+    name: Apply Liquid Glass safely
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Backup index.css
+        run: |
+          cp src/index.css /tmp/index.css.backup
+
+      - name: Add global Liquid Glass layer
+        run: |
+          cat >> src/index.css <<'EOF'
+
+/* =========================================================
+   GESTON HOSTING — GLOBAL LIQUID GLASS
+   ========================================================= */
+
+@layer components {
+
+  /* Surfaces principales */
+  .glass-surface {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.16),
+        rgba(255, 255, 255, 0.05)
+      );
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+  }
+
+  /* Champs et contrôles */
+  input,
+  textarea,
+  select {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.12),
+        rgba(255, 255, 255, 0.04)
+      );
+    border-color: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  /* Surfaces communes */
+  [role="dialog"],
+  [role="menu"],
+  [role="listbox"],
+  [data-radix-popper-content-wrapper] > *,
+  [data-slot="card"],
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="sheet-content"],
+  [data-slot="drawer-content"] {
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+  }
+}
+
+/* =========================================================
+   LIGHT MODE
+   ========================================================= */
+
+html.light .glass-surface,
+html.light input,
+html.light textarea,
+html.light select,
+html.light [role="dialog"],
+html.light [role="menu"],
+html.light [role="listbox"] {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.78),
+      rgba(255, 255, 255, 0.42)
+    );
+  border-color: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 8px 32px rgba(31, 38, 135, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* =========================================================
+   DARK MODE
+   ========================================================= */
+
+html.dark .glass-surface,
+html.dark input,
+html.dark textarea,
+html.dark select,
+html.dark [role="dialog"],
+html.dark [role="menu"],
+html.dark [role="listbox"] {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.11),
+      rgba(255, 255, 255, 0.035)
+    );
+  border-color: rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* =========================================================
+   ACCESSIBILITÉ
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-surface,
+  input,
+  textarea,
+  select,
+  [role="dialog"],
+  [role="menu"],
+  [role="listbox"] {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+EOF
+
+      - name: Check TypeScript
+        run: npx tsc -b
+
+      - name: Build production
+        run: npm run build
+
+      - name: Check Git diff
+        run: git diff --check
+
+      - name: Commit only if build succeeds
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git add src/index.css
+          git commit -m "Apply global Liquid Glass theme"
+          git push origin main
