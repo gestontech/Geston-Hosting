@@ -26,193 +26,118 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Replace only the visual theme
+      - name: Apply Liquid Glass to side menus
         shell: bash
         run: |
           python3 <<'PY'
           from pathlib import Path
-          import re
 
-          path = Path("src/index.css")
-          css = path.read_text(encoding="utf-8")
+          files = [
+              "src/pages/Home.tsx",
+              "src/pages/MyBots.tsx",
+              "src/pages/MyPanels.tsx",
+              "src/pages/ServicesPanel.tsx",
+              "src/pages/ServicesBots.tsx",
+              "src/pages/Tutorials.tsx",
+              "src/pages/Contact.tsx",
+              "src/pages/PurchasePanels.tsx",
+              "src/pages/Dashboard.tsx",
+              "src/pages/Admin.tsx",
+          ]
 
-          # Supprimer un éventuel bloc créé par une ancienne version
-          # de cette Action.
-          managed_pattern = re.compile(
-              r"/\*\s*GESTON HOSTING — GLOBAL LIQUID GLASS START\s*\*/"
-              r".*?"
-              r"/\*\s*GESTON HOSTING — GLOBAL LIQUID GLASS END\s*\*/",
-              re.DOTALL,
-          )
+          for filename in files:
+              path = Path(filename)
 
-          css = managed_pattern.sub("", css)
+              if not path.exists():
+                  print(f"Fichier absent, ignoré : {filename}")
+                  continue
 
-          # Supprimer l'ancien bloc Liquid Glass uniquement lorsqu'il
-          # possède sa structure complète de début et de fin.
-          legacy_pattern = re.compile(
-              r"/\*\s*=+\s*"
-              r"GESTON HOSTING — LIQUID GLASS THEME"
-              r"\s*=+\s*\*/"
-              r".*?"
-              r"/\*\s*=+\s*"
-              r"END LIQUID GLASS THEME"
-              r"\s*=+\s*\*/",
-              re.DOTALL,
-          )
+              content = path.read_text(encoding="utf-8")
+              original = content
 
-          matches = list(legacy_pattern.finditer(css))
-
-          if len(matches) > 1:
-              raise SystemExit(
-                  "ERREUR: plusieurs anciens blocs Liquid Glass détectés. "
-                  "Aucun changement ne sera poussé."
+              # Menu mobile de Home.
+              content = content.replace(
+                  "lg:hidden border-t border-border bg-background px-4 py-3 space-y-1",
+                  "lg:hidden liquid-glass border-t border-white/15 px-4 py-3 space-y-2"
               )
 
-          if matches:
-              css = legacy_pattern.sub("", css)
+              # Boutons du menu mobile Home.
+              content = content.replace(
+                  "px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground",
+                  "px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
+              )
 
-          css = css.rstrip()
+              # Menus latéraux.
+              content = content.replace(
+                  "bg-card border-r border-border",
+                  "liquid-glass border-r border-white/15"
+              )
 
-          # Bloc Liquid Glass unique et officiel.
-          liquid_glass = r"""
-          /* =========================================================
-             GESTON HOSTING — LIQUID GLASS THEME
-             ========================================================= */
+              # Cartes individuelles des options.
+              content = content.replace(
+                  "px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all",
+                  "px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
+              )
 
-          html {
-            color-scheme: light dark;
-          }
+              # Autres variantes de boutons de navigation.
+              content = content.replace(
+                  "px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-all",
+                  "px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
+              )
 
-          html.light {
-            color-scheme: light;
-          }
+              # Évite les anciens états visuels opaques.
+              content = content.replace(
+                  "hover:bg-muted",
+                  "hover:bg-white/10"
+              )
 
-          html.dark {
-            color-scheme: dark;
-          }
-
-          html,
-          body {
-            background:
-              radial-gradient(
-                circle at 15% 10%,
-                rgba(80, 200, 140, 0.14),
-                transparent 35%
-              ),
-              radial-gradient(
-                circle at 85% 20%,
-                rgba(100, 180, 255, 0.12),
-                transparent 35%
-              ),
-              hsl(var(--background));
-          }
-
-          @layer components {
-
-            .liquid-glass {
-              background:
-                linear-gradient(
-                  135deg,
-                  rgba(255, 255, 255, 0.16),
-                  rgba(255, 255, 255, 0.05)
-                );
-              border: 1px solid rgba(255, 255, 255, 0.16);
-              box-shadow:
-                0 8px 32px rgba(0, 0, 0, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.18);
-              backdrop-filter: blur(24px) saturate(150%);
-              -webkit-backdrop-filter: blur(24px) saturate(150%);
-            }
-
-            .liquid-glass-subtle {
-              background:
-                linear-gradient(
-                  135deg,
-                  rgba(255, 255, 255, 0.12),
-                  rgba(255, 255, 255, 0.035)
-                );
-              border: 1px solid rgba(255, 255, 255, 0.13);
-              box-shadow:
-                0 4px 20px rgba(0, 0, 0, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.12);
-              backdrop-filter: blur(20px) saturate(145%);
-              -webkit-backdrop-filter: blur(20px) saturate(145%);
-            }
-          }
-
-          input,
-          textarea,
-          select {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.12),
-                rgba(255, 255, 255, 0.04)
-              );
-            border-color: rgba(255, 255, 255, 0.16);
-            backdrop-filter: blur(18px) saturate(140%);
-            -webkit-backdrop-filter: blur(18px) saturate(140%);
-          }
-
-          html.light input,
-          html.light textarea,
-          html.light select {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.78),
-                rgba(255, 255, 255, 0.42)
-              );
-            border-color: rgba(255, 255, 255, 0.78);
-          }
-
-          [role="dialog"],
-          [role="menu"],
-          [role="listbox"],
-          [data-radix-popper-content-wrapper] > * {
-            backdrop-filter: blur(24px) saturate(150%);
-            -webkit-backdrop-filter: blur(24px) saturate(150%);
-          }
-
-          @supports not (backdrop-filter: blur(1px)) {
-            .liquid-glass,
-            .liquid-glass-subtle {
-              background: hsl(var(--card));
-            }
-          }
-
-          @media (prefers-reduced-motion: reduce) {
-            .liquid-glass,
-            .liquid-glass-subtle,
-            input,
-            textarea,
-            select {
-              backdrop-filter: none;
-              -webkit-backdrop-filter: none;
-            }
-          }
-
-          /* =========================================================
-             END LIQUID GLASS THEME
-             ========================================================= */
-          """
-
-          css = css + "\n\n" + liquid_glass.strip() + "\n"
-
-          path.write_text(css, encoding="utf-8")
+              if content != original:
+                  path.write_text(content, encoding="utf-8")
+                  print(f"Liquid Glass appliqué : {filename}")
+              else:
+                  print(f"Aucun changement nécessaire : {filename}")
           PY
 
-      - name: Verify exactly one Liquid Glass theme
+      - name: Verify Liquid Glass side menus
         shell: bash
         run: |
-          start_count=$(grep -c "GESTON HOSTING — LIQUID GLASS THEME" src/index.css || true)
-          end_count=$(grep -c "END LIQUID GLASS THEME" src/index.css || true)
+          python3 <<'PY'
+          from pathlib import Path
 
-          echo "Liquid Glass start: $start_count"
-          echo "Liquid Glass end: $end_count"
+          files = [
+              "src/pages/Home.tsx",
+              "src/pages/MyBots.tsx",
+              "src/pages/MyPanels.tsx",
+              "src/pages/ServicesPanel.tsx",
+              "src/pages/ServicesBots.tsx",
+              "src/pages/Tutorials.tsx",
+              "src/pages/Contact.tsx",
+              "src/pages/PurchasePanels.tsx",
+              "src/pages/Dashboard.tsx",
+              "src/pages/Admin.tsx",
+          ]
 
-          test "$start_count" -eq 1
-          test "$end_count" -eq 1
+          checked = 0
+
+          for filename in files:
+              path = Path(filename)
+
+              if not path.exists():
+                  continue
+
+              content = path.read_text(encoding="utf-8")
+
+              if "liquid-glass" in content:
+                  checked += 1
+                  print(f"OK : {filename}")
+
+          if checked == 0:
+              raise SystemExit(
+                  "ERREUR : aucun menu Liquid Glass détecté."
+              )
+
+          print(f"{checked} fichier(s) vérifié(s).")
+          PY
 
       - name: Check formatting
         run: git diff --check
@@ -237,6 +162,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add src/index.css
-          git commit -m "Apply Liquid Glass theme"
+          git add \
+            src/index.css \
+            src/pages/Home.tsx \
+            src/pages/MyBots.tsx \
+            src/pages/MyPanels.tsx \
+            src/pages/ServicesPanel.tsx \
+            src/pages/ServicesBots.tsx \
+            src/pages/Tutorials.tsx \
+            src/pages/Contact.tsx \
+            src/pages/PurchasePanels.tsx \
+            src/pages/Dashboard.tsx \
+            src/pages/Admin.tsx
+
+          git commit -m "Apply Liquid Glass side menu cards"
           git push origin main
