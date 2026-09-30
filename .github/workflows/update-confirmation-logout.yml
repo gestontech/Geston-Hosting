@@ -1,0 +1,108 @@
+name: Update Confirmation Logout Button
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-confirmation-logout:
+    name: Modifier uniquement Déconnexion de la confirmation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Modifier uniquement le bouton de confirmation
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("src/components/LogoutConfirmModal.tsx")
+
+          if not path.exists():
+              raise SystemExit(
+                  "ERREUR : src/components/LogoutConfirmModal.tsx introuvable."
+              )
+
+          text = path.read_text(encoding="utf-8")
+          original = text
+
+          old = '''<Button variant="destructive" className="flex-1" onClick={onConfirm} disabled={loading}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+            {loading ? "Déconnexion..." : "Déconnexion"}
+          </Button>'''
+
+          new = '''<Button
+            className="flex-1 bg-black text-white hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/85"
+            onClick={onConfirm}
+            disabled={loading}
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+            {loading ? "Déconnexion..." : "Déconnexion"}
+          </Button>'''
+
+          if old not in text:
+              raise SystemExit(
+                  "ERREUR : le bouton de confirmation attendu n'a pas été trouvé."
+              )
+
+          text = text.replace(old, new, 1)
+
+          if text == original:
+              raise SystemExit(
+                  "ERREUR : aucune modification détectée."
+              )
+
+          path.write_text(text, encoding="utf-8")
+
+          print("✓ Seul le bouton Déconnexion de la confirmation a été modifié.")
+
+      - name: Vérifier que seul le fichier prévu est modifié
+        shell: bash
+        run: |
+          git diff -- src/components/LogoutConfirmModal.tsx
+
+          grep -q 'bg-black text-white' src/components/LogoutConfirmModal.tsx
+          grep -q 'dark:bg-white dark:text-black' src/components/LogoutConfirmModal.tsx
+          grep -q 'onClick={onConfirm}' src/components/LogoutConfirmModal.tsx
+
+          echo "✓ Mode clair : Déconnexion = noir / texte blanc."
+          echo "✓ Mode sombre : Déconnexion = blanc / texte noir."
+          echo "✓ Annuler n'a pas été modifié."
+          echo "✓ Profil et menu latéral ne sont pas modifiés."
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Vérifier le build
+        run: npm run build
+
+      - name: Configurer Git
+        run: |
+          git config user.name "gestontech"
+          git config user.email "gestonvandael15@gmail.com"
+
+      - name: Enregistrer et pousser
+        shell: bash
+        run: |
+          git add src/components/LogoutConfirmModal.tsx
+
+          if git diff --cached --quiet; then
+            echo "Aucune modification à pousser."
+            exit 0
+          fi
+
+          git commit -m "Style confirmation logout button"
+          git push origin main
