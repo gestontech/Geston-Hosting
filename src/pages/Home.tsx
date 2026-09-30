@@ -566,7 +566,7 @@ export default function Home() {
 
             <Button
               size="sm"
-              className="hidden sm:inline-flex bg-lime-500 text-lime-950 hover:bg-lime-400"
+              className="hidden sm:inline-flex bg-emerald-500/20 dark:bg-emerald-400/15 backdrop-blur-xl border border-emerald-400/30 dark:border-emerald-300/25 shadow-sm shadow-emerald-500/10 text-black dark:text-white hover:bg-emerald-500/25 dark:hover:bg-emerald-400/20 hover:border-emerald-400/40 dark:hover:border-emerald-300/35 transition-all duration-200"
               onClick={() =>
                 navigateWithLoader(
                   user ? "/dashboard" : "/signup"
@@ -627,7 +627,7 @@ export default function Home() {
               )}
 
               <Button
-                className="flex-1 bg-lime-500 text-lime-950 hover:bg-lime-400"
+                className="flex-1 bg-emerald-500/20 dark:bg-emerald-400/15 backdrop-blur-xl border border-emerald-400/30 dark:border-emerald-300/25 shadow-sm shadow-emerald-500/10 text-black dark:text-white hover:bg-emerald-500/25 dark:hover:bg-emerald-400/20 hover:border-emerald-400/40 dark:hover:border-emerald-300/35 transition-all duration-200"
                 onClick={() => {
                   navigateWithLoader(
                     user ? "/dashboard" : "/signup"
@@ -659,7 +659,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-3 mb-10">
                 <Button
                   size="lg"
-                  className="sm:min-w-[190px] bg-lime-500 text-lime-950 hover:bg-lime-400 shadow-lg shadow-lime-500/20"
+                  className="sm:min-w-[190px] bg-emerald-500/20 dark:bg-emerald-400/15 backdrop-blur-xl border border-emerald-400/30 dark:border-emerald-300/25 shadow-lg shadow-emerald-500/10 text-black dark:text-white hover:bg-emerald-500/25 dark:hover:bg-emerald-400/20 hover:border-emerald-400/40 dark:hover:border-emerald-300/35 transition-all duration-200"
                   onClick={() =>
                     navigateWithLoader(
                       user ? "/dashboard" : "/signup"
@@ -873,7 +873,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
                   size="lg"
-                  className="bg-lime-500 text-lime-950 hover:bg-lime-400"
+                  className="bg-emerald-500/20 dark:bg-emerald-400/15 backdrop-blur-xl border border-emerald-400/30 dark:border-emerald-300/25 shadow-sm shadow-emerald-500/10 text-black dark:text-white hover:bg-emerald-500/25 dark:hover:bg-emerald-400/20 hover:border-emerald-400/40 dark:hover:border-emerald-300/35 transition-all duration-200"
                   onClick={() =>
                     navigateWithLoader(
                       user ? "/dashboard" : "/signup"
