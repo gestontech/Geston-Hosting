@@ -61,7 +61,7 @@ const ADMIN_EMAIL = (
 ).toLowerCase();
 
 const DEFAULT_BOT_IMAGE =
-  "https://hosting.gestontech.online/logo/icon.png";
+  "https://raw.githubusercontent.com/xhclintohn/Music-Clips-Collection/refs/heads/main/images/Geston.jpg";
 
 function fallbackPublicHost(): string {
   const raw =
