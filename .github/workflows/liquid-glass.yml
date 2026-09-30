@@ -36,114 +36,98 @@ jobs:
           css_path = Path("src/index.css")
           css = css_path.read_text(encoding="utf-8")
 
-          marker = re.compile(
-              r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST START\s*\*/"
-              r".*?"
-              r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST END\s*\*/",
-              re.DOTALL,
-          )
+          # Sauvegarde exacte des règles sombres existantes.
+          dark_before = [
+              line.strip()
+              for line in css.splitlines()
+              if re.match(r"^\s*html\.dark\b", line)
+          ]
 
-          css = marker.sub("", css).rstrip()
+          start_marker = "GESTON HOSTING — LIGHT MENUS CONTRAST START"
+          end_marker = "GESTON HOSTING — LIGHT MENUS CONTRAST END"
 
-          light_menu_css = r"""
+          # Supprime uniquement notre ancien bloc géré.
+          start = css.find(start_marker)
+          end = css.find(end_marker)
+
+          if start != -1 and end != -1:
+              block_start = css.rfind("/*", 0, start)
+              block_end = css.find("*/", end)
+
+              if block_start == -1 or block_end == -1:
+                  raise SystemExit(
+                      "ERREUR : ancien bloc Liquid Glass invalide."
+                  )
+
+              css = (
+                  css[:block_start].rstrip()
+                  + "\n"
+                  + css[block_end + 2:].lstrip()
+              )
+
+          elif start != -1 or end != -1:
+              raise SystemExit(
+                  "ERREUR : marqueurs du bloc Liquid Glass incomplets."
+              )
+
+          light_menu_css = """
           /* =========================================================
              GESTON HOSTING — LIGHT MENUS CONTRAST START
              ========================================================= */
 
           /*
            * Correction visuelle uniquement pour le mode clair.
-           * Le thème sombre existant n'est pas redéfini ici.
+           * Le thème sombre existant reste inchangé.
            */
 
           html.light .geston-menu-glass {
-            background:
-              rgba(255, 255, 255, 0.94) !important;
-
-            border-right-color:
-              rgba(0, 0, 0, 0.08);
-
+            background: rgba(255, 255, 255, 0.94) !important;
+            border-right-color: rgba(0, 0, 0, 0.08);
             box-shadow:
               8px 0 32px rgba(0, 0, 0, 0.08),
               inset -1px 0 0 rgba(255, 255, 255, 0.90);
-
-            backdrop-filter:
-              blur(24px)
-              saturate(150%);
-
-            -webkit-backdrop-filter:
-              blur(24px)
-              saturate(150%);
-
-            color:
-              hsl(222 30% 12%);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            color: hsl(222 30% 12%);
           }
 
           html.light .geston-mobile-menu {
-            background:
-              rgba(255, 255, 255, 0.94) !important;
-
-            border-top-color:
-              rgba(0, 0, 0, 0.08);
-
+            background: rgba(255, 255, 255, 0.94) !important;
+            border-top-color: rgba(0, 0, 0, 0.08);
             box-shadow:
               0 10px 32px rgba(0, 0, 0, 0.08),
               inset 0 1px 0 rgba(255, 255, 255, 0.90);
-
-            backdrop-filter:
-              blur(24px)
-              saturate(150%);
-
-            -webkit-backdrop-filter:
-              blur(24px)
-              saturate(150%);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
           }
 
           html.light .geston-menu-option {
-            background:
-              transparent !important;
-
-            border:
-              0 !important;
-
-            outline:
-              none !important;
-
-            box-shadow:
-              none !important;
-
-            color:
-              hsl(222 30% 12%) !important;
-
-            text-shadow:
-              none;
+            background: transparent !important;
+            border: 0 !important;
+            outline: none !important;
+            box-shadow: none !important;
+            color: hsl(222 30% 12%) !important;
+            text-shadow: none;
           }
 
           html.light .geston-menu-option:hover {
-            background:
-              rgba(0, 0, 0, 0.055) !important;
-
-            color:
-              hsl(222 30% 8%) !important;
+            background: rgba(0, 0, 0, 0.055) !important;
+            color: hsl(222 30% 8%) !important;
           }
 
           html.light .geston-menu-option svg {
-            color:
-              currentColor !important;
-
-            opacity:
-              0.95;
+            color: currentColor !important;
+            opacity: 0.95;
           }
 
           html.light .geston-menu-option span,
           html.light .geston-menu-option div {
-            color:
-              inherit;
+            color: inherit;
           }
 
           html.light .geston-menu-glass .text-muted-foreground,
           html.light .geston-mobile-menu .text-muted-foreground {
-            color:
-              hsl(215 16% 38%) !important;
+            color: hsl(215 16% 38%) !important;
           }
 
           /* =========================================================
@@ -151,28 +135,80 @@ jobs:
              ========================================================= */
           """
 
-          # Contrôle strict : aucune règle html.dark ne doit être
-          # présente dans le CSS actif de correction.
-          active_css = re.sub(
+          # Sécurité : aucune règle sombre active dans notre bloc.
+          active_block = re.sub(
               r"/\*.*?\*/",
               "",
               light_menu_css,
               flags=re.DOTALL,
           )
 
-          if re.search(r"html\.dark\b", active_css):
+          if re.search(r"(?m)^\s*html\.dark\b", active_block):
               raise SystemExit(
-                  "ERREUR : une règle html.dark a été introduite."
+                  "ERREUR : une règle sombre a été introduite."
               )
 
-          css += "\n\n" + light_menu_css.strip() + "\n"
+          css = css.rstrip() + "\n\n" + light_menu_css.strip() + "\n"
+
           css_path.write_text(css, encoding="utf-8")
 
-          print("Correction du mode clair appliquée.")
-          print("Le mode sombre n'a pas été redéfini.")
+          # Vérifie que les règles sombres existantes sont strictement
+          # identiques après la modification.
+          dark_after = [
+              line.strip()
+              for line in css.splitlines()
+              if re.match(r"^\s*html\.dark\b", line)
+          ]
+
+          if dark_before != dark_after:
+              raise SystemExit(
+                  "ERREUR : les règles du mode sombre ont été modifiées."
+              )
+
+          print("OK : correction du mode clair appliquée.")
+          print("OK : règles du mode sombre inchangées.")
           PY
 
       - name: Verify light menu correction
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          css = Path("src/index.css").read_text(encoding="utf-8")
+
+          required = [
+              "GESTON HOSTING — LIGHT MENUS CONTRAST START",
+              "GESTON HOSTING — LIGHT MENUS CONTRAST END",
+              "html.light .geston-menu-glass",
+              "html.light .geston-mobile-menu",
+              "html.light .geston-menu-option",
+              "html.light .geston-menu-option svg",
+          ]
+
+          for item in required:
+              if item not in css:
+                  raise SystemExit(
+                      f"ERREUR : élément CSS manquant : {item}"
+                  )
+
+          if css.count("GESTON HOSTING — LIGHT MENUS CONTRAST START") != 1:
+              raise SystemExit(
+                  "ERREUR : plusieurs blocs de correction détectés."
+              )
+
+          if css.count("GESTON HOSTING — LIGHT MENUS CONTRAST END") != 1:
+              raise SystemExit(
+                  "ERREUR : plusieurs fins de bloc détectées."
+              )
+
+          print("OK : menu clair vérifié.")
+          print("OK : panneau Admin/Client vérifié.")
+          print("OK : options sans bordures individuelles.")
+          print("OK : icônes vérifiées.")
+          PY
+
+      - name: Verify dark mode untouched
         shell: bash
         run: |
           python3 <<'PY'
@@ -181,48 +217,33 @@ jobs:
 
           css = Path("src/index.css").read_text(encoding="utf-8")
 
-          pattern = re.compile(
-              r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST START\s*\*/"
-              r"(.*?)"
-              r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST END\s*\*/",
-              re.DOTALL,
+          start = css.find(
+              "GESTON HOSTING — LIGHT MENUS CONTRAST START"
+          )
+          end = css.find(
+              "GESTON HOSTING — LIGHT MENUS CONTRAST END"
           )
 
-          matches = pattern.findall(css)
-
-          if len(matches) != 1:
+          if start == -1 or end == -1 or end <= start:
               raise SystemExit(
-                  f"ERREUR : nombre de blocs clair incorrect : {len(matches)}"
+                  "ERREUR : bloc de correction introuvable."
               )
 
-          block = re.sub(
+          block = css[start:end]
+
+          active_block = re.sub(
               r"/\*.*?\*/",
               "",
-              matches[0],
+              block,
               flags=re.DOTALL,
           )
 
-          if re.search(r"html\.dark\b", block):
+          if re.search(r"(?m)^\s*html\.dark\b", active_block):
               raise SystemExit(
-                  "ERREUR : le bloc de correction contient une règle sombre."
+                  "ERREUR : une règle sombre est présente dans le bloc."
               )
 
-          required = [
-              "html.light .geston-menu-glass",
-              "html.light .geston-mobile-menu",
-              "html.light .geston-menu-option",
-              "html.light .geston-menu-option svg",
-          ]
-
-          for rule in required:
-              if rule not in matches[0]:
-                  raise SystemExit(
-                      f"ERREUR : règle manquante : {rule}"
-                  )
-
-          print("OK : menu Admin/Client en mode clair vérifié.")
-          print("OK : textes et icônes en mode clair vérifiés.")
-          print("OK : aucune règle sombre ajoutée.")
+          print("OK : aucune règle sombre ajoutée au nouveau bloc.")
           PY
 
       - name: Check formatting
@@ -234,19 +255,29 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: Show changes
+      - name: Verify changed files
+        shell: bash
         run: |
-          echo "===== MODIFICATIONS ====="
-          git diff --stat
-
           echo "===== FICHIERS MODIFIÉS ====="
           git diff --name-only
 
-      - name: Commit and push only after everything passes
+          if git diff --name-only | grep -v '^src/index\.css$' | grep -q .; then
+            echo "ERREUR : un fichier autre que src/index.css a été modifié."
+            exit 1
+          fi
+
+          echo "OK : seul src/index.css a été modifié."
+
+      - name: Show changes
+        run: |
+          echo "===== STATISTIQUES ====="
+          git diff --stat
+
+      - name: Commit and push
         shell: bash
         run: |
           if git diff --quiet; then
-            echo "Aucun changement."
+            echo "Aucun changement à publier."
             exit 0
           fi
 
@@ -254,7 +285,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add src/index.css
-
-          git commit -m "Improve light menu readability"
-
+          git commit -m "Improve light menu contrast"
           git push origin main
