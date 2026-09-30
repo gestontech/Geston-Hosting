@@ -62,47 +62,57 @@ jobs:
         working-directory: android
         shell: bash
         run: |
+          set -e
+
+          VARIABLES_FILE="variables.gradle"
+
+          if [ ! -f "$VARIABLES_FILE" ]; then
+            echo "ERROR: android/variables.gradle was not generated."
+            exit 1
+          fi
+
           python3 - <<'PY'
           from pathlib import Path
           import re
 
-          path = Path("app/build.gradle")
-
-          if not path.is_file():
-              raise SystemExit("android/app/build.gradle was not generated.")
-
+          path = Path("variables.gradle")
           text = path.read_text()
 
-          # Capacitor 8 generates a Groovy Android project.
-          # Force the Play-required target API without changing
-          # the rest of the generated project.
-          text = re.sub(
-              r'(?m)^(\s*)targetSdkVersion\s+\d+\s*$',
-              r'\g<1>targetSdkVersion 36',
-              text
-          )
+          def replace_value(text, name, value):
+              pattern = rf'(?m)^(\s*{name}\s*=\s*)[^\r\n]+$'
 
-          text = re.sub(
-              r'(?m)^(\s*)compileSdkVersion\s+\d+\s*$',
-              r'\g<1>compileSdkVersion 36',
-              text
-          )
+              if not re.search(pattern, text):
+                  raise SystemExit(
+                      f"Could not find {name} in android/variables.gradle."
+                  )
 
-          if "targetSdkVersion 36" not in text:
-              raise SystemExit(
-                  "Could not configure targetSdkVersion 36."
+              return re.sub(
+                  pattern,
+                  rf'\g<1>{value}',
+                  text,
+                  count=1
               )
 
-          if "compileSdkVersion 36" not in text:
-              raise SystemExit(
-                  "Could not configure compileSdkVersion 36."
-              )
+          text = replace_value(
+              text,
+              "compileSdkVersion",
+              "36"
+          )
+
+          text = replace_value(
+              text,
+              "targetSdkVersion",
+              "36"
+          )
 
           path.write_text(text)
           PY
 
           echo "Android SDK configuration:"
-          grep -nE "compileSdkVersion|targetSdkVersion" app/build.gradle
+          grep -nE "compileSdkVersion|targetSdkVersion" variables.gradle
+
+          grep -qE '^[[:space:]]*compileSdkVersion[[:space:]]*=[[:space:]]*36[[:space:]]*$' variables.gradle
+          grep -qE '^[[:space:]]*targetSdkVersion[[:space:]]*=[[:space:]]*36[[:space:]]*$' variables.gradle
 
       - name: Setup Java 21
         uses: actions/setup-java@v5
@@ -220,8 +230,16 @@ jobs:
         working-directory: android
         shell: bash
         run: |
-          grep -n "targetSdkVersion 36" app/build.gradle
-          grep -n "compileSdkVersion 36" app/build.gradle
+          echo "Checking Android SDK configuration..."
+
+          grep -nE "compileSdkVersion|targetSdkVersion" variables.gradle
+
+          grep -qE '^[[:space:]]*compileSdkVersion[[:space:]]*=[[:space:]]*36[[:space:]]*$' variables.gradle
+          grep -qE '^[[:space:]]*targetSdkVersion[[:space:]]*=[[:space:]]*36[[:space:]]*$' variables.gradle
+
+          echo "Google Play SDK configuration OK:"
+          echo "  compileSdkVersion = 36"
+          echo "  targetSdkVersion  = 36"
 
       - name: Build signed Android App Bundle
         working-directory: android
@@ -245,8 +263,10 @@ jobs:
           echo "Release AAB:"
           ls -lh "$AAB"
 
-          echo "Checking archive:"
+          echo "Checking AAB archive..."
           unzip -t "$AAB" >/dev/null
+
+          echo "AAB archive is valid."
 
       - name: Upload release AAB
         uses: actions/upload-artifact@v4
