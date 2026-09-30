@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   liquid-glass:
-    name: Apply Liquid Glass menu safely
+    name: Improve light menu contrast
     runs-on: ubuntu-latest
 
     steps:
@@ -26,314 +26,215 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Apply menu-only Liquid Glass
+      - name: Improve light mode menus only
         shell: bash
         run: |
           python3 <<'PY'
           from pathlib import Path
           import re
 
-          files = [
-              "src/pages/Home.tsx",
-              "src/pages/MyBots.tsx",
-              "src/pages/MyPanels.tsx",
-              "src/pages/ServicesPanel.tsx",
-              "src/pages/ServicesBots.tsx",
-              "src/pages/Tutorials.tsx",
-              "src/pages/Contact.tsx",
-              "src/pages/PurchasePanels.tsx",
-              "src/pages/Dashboard.tsx",
-              "src/pages/Admin.tsx",
-          ]
-
-          # =========================================================
-          # CSS : uniquement les menus
-          # =========================================================
-
           css_path = Path("src/index.css")
           css = css_path.read_text(encoding="utf-8")
 
-          marker = re.compile(
-              r"/\*\s*GESTON HOSTING — MENU LIQUID GLASS START\s*\*/"
+          # Supprimer uniquement notre ancien bloc de correction
+          # des menus clair afin d'éviter les doublons.
+          pattern = re.compile(
+              r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST START\s*\*/"
               r".*?"
-              r"/\*\s*GESTON HOSTING — MENU LIQUID GLASS END\s*\*/",
+              r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST END\s*\*/",
               re.DOTALL,
           )
 
-          css = marker.sub("", css).rstrip()
+          css = pattern.sub("", css).rstrip()
 
-          menu_css = r"""
+          light_menu_css = r"""
           /* =========================================================
-             GESTON HOSTING — MENU LIQUID GLASS START
+             GESTON HOSTING — LIGHT MENUS CONTRAST START
              ========================================================= */
 
           /*
-           * Le panneau utilise le même langage visuel que le menu Admin.
-           * Les options n'ont volontairement PAS de bordure individuelle.
+           * MODE CLAIR UNIQUEMENT
+           *
+           * Le mode sombre n'est volontairement pas défini ici.
+           * Les règles existantes du mode sombre restent intactes.
            */
 
-          .geston-menu-glass {
+          html.light .geston-menu-glass {
             background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.075),
-                rgba(255, 255, 255, 0.018)
-              );
+              rgba(255, 255, 255, 0.94) !important;
 
-            border-color: rgba(255, 255, 255, 0.12);
+            border-right-color:
+              rgba(0, 0, 0, 0.08);
 
             box-shadow:
               8px 0 32px rgba(0, 0, 0, 0.08),
-              inset -1px 0 0 rgba(255, 255, 255, 0.08);
+              inset -1px 0 0 rgba(255, 255, 255, 0.90);
 
             backdrop-filter:
-              blur(32px)
-              saturate(170%);
+              blur(24px)
+              saturate(150%);
 
             -webkit-backdrop-filter:
-              blur(32px)
-              saturate(170%);
+              blur(24px)
+              saturate(150%);
+
+            color:
+              hsl(222 30% 12%);
           }
 
           /*
-           * Option de menu :
-           * - pas de contour
-           * - pas de carte individuelle
-           * - petit espace entre les lignes
-           * - comportement visuel proche du menu Admin
+           * Même rendu blanc pour le menu principal/mobile
+           * en mode clair.
            */
 
-          .geston-menu-option {
-            border: 0 !important;
-            outline: none !important;
-            box-shadow: none !important;
-
-            background: transparent;
-
-            color: hsl(var(--foreground));
-
-            border-radius: 0.65rem;
-
-            margin-bottom: 4px;
-
-            transition:
-              background-color 160ms ease,
-              color 160ms ease;
-          }
-
-          .geston-menu-option:hover {
+          html.light .geston-mobile-menu {
             background:
-              rgba(255, 255, 255, 0.075);
+              rgba(255, 255, 255, 0.94) !important;
 
-            color: hsl(var(--foreground));
-          }
+            border-top-color:
+              rgba(0, 0, 0, 0.08);
 
-          .geston-menu-option[aria-current="page"],
-          .geston-menu-option[data-active="true"] {
-            background:
-              rgba(255, 255, 255, 0.10);
+            box-shadow:
+              0 10px 32px rgba(0, 0, 0, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 0.90);
 
-            color: hsl(var(--foreground));
+            backdrop-filter:
+              blur(24px)
+              saturate(150%);
+
+            -webkit-backdrop-filter:
+              blur(24px)
+              saturate(150%);
           }
 
           /*
-           * Texte et icônes héritent du foreground du thème.
-           * Cela évite les textes trop sombres en dark mode
-           * et les textes trop clairs en light mode.
-           */
-
-          .geston-menu-option svg {
-            color: currentColor;
-            opacity: 0.92;
-          }
-
-          .geston-menu-option span,
-          .geston-menu-option div {
-            color: inherit;
-          }
-
-          /*
-           * Mode clair : contraste lisible.
+           * OPTIONS DES MENUS — MODE CLAIR
+           *
+           * Aucun contour individuel.
+           * Les options gardent le style du menu Admin.
            */
 
           html.light .geston-menu-option {
-            color: hsl(222 30% 12%);
+            background:
+              transparent !important;
+
+            border:
+              0 !important;
+
+            outline:
+              none !important;
+
+            box-shadow:
+              none !important;
+
+            color:
+              hsl(222 30% 12%) !important;
+
+            text-shadow:
+              none;
           }
 
           html.light .geston-menu-option:hover {
             background:
-              rgba(0, 0, 0, 0.055);
+              rgba(0, 0, 0, 0.055) !important;
 
-            color: hsl(222 30% 10%);
+            color:
+              hsl(222 30% 8%) !important;
           }
 
           /*
-           * Mode sombre : contraste lisible.
+           * Texte et icônes héritent du même contraste.
            */
 
-          html.dark .geston-menu-option {
-            color: hsl(0 0% 96%);
+          html.light .geston-menu-option svg {
+            color:
+              currentColor !important;
+
+            opacity:
+              0.95;
           }
 
-          html.dark .geston-menu-option:hover {
-            background:
-              rgba(255, 255, 255, 0.075);
-
-            color: hsl(0 0% 100%);
+          html.light .geston-menu-option span,
+          html.light .geston-menu-option div {
+            color:
+              inherit;
           }
 
           /*
-           * Menu mobile / menu principal.
+           * Sections secondaires du menu.
            */
 
-          .geston-mobile-menu {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.075),
-                rgba(255, 255, 255, 0.018)
-              );
-
-            backdrop-filter:
-              blur(32px)
-              saturate(170%);
-
-            -webkit-backdrop-filter:
-              blur(32px)
-              saturate(170%);
+          html.light .geston-menu-glass .text-muted-foreground,
+          html.light .geston-mobile-menu .text-muted-foreground {
+            color:
+              hsl(215 16% 38%) !important;
           }
+
+          /*
+           * Le mode sombre n'est PAS redéfini.
+           * Les règles html.dark existantes restent inchangées.
+           */
 
           /* =========================================================
-             GESTON HOSTING — MENU LIQUID GLASS END
+             GESTON HOSTING — LIGHT MENUS CONTRAST END
              ========================================================= */
           """
 
-          css += "\n\n" + menu_css.strip() + "\n"
+          css += "\n\n" + light_menu_css.strip() + "\n"
+
           css_path.write_text(css, encoding="utf-8")
 
-          # =========================================================
-          # TSX : classes visuelles uniquement
-          # =========================================================
+          print("Correction du mode clair des menus appliquée.")
+          print("Aucune règle html.dark ajoutée ou modifiée.")
 
-          for filename in files:
-              path = Path(filename)
-
-              if not path.exists():
-                  print(f"Fichier absent : {filename}")
-                  continue
-
-              content = path.read_text(encoding="utf-8")
-              original = content
-
-              # -----------------------------------------------------
-              # Anciennes cartes individuelles :
-              # on les transforme en simples options comme Admin.
-              # -----------------------------------------------------
-
-              content = content.replace(
-                  "sidebar-glass-item",
-                  "geston-menu-option"
+          # Vérification de sécurité :
+          # le bloc ne doit contenir aucune règle html.dark.
+          if "html.dark" in light_menu_css:
+              raise SystemExit(
+                  "ERREUR : une règle dark a été introduite."
               )
-
-              # Ancienne classe de panneau.
-              content = content.replace(
-                  "sidebar-glass-panel",
-                  "geston-menu-glass"
-              )
-
-              # Ancienne classe mobile.
-              content = content.replace(
-                  "sidebar-glass-mobile",
-                  "geston-mobile-menu"
-              )
-
-              # -----------------------------------------------------
-              # Si certaines options utilisent encore les anciennes
-              # classes Liquid Glass, on retire seulement leur
-              # apparence individuelle.
-              # -----------------------------------------------------
-
-              content = content.replace(
-                  "liquid-glass-subtle",
-                  ""
-              )
-
-              # -----------------------------------------------------
-              # Anciennes bordures/classes d'options.
-              # -----------------------------------------------------
-
-              content = content.replace(
-                  "hover:bg-muted",
-                  "hover:bg-black/5 dark:hover:bg-white/10"
-              )
-
-              # -----------------------------------------------------
-              # Ajouter la classe visuelle à certains boutons de menu
-              # qui utilisent encore px-3 py-2.5.
-              # -----------------------------------------------------
-
-              patterns = [
-                  r'className="([^"]*px-3 py-2\.5[^"]*)"',
-                  r"className='([^']*px-3 py-2\.5[^']*)'",
-              ]
-
-              for pattern in patterns:
-                  def replace_class(match):
-                      classes = match.group(1)
-
-                      # Ne pas toucher aux éléments qui ne ressemblent
-                      # pas à une option de menu.
-                      if "geston-menu-option" in classes:
-                          return match.group(0)
-
-                      if (
-                          "nav" in classes
-                          or "muted-foreground" in classes
-                          or "ChevronRight" in classes
-                      ):
-                          classes = classes.replace(
-                              "rounded-lg",
-                              "rounded-xl"
-                          )
-
-                          classes += " geston-menu-option"
-
-                          return f'className="{classes}"'
-
-                      return match.group(0)
-
-                  content = re.sub(pattern, replace_class, content)
-
-              # -----------------------------------------------------
-              # Nav : petit espace entre les options, sans cartes.
-              # -----------------------------------------------------
-
-              content = content.replace(
-                  'className="space-y-0.5 flex-1"',
-                  'className="space-y-1 flex-1"'
-              )
-
-              content = content.replace(
-                  'className="space-y-1 flex-1"',
-                  'className="space-y-1 flex-1"'
-              )
-
-              if content != original:
-                  path.write_text(content, encoding="utf-8")
-                  print(f"Menu mis à jour : {filename}")
-              else:
-                  print(f"Aucun changement nécessaire : {filename}")
-
           PY
 
-      - name: Verify menu-only changes
+      - name: Verify light menu correction
         shell: bash
         run: |
-          grep -q "GESTON HOSTING — MENU LIQUID GLASS START" src/index.css
-          grep -q "geston-menu-option" src/index.css
-          grep -q "geston-menu-glass" src/index.css
+          grep -q "GESTON HOSTING — LIGHT MENUS CONTRAST START" src/index.css
+          grep -q "html.light .geston-menu-glass" src/index.css
+          grep -q "html.light .geston-menu-option" src/index.css
 
-          echo "Menu Liquid Glass vérifié."
+          echo "Menus Admin/Client en mode clair vérifiés."
+
+      - name: Verify no dark-mode rule was added
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          css = Path("src/index.css").read_text(encoding="utf-8")
+
+          match = re.search(
+              r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST START\s*\*/"
+              r"(.*?)"
+              r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST END\s*\*/",
+              css,
+              re.DOTALL,
+          )
+
+          if not match:
+              raise SystemExit(
+                  "Bloc de correction introuvable."
+              )
+
+          block = match.group(1)
+
+          if "html.dark" in block:
+              raise SystemExit(
+                  "ERREUR : le mode sombre a été touché."
+              )
+
+          print("OK : aucune règle dark dans la correction.")
+          PY
 
       - name: Check formatting
         run: git diff --check
@@ -356,7 +257,7 @@ jobs:
         shell: bash
         run: |
           if git diff --quiet; then
-            echo "Aucun changement à pousser."
+            echo "Aucun changement."
             exit 0
           fi
 
@@ -364,16 +265,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add src/index.css
-          git add src/pages/Home.tsx
-          git add src/pages/MyBots.tsx
-          git add src/pages/MyPanels.tsx
-          git add src/pages/ServicesPanel.tsx
-          git add src/pages/ServicesBots.tsx
-          git add src/pages/Tutorials.tsx
-          git add src/pages/Contact.tsx
-          git add src/pages/PurchasePanels.tsx
-          git add src/pages/Dashboard.tsx
-          git add src/pages/Admin.tsx
 
-          git commit -m "Match menus to Admin Liquid Glass style"
+          git commit -m "Improve light menu contrast"
+
           git push origin main
