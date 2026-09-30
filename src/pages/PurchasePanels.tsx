@@ -916,7 +916,7 @@ export function PurchasePanels() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-full w-72 sidebar-glass-panel border-r border-white/15 z-[110] transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full w-72 geston-menu-glass border-r border-white/15 z-[110] transform transition-transform duration-300 ${
           navOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -958,7 +958,7 @@ export function PurchasePanels() {
                   navigateWithLoader(item.path);
                   setNavOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground geston-menu-option"
               >
                 <div className="flex items-center gap-2.5">
                   <item.icon className="w-4 h-4" />
@@ -975,7 +975,7 @@ export function PurchasePanels() {
                 navigateWithLoader("/services/bots");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-white/10 geston-menu-option"
             >
               <div className="flex items-center gap-2.5">
                 <Bot className="w-4 h-4" />
@@ -1027,7 +1027,7 @@ export function PurchasePanels() {
                 navigateWithLoader("/profile");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:bg-white/10 geston-menu-option"
             >
               <UserCircle className="w-4 h-4" />
               Profil

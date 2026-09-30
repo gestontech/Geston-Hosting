@@ -596,7 +596,7 @@ export default function Home() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="lg:hidden sidebar-glass-mobile border-t border-white/15 px-4 py-3 space-y-2">
+          <div className="lg:hidden geston-mobile-menu border-t border-white/15 px-4 py-3 space-y-2">
             {NAV_LINKS.map((l) => (
               <button
                 key={l.href}
@@ -605,7 +605,7 @@ export default function Home() {
                   navigateWithLoader(l.href);
                   setMobileMenuOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl sidebar-glass-item text-sm text-muted-foreground hover:text-foreground transition-all"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl geston-menu-option text-sm text-muted-foreground hover:text-foreground transition-all"
               >
                 {l.label}
                 <ChevronRight className="w-4 h-4 opacity-40" />

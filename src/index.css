@@ -831,3 +831,147 @@ html.dark .sidebar-glass-item {
 /* =========================================================
    GESTON HOSTING — GLOBAL LIQUID GLASS END
    ========================================================= */
+
+/* =========================================================
+   GESTON HOSTING — MENU LIQUID GLASS START
+   ========================================================= */
+
+/*
+ * Le panneau utilise le même langage visuel que le menu Admin.
+ * Les options n'ont volontairement PAS de bordure individuelle.
+ */
+
+.geston-menu-glass {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.018)
+    );
+
+  border-color: rgba(255, 255, 255, 0.12);
+
+  box-shadow:
+    8px 0 32px rgba(0, 0, 0, 0.08),
+    inset -1px 0 0 rgba(255, 255, 255, 0.08);
+
+  backdrop-filter:
+    blur(32px)
+    saturate(170%);
+
+  -webkit-backdrop-filter:
+    blur(32px)
+    saturate(170%);
+}
+
+/*
+ * Option de menu :
+ * - pas de contour
+ * - pas de carte individuelle
+ * - petit espace entre les lignes
+ * - comportement visuel proche du menu Admin
+ */
+
+.geston-menu-option {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+
+  background: transparent;
+
+  color: hsl(var(--foreground));
+
+  border-radius: 0.65rem;
+
+  margin-bottom: 4px;
+
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.geston-menu-option:hover {
+  background:
+    rgba(255, 255, 255, 0.075);
+
+  color: hsl(var(--foreground));
+}
+
+.geston-menu-option[aria-current="page"],
+.geston-menu-option[data-active="true"] {
+  background:
+    rgba(255, 255, 255, 0.10);
+
+  color: hsl(var(--foreground));
+}
+
+/*
+ * Texte et icônes héritent du foreground du thème.
+ * Cela évite les textes trop sombres en dark mode
+ * et les textes trop clairs en light mode.
+ */
+
+.geston-menu-option svg {
+  color: currentColor;
+  opacity: 0.92;
+}
+
+.geston-menu-option span,
+.geston-menu-option div {
+  color: inherit;
+}
+
+/*
+ * Mode clair : contraste lisible.
+ */
+
+html.light .geston-menu-option {
+  color: hsl(222 30% 12%);
+}
+
+html.light .geston-menu-option:hover {
+  background:
+    rgba(0, 0, 0, 0.055);
+
+  color: hsl(222 30% 10%);
+}
+
+/*
+ * Mode sombre : contraste lisible.
+ */
+
+html.dark .geston-menu-option {
+  color: hsl(0 0% 96%);
+}
+
+html.dark .geston-menu-option:hover {
+  background:
+    rgba(255, 255, 255, 0.075);
+
+  color: hsl(0 0% 100%);
+}
+
+/*
+ * Menu mobile / menu principal.
+ */
+
+.geston-mobile-menu {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.018)
+    );
+
+  backdrop-filter:
+    blur(32px)
+    saturate(170%);
+
+  -webkit-backdrop-filter:
+    blur(32px)
+    saturate(170%);
+}
+
+/* =========================================================
+   GESTON HOSTING — MENU LIQUID GLASS END
+   ========================================================= */
