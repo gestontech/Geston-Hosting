@@ -24,10 +24,11 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Modifier uniquement le bouton de confirmation
+      - name: Modifier uniquement le bouton Déconnexion
         shell: python
         run: |
           from pathlib import Path
+          import re
 
           path = Path("src/components/LogoutConfirmModal.tsx")
 
@@ -37,12 +38,29 @@ jobs:
               )
 
           text = path.read_text(encoding="utf-8")
-          original = text
 
-          old = '''<Button variant="destructive" className="flex-1" onClick={onConfirm} disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-            {loading ? "Déconnexion..." : "Déconnexion"}
-          </Button>'''
+          # Cherche uniquement le Button qui déclenche onConfirm.
+          pattern = re.compile(
+              r'<Button\b(?=[\s\S]*?onClick=\{onConfirm\})[\s\S]*?</Button>',
+              re.MULTILINE
+          )
+
+          matches = list(pattern.finditer(text))
+
+          if not matches:
+              raise SystemExit(
+                  "ERREUR : aucun bouton de confirmation avec onClick={onConfirm} trouvé."
+              )
+
+          # On prend le dernier bouton correspondant dans la fenêtre de confirmation.
+          match = matches[-1]
+          old = match.group(0)
+
+          # Sécurité : ce bouton doit bien contenir Déconnexion.
+          if "Déconnexion" not in old:
+              raise SystemExit(
+                  "ERREUR : le bouton trouvé ne contient pas 'Déconnexion'."
+              )
 
           new = '''<Button
             className="flex-1 bg-black text-white hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/85"
@@ -53,35 +71,25 @@ jobs:
             {loading ? "Déconnexion..." : "Déconnexion"}
           </Button>'''
 
-          if old not in text:
-              raise SystemExit(
-                  "ERREUR : le bouton de confirmation attendu n'a pas été trouvé."
-              )
-
-          text = text.replace(old, new, 1)
-
-          if text == original:
-              raise SystemExit(
-                  "ERREUR : aucune modification détectée."
-              )
+          text = text[:match.start()] + new + text[match.end():]
 
           path.write_text(text, encoding="utf-8")
 
-          print("✓ Seul le bouton Déconnexion de la confirmation a été modifié.")
+          print("✓ Bouton Déconnexion de la confirmation modifié uniquement.")
 
-      - name: Vérifier que seul le fichier prévu est modifié
+      - name: Vérifier la modification
         shell: bash
         run: |
-          git diff -- src/components/LogoutConfirmModal.tsx
-
           grep -q 'bg-black text-white' src/components/LogoutConfirmModal.tsx
           grep -q 'dark:bg-white dark:text-black' src/components/LogoutConfirmModal.tsx
           grep -q 'onClick={onConfirm}' src/components/LogoutConfirmModal.tsx
+          grep -q '"Déconnexion"' src/components/LogoutConfirmModal.tsx
+          grep -q '"Annuler"' src/components/LogoutConfirmModal.tsx
 
-          echo "✓ Mode clair : Déconnexion = noir / texte blanc."
-          echo "✓ Mode sombre : Déconnexion = blanc / texte noir."
-          echo "✓ Annuler n'a pas été modifié."
-          echo "✓ Profil et menu latéral ne sont pas modifiés."
+          echo "✓ Mode clair : bouton Déconnexion noir."
+          echo "✓ Mode sombre : bouton Déconnexion blanc."
+          echo "✓ Annuler conservé."
+          echo "✓ Action onConfirm conservée."
 
       - name: Installer les dépendances
         run: npm ci
