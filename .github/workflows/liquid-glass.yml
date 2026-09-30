@@ -36,16 +36,14 @@ jobs:
           css_path = Path("src/index.css")
           css = css_path.read_text(encoding="utf-8")
 
-          # Supprimer uniquement notre ancien bloc de correction
-          # des menus clair afin d'éviter les doublons.
-          pattern = re.compile(
+          marker = re.compile(
               r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST START\s*\*/"
               r".*?"
               r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST END\s*\*/",
               re.DOTALL,
           )
 
-          css = pattern.sub("", css).rstrip()
+          css = marker.sub("", css).rstrip()
 
           light_menu_css = r"""
           /* =========================================================
@@ -53,10 +51,8 @@ jobs:
              ========================================================= */
 
           /*
-           * MODE CLAIR UNIQUEMENT
-           *
-           * Le mode sombre n'est volontairement pas défini ici.
-           * Les règles existantes du mode sombre restent intactes.
+           * Correction visuelle uniquement pour le mode clair.
+           * Le thème sombre existant n'est pas redéfini ici.
            */
 
           html.light .geston-menu-glass {
@@ -82,11 +78,6 @@ jobs:
               hsl(222 30% 12%);
           }
 
-          /*
-           * Même rendu blanc pour le menu principal/mobile
-           * en mode clair.
-           */
-
           html.light .geston-mobile-menu {
             background:
               rgba(255, 255, 255, 0.94) !important;
@@ -106,13 +97,6 @@ jobs:
               blur(24px)
               saturate(150%);
           }
-
-          /*
-           * OPTIONS DES MENUS — MODE CLAIR
-           *
-           * Aucun contour individuel.
-           * Les options gardent le style du menu Admin.
-           */
 
           html.light .geston-menu-option {
             background:
@@ -142,10 +126,6 @@ jobs:
               hsl(222 30% 8%) !important;
           }
 
-          /*
-           * Texte et icônes héritent du même contraste.
-           */
-
           html.light .geston-menu-option svg {
             color:
               currentColor !important;
@@ -160,51 +140,39 @@ jobs:
               inherit;
           }
 
-          /*
-           * Sections secondaires du menu.
-           */
-
           html.light .geston-menu-glass .text-muted-foreground,
           html.light .geston-mobile-menu .text-muted-foreground {
             color:
               hsl(215 16% 38%) !important;
           }
 
-          /*
-           * Le mode sombre n'est PAS redéfini.
-           * Les règles html.dark existantes restent inchangées.
-           */
-
           /* =========================================================
              GESTON HOSTING — LIGHT MENUS CONTRAST END
              ========================================================= */
           """
 
-          css += "\n\n" + light_menu_css.strip() + "\n"
+          # Contrôle strict : aucune règle html.dark ne doit être
+          # présente dans le CSS actif de correction.
+          active_css = re.sub(
+              r"/\*.*?\*/",
+              "",
+              light_menu_css,
+              flags=re.DOTALL,
+          )
 
+          if re.search(r"html\.dark\b", active_css):
+              raise SystemExit(
+                  "ERREUR : une règle html.dark a été introduite."
+              )
+
+          css += "\n\n" + light_menu_css.strip() + "\n"
           css_path.write_text(css, encoding="utf-8")
 
-          print("Correction du mode clair des menus appliquée.")
-          print("Aucune règle html.dark ajoutée ou modifiée.")
-
-          # Vérification de sécurité :
-          # le bloc ne doit contenir aucune règle html.dark.
-          if "html.dark" in light_menu_css:
-              raise SystemExit(
-                  "ERREUR : une règle dark a été introduite."
-              )
+          print("Correction du mode clair appliquée.")
+          print("Le mode sombre n'a pas été redéfini.")
           PY
 
       - name: Verify light menu correction
-        shell: bash
-        run: |
-          grep -q "GESTON HOSTING — LIGHT MENUS CONTRAST START" src/index.css
-          grep -q "html.light .geston-menu-glass" src/index.css
-          grep -q "html.light .geston-menu-option" src/index.css
-
-          echo "Menus Admin/Client en mode clair vérifiés."
-
-      - name: Verify no dark-mode rule was added
         shell: bash
         run: |
           python3 <<'PY'
@@ -213,27 +181,48 @@ jobs:
 
           css = Path("src/index.css").read_text(encoding="utf-8")
 
-          match = re.search(
+          pattern = re.compile(
               r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST START\s*\*/"
               r"(.*?)"
               r"/\*\s*GESTON HOSTING — LIGHT MENUS CONTRAST END\s*\*/",
-              css,
               re.DOTALL,
           )
 
-          if not match:
+          matches = pattern.findall(css)
+
+          if len(matches) != 1:
               raise SystemExit(
-                  "Bloc de correction introuvable."
+                  f"ERREUR : nombre de blocs clair incorrect : {len(matches)}"
               )
 
-          block = match.group(1)
+          block = re.sub(
+              r"/\*.*?\*/",
+              "",
+              matches[0],
+              flags=re.DOTALL,
+          )
 
-          if "html.dark" in block:
+          if re.search(r"html\.dark\b", block):
               raise SystemExit(
-                  "ERREUR : le mode sombre a été touché."
+                  "ERREUR : le bloc de correction contient une règle sombre."
               )
 
-          print("OK : aucune règle dark dans la correction.")
+          required = [
+              "html.light .geston-menu-glass",
+              "html.light .geston-mobile-menu",
+              "html.light .geston-menu-option",
+              "html.light .geston-menu-option svg",
+          ]
+
+          for rule in required:
+              if rule not in matches[0]:
+                  raise SystemExit(
+                      f"ERREUR : règle manquante : {rule}"
+                  )
+
+          print("OK : menu Admin/Client en mode clair vérifié.")
+          print("OK : textes et icônes en mode clair vérifiés.")
+          print("OK : aucune règle sombre ajoutée.")
           PY
 
       - name: Check formatting
@@ -253,7 +242,7 @@ jobs:
           echo "===== FICHIERS MODIFIÉS ====="
           git diff --name-only
 
-      - name: Commit and push only after successful verification
+      - name: Commit and push only after everything passes
         shell: bash
         run: |
           if git diff --quiet; then
@@ -266,6 +255,6 @@ jobs:
 
           git add src/index.css
 
-          git commit -m "Improve light menu contrast"
+          git commit -m "Improve light menu readability"
 
           git push origin main
