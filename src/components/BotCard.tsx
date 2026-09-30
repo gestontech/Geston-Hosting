@@ -420,7 +420,7 @@ export function BotCard({
 
           {bot.isTrial && (
             <div className="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded-lg border border-blue-500/20 inline-block mb-3">
-              Essai gratuit
+              Essai
             </div>
           )}
 
@@ -549,10 +549,10 @@ export function BotCard({
                   variant="outline"
                   onClick={() => setRenewOpen(true)}
                   className="h-8 text-xs bg-orange-500/10 border-orange-500/30 text-orange-400 hover:bg-orange-500/20 hover:text-orange-300"
-                  title="Renouveler gratuitement le bot"
+                  title="Renouveler le bot"
                 >
                   <Timer className="w-3 h-3 mr-1" />
-                  Renouveler gratuitement
+                  Renouveler
                 </Button>
               )}
 
@@ -830,7 +830,7 @@ export function BotCard({
       <Modal
         isOpen={renewOpen}
         onClose={() => setRenewOpen(false)}
-        title="Renouvellement gratuit"
+        title="Renouvellement"
         maxWidth="max-w-md"
       >
         <div className="space-y-4">
@@ -858,7 +858,7 @@ export function BotCard({
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
             ) : null}
 
-            Renouveler gratuitement
+            Renouveler
           </Button>
         </div>
       </Modal>

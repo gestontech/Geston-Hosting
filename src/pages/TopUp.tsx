@@ -22,7 +22,7 @@ export default function TopUp() {
 
           <div>
             <h1 className="text-2xl font-bold">
-              Services gratuits
+              Services
             </h1>
 
             <p className="text-sm text-muted-foreground">

@@ -626,7 +626,7 @@ export function BotDeployPage() {
               </p>
 
               <p className="text-xs text-green-400">
-                Service gratuit
+                Service
               </p>
             </div>
           </div>
@@ -954,7 +954,7 @@ export function BotDeployPage() {
             <Rocket className="w-4 h-4 text-green-400" />
 
             <p className="text-sm font-semibold text-green-300">
-              Déploiement gratuit
+              Déploiement
             </p>
           </div>
 
@@ -983,7 +983,7 @@ export function BotDeployPage() {
           ) : (
             <>
               <Rocket className="w-4 h-4 mr-2" />
-              Déployer gratuitement
+              Déployer
             </>
           )}
         </Button>

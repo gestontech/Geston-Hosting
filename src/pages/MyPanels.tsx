@@ -329,7 +329,7 @@ export function MyPanels() {
             <div className="mt-2 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
               <span className="text-xs text-green-400">
-                Services gratuits
+                Services
               </span>
             </div>
           </div>
@@ -633,7 +633,7 @@ export function MyPanels() {
                               <Server className="w-3.5 h-3.5 mr-1.5" />
                             )}
 
-                            Renouveler gratuitement
+                            Renouveler
                           </Button>
                         )}
                       </div>

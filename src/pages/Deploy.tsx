@@ -215,7 +215,7 @@ export function Deploy() {
               </h1>
 
               <p className="text-xs text-muted-foreground">
-                Déploiement gratuit de votre bot
+                Déploiement de votre bot
               </p>
             </div>
           </div>
@@ -257,7 +257,7 @@ export function Deploy() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm font-bold">
-                  Essai gratuit — 24 heures
+                  Essai — 24 heures
                 </p>
 
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-teal-500 text-white leading-none shrink-0">
@@ -547,7 +547,7 @@ export function Deploy() {
 
               <div>
                 <p className="font-semibold text-sm text-teal-300">
-                  Déploiement gratuit
+                  Déploiement
                 </p>
 
                 <p className="text-xs text-teal-300/70">
@@ -572,7 +572,7 @@ export function Deploy() {
           ) : (
             <>
               <Rocket className="w-4 h-4 mr-2" />
-              Déployer gratuitement
+              Déployer
             </>
           )}
         </Button>

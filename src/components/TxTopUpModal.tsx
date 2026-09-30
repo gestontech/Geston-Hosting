@@ -17,7 +17,7 @@ export function TxTopUpModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Services gratuits"
+      title="Services"
       maxWidth="max-w-xl"
     >
       <div className="space-y-3 p-1 max-h-[70vh] overflow-y-auto">

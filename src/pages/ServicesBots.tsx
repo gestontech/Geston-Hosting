@@ -342,7 +342,7 @@ export function ServicesBots() {
         <div className="p-4 flex flex-col h-[calc(100%-65px)] overflow-y-auto">
           <div className="mb-5 p-3 rounded-xl bg-teal-500/10 border border-teal-500/20">
             <p className="text-xs font-semibold text-teal-400 mb-2">
-              {user ? "Service gratuit" : "Mode invité"}
+              {user ? "Service" : "Mode invité"}
             </p>
 
             <p className="text-xs text-muted-foreground">
@@ -517,10 +517,10 @@ export function ServicesBots() {
           <div className="mb-6 p-4 rounded-xl bg-teal-500/10 border border-teal-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-teal-400">
-                Déploiement gratuit
+                Déploiement
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Connectez-vous ou inscrivez-vous pour déployer gratuitement
+                Connectez-vous ou inscrivez-vous pour déployer
                 un bot et gérer votre compte.
               </p>
             </div>
@@ -538,7 +538,7 @@ export function ServicesBots() {
                 size="sm"
                 onClick={() => navigateWithLoader("/signup")}
               >
-                Inscription gratuite
+                Inscription
               </Button>
             </div>
           </div>
@@ -613,7 +613,7 @@ export function ServicesBots() {
                       className="w-full sm:w-auto px-6"
                       onClick={handleDeploy}
                     >
-                      {user ? "Déployer gratuitement" : "Essayer gratuitement"}
+                      {user ? "Déployer" : "Essayer"}
                     </Button>
 
                     <div className="flex items-center justify-between sm:justify-end gap-3">
@@ -689,7 +689,7 @@ export function ServicesBots() {
                             <h3 className="font-semibold">{template.name}</h3>
 
                             <p className="text-xs text-muted-foreground mt-1">
-                              Service de déploiement gratuit
+                              Service de déploiement
                             </p>
                           </div>
 
@@ -699,7 +699,7 @@ export function ServicesBots() {
                               className="w-full"
                               onClick={() => handleTemplateDeploy(template)}
                             >
-                              Déployer gratuitement
+                              Déployer
                             </Button>
 
                             <div className="flex items-center justify-between">

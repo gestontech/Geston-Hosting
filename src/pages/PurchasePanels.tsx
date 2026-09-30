@@ -709,7 +709,7 @@ export function PurchasePanels() {
                     }}
                   >
                     {wizardStep === "password"
-                      ? "Créer gratuitement"
+                      ? "Créer"
                       : "Suivant"}
                   </Button>
                 </div>
@@ -941,7 +941,7 @@ export function PurchasePanels() {
         <div className="p-4 flex flex-col h-[calc(100%-65px)] overflow-y-auto">
           <div className="mb-5 p-3 rounded-xl bg-teal-500/10 border border-teal-500/20">
             <p className="text-xs font-semibold text-teal-400">
-              Service gratuit
+              Service
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Les panels disponibles peuvent être créés sans
@@ -1058,7 +1058,7 @@ export function PurchasePanels() {
 
           <div>
             <h1 className="text-2xl font-bold">
-              Panels gratuits
+              Panels
             </h1>
 
             <p className="text-sm text-muted-foreground mt-0.5">
@@ -1167,7 +1167,7 @@ export function PurchasePanels() {
                     className="w-full"
                     onClick={() => openWizard(plan)}
                   >
-                    Créer gratuitement
+                    Créer
                   </Button>
                 </div>
               );
@@ -1233,7 +1233,7 @@ export function PurchasePanels() {
                   className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-bold border-0"
                   onClick={() => openWizard(null, true)}
                 >
-                  Créer gratuitement
+                  Créer
                 </Button>
               </div>
             </div>

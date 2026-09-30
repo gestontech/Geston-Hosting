@@ -156,7 +156,7 @@ const HERO_SLIDES = [
     key: "bots",
     badge: "Bots WhatsApp",
     title: "Déployez Geston-MD en quelques minutes",
-    body: "Associez votre session, choisissez votre bot et lancez le déploiement gratuitement sur Heroku.",
+    body: "Associez votre session, choisissez votre bot et lancez le déploiementement sur Heroku.",
     meta: [
       { label: "Config", value: "~3 min" },
       { label: "Déploiement", value: "Gratuit" },
@@ -358,7 +358,7 @@ const FEATURES = [
   {
     icon: Bot,
     title: "Bots WhatsApp",
-    desc: "Lancez Geston-MD sur Heroku avec un déploiement gratuit et une configuration automatisée.",
+    desc: "Lancez Geston-MD sur Heroku avec un déploiement et une configuration automatisée.",
     link: "/services/bots",
     cta: "Explorer les bots",
   },
@@ -403,7 +403,7 @@ const STEPS = [
   {
     icon: UserPlus,
     title: "Créez un compte",
-    desc: "Inscription gratuite. Aucune carte bancaire requise pour ouvrir le tableau de bord.",
+    desc: "Inscription. Aucune carte bancaire requise pour ouvrir le tableau de bord.",
   },
   {
     icon: MousePointerClick,
@@ -575,7 +575,7 @@ export default function Home() {
             >
               {user
                 ? "Tableau de bord"
-                : "Créer un compte gratuit"}
+                : "Créer un compte"}
             </Button>
 
             <button
@@ -637,7 +637,7 @@ export default function Home() {
               >
                 {user
                   ? "Tableau de bord"
-                  : "Inscription gratuite"}
+                  : "Inscription"}
               </Button>
             </div>
           </div>
@@ -668,7 +668,7 @@ export default function Home() {
                 >
                   {user
                     ? "Ouvrir le tableau de bord"
-                    : "Créer un compte gratuit"}
+                    : "Créer un compte"}
 
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
@@ -687,7 +687,7 @@ export default function Home() {
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Inscription gratuite · Bots, panels & services sociaux · Support IA sur WhatsApp
+                Inscription · Bots, panels & services sociaux · Support IA sur WhatsApp
               </p>
             </Reveal>
 
@@ -882,7 +882,7 @@ export default function Home() {
                 >
                   {user
                     ? "Aller au tableau de bord"
-                    : "Créer un compte gratuit"}
+                    : "Créer un compte"}
 
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>

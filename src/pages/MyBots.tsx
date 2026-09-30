@@ -323,7 +323,7 @@ export function MyBots() {
             <div className="mt-2 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
               <span className="text-xs text-green-400">
-                Services gratuits
+                Services
               </span>
             </div>
           </div>

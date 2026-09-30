@@ -16,7 +16,7 @@ export function CustomTxModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Services gratuits"
+      title="Services"
       maxWidth="max-w-lg"
     >
       <div className="flex flex-col items-center gap-4 py-6">
