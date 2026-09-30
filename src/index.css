@@ -377,6 +377,22 @@ html.dark {
   color-scheme: dark;
 }
 
+html,
+body {
+  background:
+    radial-gradient(
+      circle at 15% 10%,
+      rgba(80, 200, 140, 0.14),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 85% 20%,
+      rgba(100, 180, 255, 0.12),
+      transparent 35%
+    ),
+    hsl(var(--background));
+}
+
 @layer components {
 
   .liquid-glass {
@@ -410,57 +426,6 @@ html.dark {
   }
 }
 
-/* ---------------------------------------------------------
-   Application globale
-   --------------------------------------------------------- */
-
-html,
-body {
-  background:
-    radial-gradient(
-      circle at 15% 10%,
-      rgba(142, 230, 180, 0.16),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 85% 20%,
-      rgba(100, 180, 255, 0.12),
-      transparent 35%
-    ),
-    hsl(var(--background));
-}
-
-html.light body {
-  background:
-    radial-gradient(
-      circle at 15% 10%,
-      rgba(80, 200, 140, 0.14),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 85% 20%,
-      rgba(100, 180, 255, 0.12),
-      transparent 35%
-    ),
-    hsl(var(--background));
-}
-
-html.dark body {
-  background:
-    radial-gradient(
-      circle at 15% 10%,
-      rgba(80, 180, 140, 0.10),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 85% 20%,
-      rgba(70, 130, 220, 0.10),
-      transparent 35%
-    ),
-    hsl(var(--background));
-}
-
-/* Champs non encore convertis individuellement */
 input,
 textarea,
 select {
@@ -487,7 +452,6 @@ html.light select {
   border-color: rgba(255, 255, 255, 0.78);
 }
 
-/* Menus, popovers et fenêtres */
 [role="dialog"],
 [role="menu"],
 [role="listbox"],
