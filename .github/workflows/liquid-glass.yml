@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   liquid-glass:
-    name: Apply transparent Liquid Glass
+    name: Apply Liquid Glass menu safely
     runs-on: ubuntu-latest
 
     steps:
@@ -26,399 +26,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Apply global transparent Liquid Glass
+      - name: Apply menu-only Liquid Glass
         shell: bash
         run: |
           python3 <<'PY'
           from pathlib import Path
           import re
-
-          # =========================================================
-          # GLOBAL LIQUID GLASS
-          # =========================================================
-
-          css_path = Path("src/index.css")
-          css = css_path.read_text(encoding="utf-8")
-
-          # Supprimer les blocs gérés précédemment par cette Action.
-          patterns = [
-              re.compile(
-                  r"/\*\s*GESTON HOSTING — GLOBAL LIQUID GLASS START\s*\*/"
-                  r".*?"
-                  r"/\*\s*GESTON HOSTING — GLOBAL LIQUID GLASS END\s*\*/",
-                  re.DOTALL,
-              ),
-              re.compile(
-                  r"/\*\s*GESTON HOSTING — SIDEBAR LIQUID GLASS START\s*\*/"
-                  r".*?"
-                  r"/\*\s*GESTON HOSTING — SIDEBAR LIQUID GLASS END\s*\*/",
-                  re.DOTALL,
-              ),
-          ]
-
-          for pattern in patterns:
-              css = pattern.sub("", css)
-
-          css = css.rstrip()
-
-          liquid_glass = r"""
-          /* =========================================================
-             GESTON HOSTING — GLOBAL LIQUID GLASS START
-             ========================================================= */
-
-          @layer components {
-
-            /* -------------------------------------------------------
-               Surface principale
-               ------------------------------------------------------- */
-
-            .liquid-glass {
-              background:
-                linear-gradient(
-                  135deg,
-                  rgba(255, 255, 255, 0.115),
-                  rgba(255, 255, 255, 0.025)
-                ) !important;
-
-              border: 1px solid rgba(255, 255, 255, 0.14);
-
-              box-shadow:
-                0 8px 30px rgba(0, 0, 0, 0.07),
-                inset 0 1px 0 rgba(255, 255, 255, 0.20);
-
-              backdrop-filter:
-                blur(30px)
-                saturate(175%);
-
-              -webkit-backdrop-filter:
-                blur(30px)
-                saturate(175%);
-            }
-
-            /* -------------------------------------------------------
-               Surface secondaire
-               ------------------------------------------------------- */
-
-            .liquid-glass-subtle {
-              background:
-                linear-gradient(
-                  135deg,
-                  rgba(255, 255, 255, 0.075),
-                  rgba(255, 255, 255, 0.018)
-                ) !important;
-
-              border: 1px solid rgba(255, 255, 255, 0.105);
-
-              box-shadow:
-                0 5px 22px rgba(0, 0, 0, 0.055),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15);
-
-              backdrop-filter:
-                blur(26px)
-                saturate(165%);
-
-              -webkit-backdrop-filter:
-                blur(26px)
-                saturate(165%);
-            }
-
-            /* -------------------------------------------------------
-               Cartes individuelles du menu
-               ------------------------------------------------------- */
-
-            .sidebar-glass-item {
-              background:
-                linear-gradient(
-                  135deg,
-                  rgba(255, 255, 255, 0.095),
-                  rgba(255, 255, 255, 0.022)
-                ) !important;
-
-              border: 1px solid rgba(255, 255, 255, 0.13);
-
-              box-shadow:
-                0 4px 16px rgba(0, 0, 0, 0.065),
-                inset 0 1px 0 rgba(255, 255, 255, 0.18);
-
-              backdrop-filter:
-                blur(28px)
-                saturate(170%);
-
-              -webkit-backdrop-filter:
-                blur(28px)
-                saturate(170%);
-
-              transition:
-                background 180ms ease,
-                box-shadow 180ms ease,
-                transform 180ms ease;
-            }
-
-            .sidebar-glass-item:hover {
-              background:
-                linear-gradient(
-                  135deg,
-                  rgba(255, 255, 255, 0.14),
-                  rgba(255, 255, 255, 0.035)
-                ) !important;
-
-              box-shadow:
-                0 6px 20px rgba(0, 0, 0, 0.09),
-                inset 0 1px 0 rgba(255, 255, 255, 0.22);
-            }
-
-            .sidebar-glass-list {
-              display: flex;
-              flex-direction: column;
-              gap: 6px;
-            }
-
-            /* -------------------------------------------------------
-               Panneau du menu latéral
-               ------------------------------------------------------- */
-
-            .sidebar-glass-panel {
-              background:
-                linear-gradient(
-                  145deg,
-                  rgba(255, 255, 255, 0.085),
-                  rgba(255, 255, 255, 0.018)
-                ) !important;
-
-              border-right: 1px solid rgba(255, 255, 255, 0.14);
-
-              box-shadow:
-                8px 0 34px rgba(0, 0, 0, 0.08),
-                inset -1px 0 0 rgba(255, 255, 255, 0.10);
-
-              backdrop-filter:
-                blur(34px)
-                saturate(175%);
-
-              -webkit-backdrop-filter:
-                blur(34px)
-                saturate(175%);
-            }
-
-            /* -------------------------------------------------------
-               Menu mobile
-               ------------------------------------------------------- */
-
-            .sidebar-glass-mobile {
-              background:
-                linear-gradient(
-                  145deg,
-                  rgba(255, 255, 255, 0.09),
-                  rgba(255, 255, 255, 0.02)
-                ) !important;
-
-              border-top: 1px solid rgba(255, 255, 255, 0.13);
-
-              box-shadow:
-                0 10px 35px rgba(0, 0, 0, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.16);
-
-              backdrop-filter:
-                blur(34px)
-                saturate(175%);
-
-              -webkit-backdrop-filter:
-                blur(34px)
-                saturate(175%);
-            }
-
-            /* -------------------------------------------------------
-               Icônes
-               ------------------------------------------------------- */
-
-            .liquid-glass-icon {
-              background:
-                linear-gradient(
-                  135deg,
-                  rgba(255, 255, 255, 0.13),
-                  rgba(255, 255, 255, 0.025)
-                );
-
-              border: 1px solid rgba(255, 255, 255, 0.13);
-
-              box-shadow:
-                0 3px 12px rgba(0, 0, 0, 0.055),
-                inset 0 1px 0 rgba(255, 255, 255, 0.18);
-
-              backdrop-filter:
-                blur(22px)
-                saturate(165%);
-
-              -webkit-backdrop-filter:
-                blur(22px)
-                saturate(165%);
-
-              border-radius: 10px;
-            }
-
-            /* -------------------------------------------------------
-               Champs
-               ------------------------------------------------------- */
-
-            input,
-            textarea,
-            select {
-              background:
-                linear-gradient(
-                  135deg,
-                  rgba(255, 255, 255, 0.075),
-                  rgba(255, 255, 255, 0.018)
-                ) !important;
-
-              border-color: rgba(255, 255, 255, 0.13) !important;
-
-              backdrop-filter:
-                blur(26px)
-                saturate(165%);
-
-              -webkit-backdrop-filter:
-                blur(26px)
-                saturate(165%);
-            }
-
-            /* -------------------------------------------------------
-               Fenêtres, menus et overlays
-               ------------------------------------------------------- */
-
-            [role="dialog"],
-            [role="menu"],
-            [role="listbox"],
-            [data-radix-popper-content-wrapper] > * {
-              background:
-                linear-gradient(
-                  135deg,
-                  rgba(255, 255, 255, 0.105),
-                  rgba(255, 255, 255, 0.025)
-                ) !important;
-
-              border: 1px solid rgba(255, 255, 255, 0.13);
-
-              box-shadow:
-                0 12px 38px rgba(0, 0, 0, 0.10),
-                inset 0 1px 0 rgba(255, 255, 255, 0.18);
-
-              backdrop-filter:
-                blur(32px)
-                saturate(175%);
-
-              -webkit-backdrop-filter:
-                blur(32px)
-                saturate(175%);
-            }
-          }
-
-          /* =========================================================
-             MODE CLAIR
-             ========================================================= */
-
-          html.light .liquid-glass {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.30),
-                rgba(255, 255, 255, 0.075)
-              ) !important;
-
-            border-color: rgba(255, 255, 255, 0.34);
-          }
-
-          html.light .liquid-glass-subtle {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.22),
-                rgba(255, 255, 255, 0.045)
-              ) !important;
-
-            border-color: rgba(255, 255, 255, 0.28);
-          }
-
-          html.light .sidebar-glass-item {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.27),
-                rgba(255, 255, 255, 0.055)
-              ) !important;
-
-            border-color: rgba(255, 255, 255, 0.31);
-          }
-
-          /* =========================================================
-             MODE SOMBRE
-             ========================================================= */
-
-          html.dark .liquid-glass {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.075),
-                rgba(255, 255, 255, 0.012)
-              ) !important;
-
-            border-color: rgba(255, 255, 255, 0.10);
-          }
-
-          html.dark .liquid-glass-subtle {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.055),
-                rgba(255, 255, 255, 0.008)
-              ) !important;
-
-            border-color: rgba(255, 255, 255, 0.075);
-          }
-
-          html.dark .sidebar-glass-item {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.065),
-                rgba(255, 255, 255, 0.01)
-              ) !important;
-
-            border-color: rgba(255, 255, 255, 0.09);
-          }
-
-          /* =========================================================
-             ACCESSIBILITÉ
-             ========================================================= */
-
-          @media (prefers-reduced-motion: reduce) {
-            .liquid-glass,
-            .liquid-glass-subtle,
-            .sidebar-glass-item {
-              transition: none !important;
-            }
-          }
-
-          @supports not (backdrop-filter: blur(1px)) {
-            .liquid-glass,
-            .liquid-glass-subtle,
-            .sidebar-glass-item,
-            .sidebar-glass-panel,
-            .sidebar-glass-mobile {
-              background: hsl(var(--card)) !important;
-            }
-          }
-
-          /* =========================================================
-             GESTON HOSTING — GLOBAL LIQUID GLASS END
-             ========================================================= */
-          """
-
-          css = css + "\n\n" + liquid_glass.strip() + "\n"
-          css_path.write_text(css, encoding="utf-8")
-
-          # =========================================================
-          # MENUS LATÉRAUX
-          # =========================================================
 
           files = [
               "src/pages/Home.tsx",
@@ -433,6 +46,175 @@ jobs:
               "src/pages/Admin.tsx",
           ]
 
+          # =========================================================
+          # CSS : uniquement les menus
+          # =========================================================
+
+          css_path = Path("src/index.css")
+          css = css_path.read_text(encoding="utf-8")
+
+          marker = re.compile(
+              r"/\*\s*GESTON HOSTING — MENU LIQUID GLASS START\s*\*/"
+              r".*?"
+              r"/\*\s*GESTON HOSTING — MENU LIQUID GLASS END\s*\*/",
+              re.DOTALL,
+          )
+
+          css = marker.sub("", css).rstrip()
+
+          menu_css = r"""
+          /* =========================================================
+             GESTON HOSTING — MENU LIQUID GLASS START
+             ========================================================= */
+
+          /*
+           * Le panneau utilise le même langage visuel que le menu Admin.
+           * Les options n'ont volontairement PAS de bordure individuelle.
+           */
+
+          .geston-menu-glass {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.075),
+                rgba(255, 255, 255, 0.018)
+              );
+
+            border-color: rgba(255, 255, 255, 0.12);
+
+            box-shadow:
+              8px 0 32px rgba(0, 0, 0, 0.08),
+              inset -1px 0 0 rgba(255, 255, 255, 0.08);
+
+            backdrop-filter:
+              blur(32px)
+              saturate(170%);
+
+            -webkit-backdrop-filter:
+              blur(32px)
+              saturate(170%);
+          }
+
+          /*
+           * Option de menu :
+           * - pas de contour
+           * - pas de carte individuelle
+           * - petit espace entre les lignes
+           * - comportement visuel proche du menu Admin
+           */
+
+          .geston-menu-option {
+            border: 0 !important;
+            outline: none !important;
+            box-shadow: none !important;
+
+            background: transparent;
+
+            color: hsl(var(--foreground));
+
+            border-radius: 0.65rem;
+
+            margin-bottom: 4px;
+
+            transition:
+              background-color 160ms ease,
+              color 160ms ease;
+          }
+
+          .geston-menu-option:hover {
+            background:
+              rgba(255, 255, 255, 0.075);
+
+            color: hsl(var(--foreground));
+          }
+
+          .geston-menu-option[aria-current="page"],
+          .geston-menu-option[data-active="true"] {
+            background:
+              rgba(255, 255, 255, 0.10);
+
+            color: hsl(var(--foreground));
+          }
+
+          /*
+           * Texte et icônes héritent du foreground du thème.
+           * Cela évite les textes trop sombres en dark mode
+           * et les textes trop clairs en light mode.
+           */
+
+          .geston-menu-option svg {
+            color: currentColor;
+            opacity: 0.92;
+          }
+
+          .geston-menu-option span,
+          .geston-menu-option div {
+            color: inherit;
+          }
+
+          /*
+           * Mode clair : contraste lisible.
+           */
+
+          html.light .geston-menu-option {
+            color: hsl(222 30% 12%);
+          }
+
+          html.light .geston-menu-option:hover {
+            background:
+              rgba(0, 0, 0, 0.055);
+
+            color: hsl(222 30% 10%);
+          }
+
+          /*
+           * Mode sombre : contraste lisible.
+           */
+
+          html.dark .geston-menu-option {
+            color: hsl(0 0% 96%);
+          }
+
+          html.dark .geston-menu-option:hover {
+            background:
+              rgba(255, 255, 255, 0.075);
+
+            color: hsl(0 0% 100%);
+          }
+
+          /*
+           * Menu mobile / menu principal.
+           */
+
+          .geston-mobile-menu {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.075),
+                rgba(255, 255, 255, 0.018)
+              );
+
+            backdrop-filter:
+              blur(32px)
+              saturate(170%);
+
+            -webkit-backdrop-filter:
+              blur(32px)
+              saturate(170%);
+          }
+
+          /* =========================================================
+             GESTON HOSTING — MENU LIQUID GLASS END
+             ========================================================= */
+          """
+
+          css += "\n\n" + menu_css.strip() + "\n"
+          css_path.write_text(css, encoding="utf-8")
+
+          # =========================================================
+          # TSX : classes visuelles uniquement
+          # =========================================================
+
           for filename in files:
               path = Path(filename)
 
@@ -441,77 +223,117 @@ jobs:
                   continue
 
               content = path.read_text(encoding="utf-8")
+              original = content
 
-              # Panneau latéral.
-              content = content.replace(
-                  "bg-card border-r border-border",
-                  "sidebar-glass-panel border-r border-white/15"
-              )
-
-              # Ancienne classe éventuelle.
-              content = content.replace(
-                  "liquid-glass border-r border-white/15",
-                  "sidebar-glass-panel border-r border-white/15"
-              )
-
-              # Options du menu.
-              content = content.replace(
-                  "liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all",
-                  "sidebar-glass-item text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
-              )
+              # -----------------------------------------------------
+              # Anciennes cartes individuelles :
+              # on les transforme en simples options comme Admin.
+              # -----------------------------------------------------
 
               content = content.replace(
-                  "liquid-glass-subtle text-sm text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all",
-                  "sidebar-glass-item text-sm text-muted-foreground hover:text-foreground transition-all"
+                  "sidebar-glass-item",
+                  "geston-menu-option"
               )
 
-              # Anciennes options.
+              # Ancienne classe de panneau.
               content = content.replace(
-                  "px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all",
-                  "px-3 py-2.5 rounded-xl sidebar-glass-item text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+                  "sidebar-glass-panel",
+                  "geston-menu-glass"
+              )
+
+              # Ancienne classe mobile.
+              content = content.replace(
+                  "sidebar-glass-mobile",
+                  "geston-mobile-menu"
+              )
+
+              # -----------------------------------------------------
+              # Si certaines options utilisent encore les anciennes
+              # classes Liquid Glass, on retire seulement leur
+              # apparence individuelle.
+              # -----------------------------------------------------
+
+              content = content.replace(
+                  "liquid-glass-subtle",
+                  ""
+              )
+
+              # -----------------------------------------------------
+              # Anciennes bordures/classes d'options.
+              # -----------------------------------------------------
+
+              content = content.replace(
+                  "hover:bg-muted",
+                  "hover:bg-black/5 dark:hover:bg-white/10"
+              )
+
+              # -----------------------------------------------------
+              # Ajouter la classe visuelle à certains boutons de menu
+              # qui utilisent encore px-3 py-2.5.
+              # -----------------------------------------------------
+
+              patterns = [
+                  r'className="([^"]*px-3 py-2\.5[^"]*)"',
+                  r"className='([^']*px-3 py-2\.5[^']*)'",
+              ]
+
+              for pattern in patterns:
+                  def replace_class(match):
+                      classes = match.group(1)
+
+                      # Ne pas toucher aux éléments qui ne ressemblent
+                      # pas à une option de menu.
+                      if "geston-menu-option" in classes:
+                          return match.group(0)
+
+                      if (
+                          "nav" in classes
+                          or "muted-foreground" in classes
+                          or "ChevronRight" in classes
+                      ):
+                          classes = classes.replace(
+                              "rounded-lg",
+                              "rounded-xl"
+                          )
+
+                          classes += " geston-menu-option"
+
+                          return f'className="{classes}"'
+
+                      return match.group(0)
+
+                  content = re.sub(pattern, replace_class, content)
+
+              # -----------------------------------------------------
+              # Nav : petit espace entre les options, sans cartes.
+              # -----------------------------------------------------
+
+              content = content.replace(
+                  'className="space-y-0.5 flex-1"',
+                  'className="space-y-1 flex-1"'
               )
 
               content = content.replace(
-                  "px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground",
-                  "px-3 py-2.5 rounded-xl sidebar-glass-item text-sm text-muted-foreground hover:text-foreground transition-all"
+                  'className="space-y-1 flex-1"',
+                  'className="space-y-1 flex-1"'
               )
 
-              # Menu mobile.
-              content = content.replace(
-                  "lg:hidden border-t border-border bg-background px-4 py-3 space-y-1",
-                  "lg:hidden sidebar-glass-mobile border-t border-white/15 px-4 py-3 space-y-2"
-              )
+              if content != original:
+                  path.write_text(content, encoding="utf-8")
+                  print(f"Menu mis à jour : {filename}")
+              else:
+                  print(f"Aucun changement nécessaire : {filename}")
 
-              content = content.replace(
-                  "lg:hidden liquid-glass border-t border-white/15 px-4 py-3 space-y-2",
-                  "lg:hidden sidebar-glass-mobile border-t border-white/15 px-4 py-3 space-y-2"
-              )
-
-              # Options mobiles.
-              content = content.replace(
-                  "rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground",
-                  "rounded-xl sidebar-glass-item text-sm text-muted-foreground hover:text-foreground transition-all"
-              )
-
-              # Espacement vertical.
-              content = content.replace(
-                  '<nav className="space-y-0.5 flex-1">',
-                  '<nav className="sidebar-glass-list flex-1">'
-              )
-
-              path.write_text(content, encoding="utf-8")
-              print(f"Liquid Glass appliqué : {filename}")
           PY
 
-      - name: Verify Liquid Glass
+      - name: Verify menu-only changes
         shell: bash
         run: |
-          grep -q "GESTON HOSTING — GLOBAL LIQUID GLASS START" src/index.css
-          grep -q "sidebar-glass-item" src/index.css
-          grep -q "sidebar-glass-panel" src/index.css
-          grep -q "backdrop-filter" src/index.css
+          grep -q "GESTON HOSTING — MENU LIQUID GLASS START" src/index.css
+          grep -q "geston-menu-option" src/index.css
+          grep -q "geston-menu-glass" src/index.css
 
-          echo "Liquid Glass global vérifié."
+          echo "Menu Liquid Glass vérifié."
 
       - name: Check formatting
         run: git diff --check
@@ -523,31 +345,35 @@ jobs:
         run: npm run build
 
       - name: Show changes
-        run: git diff --stat
+        run: |
+          echo "===== MODIFICATIONS ====="
+          git diff --stat
 
-      - name: Commit and push only if everything passed
+          echo "===== FICHIERS MODIFIÉS ====="
+          git diff --name-only
+
+      - name: Commit and push only after successful verification
         shell: bash
         run: |
           if git diff --quiet; then
-            echo "Aucun changement."
+            echo "Aucun changement à pousser."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add \
-            src/index.css \
-            src/pages/Home.tsx \
-            src/pages/MyBots.tsx \
-            src/pages/MyPanels.tsx \
-            src/pages/ServicesPanel.tsx \
-            src/pages/ServicesBots.tsx \
-            src/pages/Tutorials.tsx \
-            src/pages/Contact.tsx \
-            src/pages/PurchasePanels.tsx \
-            src/pages/Dashboard.tsx \
-            src/pages/Admin.tsx
+          git add src/index.css
+          git add src/pages/Home.tsx
+          git add src/pages/MyBots.tsx
+          git add src/pages/MyPanels.tsx
+          git add src/pages/ServicesPanel.tsx
+          git add src/pages/ServicesBots.tsx
+          git add src/pages/Tutorials.tsx
+          git add src/pages/Contact.tsx
+          git add src/pages/PurchasePanels.tsx
+          git add src/pages/Dashboard.tsx
+          git add src/pages/Admin.tsx
 
-          git commit -m "Apply transparent Liquid Glass globally"
+          git commit -m "Match menus to Admin Liquid Glass style"
           git push origin main
