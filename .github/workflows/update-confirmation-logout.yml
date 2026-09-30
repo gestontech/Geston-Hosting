@@ -24,7 +24,7 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Modifier uniquement le bouton Déconnexion
+      - name: Modifier uniquement le bouton de confirmation
         shell: python
         run: |
           from pathlib import Path
@@ -39,28 +39,33 @@ jobs:
 
           text = path.read_text(encoding="utf-8")
 
-          # Cherche uniquement le Button qui déclenche onConfirm.
-          pattern = re.compile(
-              r'<Button\b(?=[\s\S]*?onClick=\{onConfirm\})[\s\S]*?</Button>',
+          # Trouver les blocs Button complets sans traverser plusieurs boutons.
+          button_pattern = re.compile(
+              r"<Button\b[^>]*>[\s\S]*?</Button>",
               re.MULTILINE
           )
 
-          matches = list(pattern.finditer(text))
+          matches = list(button_pattern.finditer(text))
 
-          if not matches:
+          target = None
+
+          for match in matches:
+              block = match.group(0)
+
+              # Cible UNIQUEMENT le bouton de confirmation.
+              if (
+                  "onClick={onConfirm}" in block
+                  and "Déconnexion" in block
+              ):
+                  target = match
+                  break
+
+          if target is None:
               raise SystemExit(
-                  "ERREUR : aucun bouton de confirmation avec onClick={onConfirm} trouvé."
+                  "ERREUR : bouton de confirmation Déconnexion introuvable."
               )
 
-          # On prend le dernier bouton correspondant dans la fenêtre de confirmation.
-          match = matches[-1]
-          old = match.group(0)
-
-          # Sécurité : ce bouton doit bien contenir Déconnexion.
-          if "Déconnexion" not in old:
-              raise SystemExit(
-                  "ERREUR : le bouton trouvé ne contient pas 'Déconnexion'."
-              )
+          old = target.group(0)
 
           new = '''<Button
             className="flex-1 bg-black text-white hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/85"
@@ -71,25 +76,71 @@ jobs:
             {loading ? "Déconnexion..." : "Déconnexion"}
           </Button>'''
 
-          text = text[:match.start()] + new + text[match.end():]
+          text = text[:target.start()] + new + text[target.end():]
 
           path.write_text(text, encoding="utf-8")
 
-          print("✓ Bouton Déconnexion de la confirmation modifié uniquement.")
+          print("✓ Seul le bouton de confirmation Déconnexion a été modifié.")
 
-      - name: Vérifier la modification
-        shell: bash
+      - name: Vérifier précisément la modification
+        shell: python
         run: |
-          grep -q 'bg-black text-white' src/components/LogoutConfirmModal.tsx
-          grep -q 'dark:bg-white dark:text-black' src/components/LogoutConfirmModal.tsx
-          grep -q 'onClick={onConfirm}' src/components/LogoutConfirmModal.tsx
-          grep -q '"Déconnexion"' src/components/LogoutConfirmModal.tsx
-          grep -q '"Annuler"' src/components/LogoutConfirmModal.tsx
+          from pathlib import Path
+          import re
 
-          echo "✓ Mode clair : bouton Déconnexion noir."
-          echo "✓ Mode sombre : bouton Déconnexion blanc."
-          echo "✓ Annuler conservé."
-          echo "✓ Action onConfirm conservée."
+          path = Path("src/components/LogoutConfirmModal.tsx")
+          text = path.read_text(encoding="utf-8")
+
+          button_pattern = re.compile(
+              r"<Button\b[^>]*>[\s\S]*?</Button>",
+              re.MULTILINE
+          )
+
+          buttons = [m.group(0) for m in button_pattern.finditer(text)]
+
+          confirmation_buttons = [
+              b for b in buttons
+              if "onClick={onConfirm}" in b and "Déconnexion" in b
+          ]
+
+          if len(confirmation_buttons) != 1:
+              raise SystemExit(
+                  f"ERREUR : {len(confirmation_buttons)} bouton(s) de confirmation trouvé(s), 1 attendu."
+              )
+
+          button = confirmation_buttons[0]
+
+          required = [
+              'bg-black text-white',
+              'dark:bg-white dark:text-black',
+              'onClick={onConfirm}',
+              'disabled={loading}',
+              '"Déconnexion"',
+          ]
+
+          for value in required:
+              if value not in button:
+                  raise SystemExit(
+                      f"ERREUR : élément attendu absent du bouton : {value}"
+                  )
+
+          if "variant=\"destructive\"" in button:
+              raise SystemExit(
+                  "ERREUR : l'ancien variant destructive est encore présent."
+              )
+
+          # Vérifie que le bouton Annuler existe toujours.
+          if 'onClick={onClose}' not in text or "Annuler" not in text:
+              raise SystemExit(
+                  "ERREUR : le bouton Annuler semble avoir été modifié ou supprimé."
+              )
+
+          print("✓ Bouton confirmation : noir en mode clair.")
+          print("✓ Bouton confirmation : blanc en mode sombre.")
+          print("✓ Texte adapté au thème.")
+          print("✓ onConfirm conservé.")
+          print("✓ Annuler conservé.")
+          print("✓ Aucun autre bouton ciblé.")
 
       - name: Installer les dépendances
         run: npm ci
