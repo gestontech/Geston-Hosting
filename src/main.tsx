@@ -1,82 +1,248 @@
 import { StrictMode, Component } from "react";
-  import type { ReactNode, ErrorInfo } from "react";
-  import { createRoot } from "react-dom/client";
-  import "./index.css";
-  import App from "./App";
+import type { ReactNode, ErrorInfo } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App";
 
-  const ACCENT_HSL: Record<string, string> = {
-    green:  "142 71% 45%",
-    teal:   "173 80% 40%",
-    red:    "0 72% 51%",
-    orange: "25 95% 53%",
-    amber:  "38 92% 50%",
-    yellow: "48 96% 53%",
-    cyan:   "192 91% 44%",
-    blue:   "217 91% 60%",
-    indigo: "239 84% 67%",
-    violet: "262 83% 58%",
-    rose:   "347 77% 50%",
-    pink:   "330 81% 60%",
+const ACCENT_HSL: Record<string, string> = {
+  green: "142 71% 45%",
+  teal: "173 80% 40%",
+  red: "0 72% 51%",
+  orange: "25 95% 53%",
+  amber: "38 92% 50%",
+  yellow: "48 96% 53%",
+  cyan: "192 91% 44%",
+  blue: "217 91% 60%",
+  indigo: "239 84% 67%",
+  violet: "262 83% 58%",
+  rose: "347 77% 50%",
+  pink: "330 81% 60%",
+};
+
+/**
+ * Détection automatique du thème du téléphone.
+ *
+ * Aucun thème n'est enregistré dans localStorage.
+ * L'application suit donc toujours :
+ *
+ * Téléphone sombre -> sombre
+ * Téléphone clair  -> clair
+ */
+(function initThemeAndAccent() {
+  const root = document.documentElement;
+
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  const theme = media.matches ? "dark" : "light";
+
+  root.classList.remove("dark", "light");
+  root.classList.add(theme);
+
+  root.style.colorScheme = theme;
+
+  const updateSystemTheme = (event: MediaQueryListEvent) => {
+    const nextTheme = event.matches ? "dark" : "light";
+
+    root.classList.remove("dark", "light");
+    root.classList.add(nextTheme);
+
+    root.style.colorScheme = nextTheme;
   };
 
-  (function initThemeAndAccent() {
-    const theme = localStorage.getItem("theme") || "dark";
-    document.documentElement.classList.add(theme);
+  media.addEventListener("change", updateSystemTheme);
 
-    // Default site accent: green (never violet/purple)
-    let accent = localStorage.getItem("accent") || "green";
-    if (accent === "violet" || accent === "purple") {
-      accent = "green";
-      localStorage.setItem("accent", "green");
-    }
-    const hsl = ACCENT_HSL[accent] || ACCENT_HSL["green"];
-    const style = document.createElement("style");
-    style.id = "__accent_override__";
-    style.textContent = `:root, .dark { --primary: ${hsl}; --ring: ${hsl}; }`;
-    document.head.appendChild(style);
-  })();
+  /**
+   * Détection automatique de la langue du téléphone.
+   *
+   * On conserve les langues principales reconnues par le site.
+   * La langue détectée est placée dans <html lang="...">.
+   */
+  const browserLanguages =
+    Array.isArray(navigator.languages) && navigator.languages.length > 0
+      ? navigator.languages
+      : [navigator.language];
 
-  class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
-    constructor(props: { children: ReactNode }) {
-      super(props);
-      this.state = { hasError: false };
-    }
-    static getDerivedStateFromError() {
-      return { hasError: true };
-    }
-    componentDidCatch(error: Error, info: ErrorInfo) {
-      console.error("[ErrorBoundary]", error, info.componentStack);
-    }
-    render() {
-      if (this.state.hasError) {
-        return (
-          <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem", background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
-            <div style={{ textAlign: "center", maxWidth: "20rem" }}>
-              <div style={{ width: "3.5rem", height: "3.5rem", borderRadius: "50%", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(239,68,68)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              </div>
-              <h2 style={{ fontSize: "1.125rem", fontWeight: 700, marginBottom: "0.5rem" }}>Something went wrong</h2>
-              <p style={{ fontSize: "0.875rem", opacity: 0.6, marginBottom: "1.25rem" }}>An unexpected error occurred. Try reloading the page.</p>
-              <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
-                <button onClick={() => window.location.reload()} style={{ padding: "0.5rem 1rem", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.15)", background: "transparent", color: "inherit", cursor: "pointer", fontSize: "0.875rem" }}>
-                  Reload
-                </button>
-                <button onClick={() => { window.location.href = "/dashboard"; }} style={{ padding: "0.5rem 1rem", borderRadius: "0.5rem", border: "none", background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", cursor: "pointer", fontSize: "0.875rem", fontWeight: 600 }}>
-                  Go to Dashboard
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      }
-      return this.props.children;
-    }
+  const supportedLanguages = ["fr", "en", "sw"];
+
+  const detectedLanguage =
+    browserLanguages
+      .map((language) => language.toLowerCase().split("-")[0])
+      .find((language) => supportedLanguages.includes(language)) || "fr";
+
+  root.lang = detectedLanguage;
+
+  root.dataset.language = detectedLanguage;
+
+  /**
+   * Accent existant.
+   *
+   * On conserve le comportement actuel afin de ne rien casser.
+   */
+  let accent = localStorage.getItem("accent") || "green";
+
+  if (accent === "violet" || accent === "purple") {
+    accent = "green";
+    localStorage.setItem("accent", "green");
   }
 
-  createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </StrictMode>
-  );
+  const hsl = ACCENT_HSL[accent] || ACCENT_HSL.green;
+
+  const style = document.createElement("style");
+  style.id = "__accent_override__";
+
+  style.textContent = `
+    :root,
+    .dark,
+    .light {
+      --primary: ${hsl};
+      --ring: ${hsl};
+    }
+  `;
+
+  document.head.appendChild(style);
+})();
+
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+
+    this.state = {
+      hasError: false,
+    };
+  }
+
+  static getDerivedStateFromError() {
+    return {
+      hasError: true,
+    };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[ErrorBoundary]", error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1rem",
+            background: "hsl(var(--background))",
+            color: "hsl(var(--foreground))",
+          }}
+        >
+          <div
+            style={{
+              textAlign: "center",
+              maxWidth: "20rem",
+            }}
+          >
+            <div
+              style={{
+                width: "3.5rem",
+                height: "3.5rem",
+                borderRadius: "50%",
+                background: "rgba(239,68,68,0.1)",
+                border: "1px solid rgba(239,68,68,0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 1rem",
+              }}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="rgb(239,68,68)"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+
+            <h2
+              style={{
+                fontSize: "1.125rem",
+                fontWeight: 700,
+                marginBottom: "0.5rem",
+              }}
+            >
+              Something went wrong
+            </h2>
+
+            <p
+              style={{
+                fontSize: "0.875rem",
+                opacity: 0.6,
+                marginBottom: "1.25rem",
+              }}
+            >
+              An unexpected error occurred. Try reloading the page.
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "0.5rem",
+                justifyContent: "center",
+              }}
+            >
+              <button
+                onClick={() => window.location.reload()}
+                style={{
+                  padding: "0.5rem 1rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  background: "transparent",
+                  color: "inherit",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                }}
+              >
+                Reload
+              </button>
+
+              <button
+                onClick={() => {
+                  window.location.href = "/dashboard";
+                }}
+                style={{
+                  padding: "0.5rem 1rem",
+                  borderRadius: "0.5rem",
+                  border: "none",
+                  background: "hsl(var(--primary))",
+                  color: "hsl(var(--primary-foreground))",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                }}
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </StrictMode>,
+);
