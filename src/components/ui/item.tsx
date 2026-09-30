@@ -24,23 +24,23 @@ function ItemSeparator({
     <Separator
       data-slot="item-separator"
       orientation="horizontal"
-      className={cn("my-0", className)}
+      className={cn("my-0 bg-white/10", className)}
       {...props}
     />
   )
 }
 
 const itemVariants = cva(
-  "group/item flex items-center border border-transparent text-sm rounded-md transition-colors [a]:hover:bg-accent/50 [a]:transition-colors duration-100 flex-wrap outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+  "liquid-glass group/item flex items-center border text-sm rounded-xl transition-all [a]:hover:bg-white/10 [a]:transition-colors duration-100 flex-wrap outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
   {
     variants: {
       variant: {
-        default: "bg-transparent",
-        outline: "border-border",
-        muted: "bg-muted/50",
+        default: "border-transparent",
+        outline: "border-white/15",
+        muted: "border-white/10",
       },
       size: {
-        default: "p-4 gap-4 ",
+        default: "p-4 gap-4",
         sm: "py-3 px-4 gap-2.5",
       },
     },
@@ -60,6 +60,7 @@ function Item({
 }: React.ComponentProps<"div"> &
   VariantProps<typeof itemVariants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : "div"
+
   return (
     <Comp
       data-slot="item"
@@ -77,9 +78,10 @@ const itemMediaVariants = cva(
     variants: {
       variant: {
         default: "bg-transparent",
-        icon: "size-8 border rounded-sm bg-muted [&_svg:not([class*='size-'])]:size-4",
+        icon:
+          "liquid-glass-subtle size-8 border rounded-lg [&_svg:not([class*='size-'])]:size-4",
         image:
-          "size-10 rounded-sm overflow-hidden [&_img]:size-full [&_img]:object-cover",
+          "liquid-glass-subtle size-10 rounded-lg overflow-hidden [&_img]:size-full [&_img]:object-cover",
       },
     },
     defaultVariants: {
