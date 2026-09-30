@@ -36,20 +36,54 @@ import { SiteIntro } from "@/components/SiteIntro";
 import { WhatsAppIcon } from "@/components/BrandIcons";
 
 function useTheme() {
-  const [theme, setTheme] = useState<"dark" | "light">(() =>
-    (localStorage.getItem("theme") as "dark" | "light") || "dark"
+  const getSystemTheme = (): "dark" | "light" =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+
+  const [theme, setTheme] = useState<"dark" | "light">(
+    getSystemTheme
   );
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.classList.toggle("light", theme === "light");
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    const media = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    );
+
+    const applySystemTheme = () => {
+      const nextTheme: "dark" | "light" = media.matches
+        ? "dark"
+        : "light";
+
+      setTheme(nextTheme);
+
+      document.documentElement.classList.toggle(
+        "dark",
+        nextTheme === "dark"
+      );
+
+      document.documentElement.classList.toggle(
+        "light",
+        nextTheme === "light"
+      );
+
+      document.documentElement.style.colorScheme = nextTheme;
+    };
+
+    applySystemTheme();
+
+    media.addEventListener("change", applySystemTheme);
+
+    return () => {
+      media.removeEventListener("change", applySystemTheme);
+    };
+  }, []);
 
   return {
     theme,
-    toggle: () =>
-      setTheme((t) => (t === "dark" ? "light" : "dark")),
+    toggle: () => {
+      // Le thème du téléphone reste prioritaire.
+    },
   };
 }
 
