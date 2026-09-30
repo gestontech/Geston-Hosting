@@ -216,7 +216,7 @@ jobs:
           test -n "$ANDROID_KEY_ALIAS"
           test -n "$ANDROID_KEY_PASSWORD"
 
-                - name: Verify Google Play target SDK
+      - name: Verify Google Play target SDK
         working-directory: android
         shell: bash
         run: |
