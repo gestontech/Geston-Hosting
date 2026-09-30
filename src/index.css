@@ -975,3 +975,66 @@ html.dark .geston-menu-option:hover {
 /* =========================================================
    GESTON HOSTING — MENU LIQUID GLASS END
    ========================================================= */
+
+/* =========================================================
+   GESTON HOSTING — LIGHT MENUS CONTRAST START
+   ========================================================= */
+
+/*
+ * Correction visuelle uniquement pour le mode clair.
+ * Le thème sombre existant reste inchangé.
+ */
+
+html.light .geston-menu-glass {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-right-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    8px 0 32px rgba(0, 0, 0, 0.08),
+    inset -1px 0 0 rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  color: hsl(222 30% 12%);
+}
+
+html.light .geston-mobile-menu {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-top-color: rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+}
+
+html.light .geston-menu-option {
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: hsl(222 30% 12%) !important;
+  text-shadow: none;
+}
+
+html.light .geston-menu-option:hover {
+  background: rgba(0, 0, 0, 0.055) !important;
+  color: hsl(222 30% 8%) !important;
+}
+
+html.light .geston-menu-option svg {
+  color: currentColor !important;
+  opacity: 0.95;
+}
+
+html.light .geston-menu-option span,
+html.light .geston-menu-option div {
+  color: inherit;
+}
+
+html.light .geston-menu-glass .text-muted-foreground,
+html.light .geston-mobile-menu .text-muted-foreground {
+  color: hsl(215 16% 38%) !important;
+}
+
+/* =========================================================
+   GESTON HOSTING — LIGHT MENUS CONTRAST END
+   ========================================================= */
