@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   liquid-glass:
-    name: Apply Liquid Glass safely
+    name: Apply transparent Liquid Glass
     runs-on: ubuntu-latest
 
     steps:
@@ -26,48 +26,128 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Apply stronger Liquid Glass
+      - name: Apply global transparent Liquid Glass
         shell: bash
         run: |
           python3 <<'PY'
           from pathlib import Path
           import re
 
-          # ---------------------------------------------------------
-          # 1. Renforcer le Liquid Glass global
-          # ---------------------------------------------------------
+          # =========================================================
+          # GLOBAL LIQUID GLASS
+          # =========================================================
+
           css_path = Path("src/index.css")
           css = css_path.read_text(encoding="utf-8")
 
-          # Supprimer l'ancien bloc géré par cette Action.
-          managed = re.compile(
-              r"/\*\s*GESTON HOSTING — SIDEBAR LIQUID GLASS START\s*\*/"
-              r".*?"
-              r"/\*\s*GESTON HOSTING — SIDEBAR LIQUID GLASS END\s*\*/",
-              re.DOTALL,
-          )
+          # Supprimer les blocs gérés précédemment par cette Action.
+          patterns = [
+              re.compile(
+                  r"/\*\s*GESTON HOSTING — GLOBAL LIQUID GLASS START\s*\*/"
+                  r".*?"
+                  r"/\*\s*GESTON HOSTING — GLOBAL LIQUID GLASS END\s*\*/",
+                  re.DOTALL,
+              ),
+              re.compile(
+                  r"/\*\s*GESTON HOSTING — SIDEBAR LIQUID GLASS START\s*\*/"
+                  r".*?"
+                  r"/\*\s*GESTON HOSTING — SIDEBAR LIQUID GLASS END\s*\*/",
+                  re.DOTALL,
+              ),
+          ]
 
-          css = managed.sub("", css).rstrip()
+          for pattern in patterns:
+              css = pattern.sub("", css)
 
-          sidebar_css = r"""
-          /* GESTON HOSTING — SIDEBAR LIQUID GLASS START */
+          css = css.rstrip()
+
+          liquid_glass = r"""
+          /* =========================================================
+             GESTON HOSTING — GLOBAL LIQUID GLASS START
+             ========================================================= */
 
           @layer components {
 
-            /* Carte individuelle de chaque option du menu */
+            /* -------------------------------------------------------
+               Surface principale
+               ------------------------------------------------------- */
+
+            .liquid-glass {
+              background:
+                linear-gradient(
+                  135deg,
+                  rgba(255, 255, 255, 0.115),
+                  rgba(255, 255, 255, 0.025)
+                ) !important;
+
+              border: 1px solid rgba(255, 255, 255, 0.14);
+
+              box-shadow:
+                0 8px 30px rgba(0, 0, 0, 0.07),
+                inset 0 1px 0 rgba(255, 255, 255, 0.20);
+
+              backdrop-filter:
+                blur(30px)
+                saturate(175%);
+
+              -webkit-backdrop-filter:
+                blur(30px)
+                saturate(175%);
+            }
+
+            /* -------------------------------------------------------
+               Surface secondaire
+               ------------------------------------------------------- */
+
+            .liquid-glass-subtle {
+              background:
+                linear-gradient(
+                  135deg,
+                  rgba(255, 255, 255, 0.075),
+                  rgba(255, 255, 255, 0.018)
+                ) !important;
+
+              border: 1px solid rgba(255, 255, 255, 0.105);
+
+              box-shadow:
+                0 5px 22px rgba(0, 0, 0, 0.055),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+              backdrop-filter:
+                blur(26px)
+                saturate(165%);
+
+              -webkit-backdrop-filter:
+                blur(26px)
+                saturate(165%);
+            }
+
+            /* -------------------------------------------------------
+               Cartes individuelles du menu
+               ------------------------------------------------------- */
+
             .sidebar-glass-item {
               background:
                 linear-gradient(
                   135deg,
-                  rgba(255, 255, 255, 0.22),
-                  rgba(255, 255, 255, 0.07)
-                );
-              border: 1px solid rgba(255, 255, 255, 0.22);
+                  rgba(255, 255, 255, 0.095),
+                  rgba(255, 255, 255, 0.022)
+                ) !important;
+
+              border: 1px solid rgba(255, 255, 255, 0.13);
+
               box-shadow:
-                0 5px 18px rgba(0, 0, 0, 0.10),
-                inset 0 1px 0 rgba(255, 255, 255, 0.28);
-              backdrop-filter: blur(26px) saturate(165%);
-              -webkit-backdrop-filter: blur(26px) saturate(165%);
+                0 4px 16px rgba(0, 0, 0, 0.065),
+                inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+              backdrop-filter:
+                blur(28px)
+                saturate(170%);
+
+              -webkit-backdrop-filter:
+                blur(28px)
+                saturate(170%);
+
               transition:
                 background 180ms ease,
                 box-shadow 180ms ease,
@@ -78,91 +158,268 @@ jobs:
               background:
                 linear-gradient(
                   135deg,
-                  rgba(255, 255, 255, 0.28),
-                  rgba(255, 255, 255, 0.10)
-                );
+                  rgba(255, 255, 255, 0.14),
+                  rgba(255, 255, 255, 0.035)
+                ) !important;
+
               box-shadow:
-                0 7px 22px rgba(0, 0, 0, 0.13),
-                inset 0 1px 0 rgba(255, 255, 255, 0.34);
+                0 6px 20px rgba(0, 0, 0, 0.09),
+                inset 0 1px 0 rgba(255, 255, 255, 0.22);
             }
 
-            /* Espace entre les petites cartes */
             .sidebar-glass-list {
               display: flex;
               flex-direction: column;
               gap: 6px;
             }
 
-            /* Surface principale du menu */
+            /* -------------------------------------------------------
+               Panneau du menu latéral
+               ------------------------------------------------------- */
+
             .sidebar-glass-panel {
               background:
                 linear-gradient(
                   145deg,
-                  rgba(255, 255, 255, 0.18),
-                  rgba(255, 255, 255, 0.055)
-                );
-              border-right: 1px solid rgba(255, 255, 255, 0.20);
+                  rgba(255, 255, 255, 0.085),
+                  rgba(255, 255, 255, 0.018)
+                ) !important;
+
+              border-right: 1px solid rgba(255, 255, 255, 0.14);
+
               box-shadow:
-                8px 0 35px rgba(0, 0, 0, 0.12),
-                inset -1px 0 0 rgba(255, 255, 255, 0.12);
-              backdrop-filter: blur(30px) saturate(170%);
-              -webkit-backdrop-filter: blur(30px) saturate(170%);
+                8px 0 34px rgba(0, 0, 0, 0.08),
+                inset -1px 0 0 rgba(255, 255, 255, 0.10);
+
+              backdrop-filter:
+                blur(34px)
+                saturate(175%);
+
+              -webkit-backdrop-filter:
+                blur(34px)
+                saturate(175%);
             }
 
-            /* Menu mobile */
+            /* -------------------------------------------------------
+               Menu mobile
+               ------------------------------------------------------- */
+
             .sidebar-glass-mobile {
               background:
                 linear-gradient(
                   145deg,
-                  rgba(255, 255, 255, 0.20),
-                  rgba(255, 255, 255, 0.06)
-                );
-              border-top: 1px solid rgba(255, 255, 255, 0.18);
+                  rgba(255, 255, 255, 0.09),
+                  rgba(255, 255, 255, 0.02)
+                ) !important;
+
+              border-top: 1px solid rgba(255, 255, 255, 0.13);
+
               box-shadow:
-                0 10px 35px rgba(0, 0, 0, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.20);
-              backdrop-filter: blur(30px) saturate(170%);
-              -webkit-backdrop-filter: blur(30px) saturate(170%);
+                0 10px 35px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.16);
+
+              backdrop-filter:
+                blur(34px)
+                saturate(175%);
+
+              -webkit-backdrop-filter:
+                blur(34px)
+                saturate(175%);
             }
+
+            /* -------------------------------------------------------
+               Icônes
+               ------------------------------------------------------- */
+
+            .liquid-glass-icon {
+              background:
+                linear-gradient(
+                  135deg,
+                  rgba(255, 255, 255, 0.13),
+                  rgba(255, 255, 255, 0.025)
+                );
+
+              border: 1px solid rgba(255, 255, 255, 0.13);
+
+              box-shadow:
+                0 3px 12px rgba(0, 0, 0, 0.055),
+                inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+              backdrop-filter:
+                blur(22px)
+                saturate(165%);
+
+              -webkit-backdrop-filter:
+                blur(22px)
+                saturate(165%);
+
+              border-radius: 10px;
+            }
+
+            /* -------------------------------------------------------
+               Champs
+               ------------------------------------------------------- */
+
+            input,
+            textarea,
+            select {
+              background:
+                linear-gradient(
+                  135deg,
+                  rgba(255, 255, 255, 0.075),
+                  rgba(255, 255, 255, 0.018)
+                ) !important;
+
+              border-color: rgba(255, 255, 255, 0.13) !important;
+
+              backdrop-filter:
+                blur(26px)
+                saturate(165%);
+
+              -webkit-backdrop-filter:
+                blur(26px)
+                saturate(165%);
+            }
+
+            /* -------------------------------------------------------
+               Fenêtres, menus et overlays
+               ------------------------------------------------------- */
+
+            [role="dialog"],
+            [role="menu"],
+            [role="listbox"],
+            [data-radix-popper-content-wrapper] > * {
+              background:
+                linear-gradient(
+                  135deg,
+                  rgba(255, 255, 255, 0.105),
+                  rgba(255, 255, 255, 0.025)
+                ) !important;
+
+              border: 1px solid rgba(255, 255, 255, 0.13);
+
+              box-shadow:
+                0 12px 38px rgba(0, 0, 0, 0.10),
+                inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+              backdrop-filter:
+                blur(32px)
+                saturate(175%);
+
+              -webkit-backdrop-filter:
+                blur(32px)
+                saturate(175%);
+            }
+          }
+
+          /* =========================================================
+             MODE CLAIR
+             ========================================================= */
+
+          html.light .liquid-glass {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.30),
+                rgba(255, 255, 255, 0.075)
+              ) !important;
+
+            border-color: rgba(255, 255, 255, 0.34);
+          }
+
+          html.light .liquid-glass-subtle {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.22),
+                rgba(255, 255, 255, 0.045)
+              ) !important;
+
+            border-color: rgba(255, 255, 255, 0.28);
+          }
+
+          html.light .sidebar-glass-item {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.27),
+                rgba(255, 255, 255, 0.055)
+              ) !important;
+
+            border-color: rgba(255, 255, 255, 0.31);
+          }
+
+          /* =========================================================
+             MODE SOMBRE
+             ========================================================= */
+
+          html.dark .liquid-glass {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.075),
+                rgba(255, 255, 255, 0.012)
+              ) !important;
+
+            border-color: rgba(255, 255, 255, 0.10);
+          }
+
+          html.dark .liquid-glass-subtle {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.055),
+                rgba(255, 255, 255, 0.008)
+              ) !important;
+
+            border-color: rgba(255, 255, 255, 0.075);
           }
 
           html.dark .sidebar-glass-item {
             background:
               linear-gradient(
                 135deg,
-                rgba(255, 255, 255, 0.12),
-                rgba(255, 255, 255, 0.035)
-              );
-            border-color: rgba(255, 255, 255, 0.13);
-            box-shadow:
-              0 6px 20px rgba(0, 0, 0, 0.28),
-              inset 0 1px 0 rgba(255, 255, 255, 0.16);
+                rgba(255, 255, 255, 0.065),
+                rgba(255, 255, 255, 0.01)
+              ) !important;
+
+            border-color: rgba(255, 255, 255, 0.09);
           }
 
-          html.dark .sidebar-glass-item:hover {
-            background:
-              linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.17),
-                rgba(255, 255, 255, 0.055)
-              );
-          }
+          /* =========================================================
+             ACCESSIBILITÉ
+             ========================================================= */
 
           @media (prefers-reduced-motion: reduce) {
+            .liquid-glass,
+            .liquid-glass-subtle,
             .sidebar-glass-item {
-              transition: none;
+              transition: none !important;
             }
           }
 
-          /* GESTON HOSTING — SIDEBAR LIQUID GLASS END */
+          @supports not (backdrop-filter: blur(1px)) {
+            .liquid-glass,
+            .liquid-glass-subtle,
+            .sidebar-glass-item,
+            .sidebar-glass-panel,
+            .sidebar-glass-mobile {
+              background: hsl(var(--card)) !important;
+            }
+          }
+
+          /* =========================================================
+             GESTON HOSTING — GLOBAL LIQUID GLASS END
+             ========================================================= */
           """
 
-          css = css + "\n\n" + sidebar_css.strip() + "\n"
+          css = css + "\n\n" + liquid_glass.strip() + "\n"
           css_path.write_text(css, encoding="utf-8")
 
-          # ---------------------------------------------------------
-          # 2. Modifier uniquement l'apparence des menus latéraux
-          # ---------------------------------------------------------
+          # =========================================================
+          # MENUS LATÉRAUX
+          # =========================================================
+
           files = [
               "src/pages/Home.tsx",
               "src/pages/MyBots.tsx",
@@ -185,19 +442,19 @@ jobs:
 
               content = path.read_text(encoding="utf-8")
 
-              # Menu latéral principal.
+              # Panneau latéral.
+              content = content.replace(
+                  "bg-card border-r border-border",
+                  "sidebar-glass-panel border-r border-white/15"
+              )
+
+              # Ancienne classe éventuelle.
               content = content.replace(
                   "liquid-glass border-r border-white/15",
                   "sidebar-glass-panel border-r border-white/15"
               )
 
-              # Menus mobiles.
-              content = content.replace(
-                  "lg:hidden liquid-glass border-t border-white/15 px-4 py-3 space-y-2",
-                  "lg:hidden sidebar-glass-mobile border-t border-white/15 px-4 py-3 space-y-2"
-              )
-
-              # Chaque option devient une carte individuelle.
+              # Options du menu.
               content = content.replace(
                   "liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all",
                   "sidebar-glass-item text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
@@ -208,39 +465,53 @@ jobs:
                   "sidebar-glass-item text-sm text-muted-foreground hover:text-foreground transition-all"
               )
 
-              # Option mobile Home.
+              # Anciennes options.
               content = content.replace(
-                  "rounded-xl liquid-glass-subtle text-sm text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all",
+                  "px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all",
+                  "px-3 py-2.5 rounded-xl sidebar-glass-item text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+              )
+
+              content = content.replace(
+                  "px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground",
+                  "px-3 py-2.5 rounded-xl sidebar-glass-item text-sm text-muted-foreground hover:text-foreground transition-all"
+              )
+
+              # Menu mobile.
+              content = content.replace(
+                  "lg:hidden border-t border-border bg-background px-4 py-3 space-y-1",
+                  "lg:hidden sidebar-glass-mobile border-t border-white/15 px-4 py-3 space-y-2"
+              )
+
+              content = content.replace(
+                  "lg:hidden liquid-glass border-t border-white/15 px-4 py-3 space-y-2",
+                  "lg:hidden sidebar-glass-mobile border-t border-white/15 px-4 py-3 space-y-2"
+              )
+
+              # Options mobiles.
+              content = content.replace(
+                  "rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground",
                   "rounded-xl sidebar-glass-item text-sm text-muted-foreground hover:text-foreground transition-all"
               )
 
-              # Espacement du nav principal.
+              # Espacement vertical.
               content = content.replace(
                   '<nav className="space-y-0.5 flex-1">',
                   '<nav className="sidebar-glass-list flex-1">'
               )
 
-              # Autres variantes fréquentes.
-              content = content.replace(
-                  'className="space-y-0.5 flex-1"',
-                  'className="sidebar-glass-list flex-1"'
-              )
-
               path.write_text(content, encoding="utf-8")
-              print(f"Menu traité : {filename}")
+              print(f"Liquid Glass appliqué : {filename}")
           PY
 
       - name: Verify Liquid Glass
         shell: bash
         run: |
-          test -f src/index.css
-
-          grep -q "GESTON HOSTING — SIDEBAR LIQUID GLASS START" src/index.css
+          grep -q "GESTON HOSTING — GLOBAL LIQUID GLASS START" src/index.css
           grep -q "sidebar-glass-item" src/index.css
-          grep -q "sidebar-glass-list" src/index.css
           grep -q "sidebar-glass-panel" src/index.css
+          grep -q "backdrop-filter" src/index.css
 
-          echo "Liquid Glass du menu vérifié."
+          echo "Liquid Glass global vérifié."
 
       - name: Check formatting
         run: git diff --check
@@ -278,5 +549,5 @@ jobs:
             src/pages/Dashboard.tsx \
             src/pages/Admin.tsx
 
-          git commit -m "Enhance Liquid Glass side menu"
+          git commit -m "Apply transparent Liquid Glass globally"
           git push origin main
