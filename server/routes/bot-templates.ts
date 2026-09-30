@@ -106,11 +106,6 @@ function withLogo<T extends Record<string, unknown> & {
     imageUrl: "",
   };
 }
-  const url = String(t.imageUrl || "").trim();
-  if (url) return { ...t, imageUrl: url };
-  if (t.isDefault) return { ...t, imageUrl: DEFAULT_GESTON_MD_LOGO };
-  return { ...t, imageUrl: "" };
-}
 
 /** Public — no login required so the bots page always loads logos for guests too */
 router.get("/", async (_req: Request, res: Response, next: NextFunction) => {
