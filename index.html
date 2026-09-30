@@ -1,22 +1,45 @@
 <!doctype html>
-<html lang="fr" class="dark">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
 
-    <title>Geston Hosting | Hébergement web, Bots WhatsApp & Déploiement</title>
+    <title>
+      Geston Hosting | Hébergement web, Bots WhatsApp & Déploiement
+    </title>
 
     <meta
       name="description"
-      content="Geston Hosting est une plateforme d’hébergement web et de déploiement pour sites, applications, bots WhatsApp, panels Pterodactyl et projets de développeurs au Congo et en RDC."
+      content="Geston Hosting est une plateforme d'hébergement web et de déploiement pour sites, applications, bots WhatsApp, panels Pterodactyl et projets de développeurs au Congo et en RDC."
     />
 
-    <meta name="robots" content="index, follow, max-image-preview:large" />
-    <meta name="googlebot" content="index, follow, max-image-preview:large" />
-    <meta name="bingbot" content="index, follow, max-image-preview:large" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large"
+    />
 
-    <meta name="theme-color" content="#0a0f1f" />
-    <meta name="application-name" content="Geston Hosting" />
+    <meta
+      name="googlebot"
+      content="index, follow, max-image-preview:large"
+    />
+
+    <meta
+      name="bingbot"
+      content="index, follow, max-image-preview:large"
+    />
+
+    <meta
+      name="theme-color"
+      content="#0a0f1f"
+    />
+
+    <meta
+      name="application-name"
+      content="Geston Hosting"
+    />
 
     <link
       rel="canonical"
@@ -87,14 +110,40 @@
       content="https://hosting.gestontech.online/opengraph.jpg"
     />
 
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Geston Hosting" />
-    <meta property="og:site_name" content="Geston Hosting" />
-    <meta property="og:locale" content="fr_FR" />
+    <meta
+      property="og:image:type"
+      content="image/jpeg"
+    />
 
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      property="og:image:width"
+      content="1200"
+    />
+
+    <meta
+      property="og:image:height"
+      content="630"
+    />
+
+    <meta
+      property="og:image:alt"
+      content="Geston Hosting"
+    />
+
+    <meta
+      property="og:site_name"
+      content="Geston Hosting"
+    />
+
+    <meta
+      property="og:locale"
+      content="fr_FR"
+    />
+
+    <meta
+      name="twitter:card"
+      content="summary_large_image"
+    />
 
     <meta
       name="twitter:title"
@@ -186,17 +235,29 @@
       }
 
       .boot-cube:nth-child(1) {
-        background: linear-gradient(135deg, #4ade80, #16a34a);
+        background: linear-gradient(
+          135deg,
+          #4ade80,
+          #16a34a
+        );
         animation-delay: 0s;
       }
 
       .boot-cube:nth-child(2) {
-        background: linear-gradient(135deg, #22d3ee, #0d9488);
+        background: linear-gradient(
+          135deg,
+          #22d3ee,
+          #0d9488
+        );
         animation-delay: 0.25s;
       }
 
       .boot-cube:nth-child(3) {
-        background: linear-gradient(135deg, #a3e635, #65a30d);
+        background: linear-gradient(
+          135deg,
+          #a3e635,
+          #65a30d
+        );
         animation-delay: 0.5s;
       }
 
@@ -242,18 +303,38 @@
         font-weight: 700;
         letter-spacing: 0.2em;
         text-transform: uppercase;
-        background: linear-gradient(90deg, #4ade80, #22d3ee);
+        background: linear-gradient(
+          90deg,
+          #4ade80,
+          #22d3ee
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         user-select: none;
+      }
+
+      @media (prefers-color-scheme: light) {
+        #boot-loader {
+          background: #f6f8fb;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .boot-cube,
+        #boot-loader img {
+          animation: none !important;
+        }
       }
     </style>
   </head>
 
   <body>
     <div id="boot-loader">
-      <img src="/logo/icon.png" alt="Geston Hosting" />
+      <img
+        src="/logo/icon.png"
+        alt="Geston Hosting"
+      />
 
       <div class="boot-cubes">
         <div class="boot-cube"></div>
@@ -261,11 +342,16 @@
         <div class="boot-cube"></div>
       </div>
 
-      <span class="boot-label">Geston Hosting</span>
+      <span class="boot-label">
+        Geston Hosting
+      </span>
     </div>
 
     <div id="root"></div>
 
-    <script type="module" src="/src/main.tsx"></script>
+    <script
+      type="module"
+      src="/src/main.tsx"
+    ></script>
   </body>
 </html>
