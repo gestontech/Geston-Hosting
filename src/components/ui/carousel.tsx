@@ -56,11 +56,13 @@ function Carousel({
     },
     plugins
   )
+
   const [canScrollPrev, setCanScrollPrev] = React.useState(false)
   const [canScrollNext, setCanScrollNext] = React.useState(false)
 
   const onSelect = React.useCallback((api: CarouselApi) => {
     if (!api) return
+
     setCanScrollPrev(api.canScrollPrev())
     setCanScrollNext(api.canScrollNext())
   }, [])
@@ -88,11 +90,13 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api || !setApi) return
+
     setApi(api)
   }, [api, setApi])
 
   React.useEffect(() => {
     if (!api) return
+
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)
@@ -106,7 +110,7 @@ function Carousel({
     <CarouselContext.Provider
       value={{
         carouselRef,
-        api: api,
+        api,
         opts,
         orientation:
           orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
@@ -118,7 +122,10 @@ function Carousel({
     >
       <div
         onKeyDownCapture={handleKeyDown}
-        className={cn("relative", className)}
+        className={cn(
+          "liquid-glass relative rounded-2xl p-2",
+          className
+        )}
         role="region"
         aria-roledescription="carousel"
         data-slot="carousel"
@@ -136,7 +143,7 @@ function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       ref={carouselRef}
-      className="overflow-hidden"
+      className="overflow-hidden rounded-xl"
       data-slot="carousel-content"
     >
       <div
