@@ -1,0 +1,146 @@
+name: Update Create Account Button
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-button:
+    name: Bouton Créer un compte Liquid Glass
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Find Create Account button
+        shell: bash
+        run: |
+          echo "Recherche du bouton Créer un compte..."
+
+          grep -Rni \
+            --include="*.tsx" \
+            --include="*.jsx" \
+            --include="*.ts" \
+            --include="*.js" \
+            "Créer un compte" src || true
+
+      - name: Apply Liquid Glass button style
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          root = Path("src")
+
+          files = list(root.rglob("*.tsx")) + list(root.rglob("*.jsx"))
+
+          for path in files:
+              text = path.read_text(encoding="utf-8")
+
+              if "Créer un compte" not in text:
+                  continue
+
+              original = text
+
+              # Ajoute les classes de base uniquement lorsqu'un bouton
+              # contient déjà le texte "Créer un compte".
+              pattern = re.compile(
+                  r'(<button\b[^>]*className=["\'])([^"\']*)(["\'][^>]*>)(\s*Créer un compte\s*)(</button>)',
+                  re.MULTILINE
+              )
+
+              def replace_button(match):
+                  prefix = match.group(1)
+                  classes = match.group(2)
+                  middle = match.group(3)
+                  label = match.group(4)
+                  closing = match.group(5)
+
+                  additions = [
+                      "bg-emerald-500/20",
+                      "dark:bg-emerald-400/15",
+                      "backdrop-blur-xl",
+                      "border",
+                      "border-emerald-400/30",
+                      "dark:border-emerald-300/25",
+                      "shadow-sm",
+                      "shadow-emerald-500/10",
+                      "text-black",
+                      "dark:text-white",
+                      "transition-all",
+                      "duration-200",
+                      "hover:bg-emerald-500/25",
+                      "dark:hover:bg-emerald-400/20",
+                      "hover:border-emerald-400/40",
+                      "dark:hover:border-emerald-300/35",
+                  ]
+
+                  existing = classes.split()
+
+                  for item in additions:
+                      if item not in existing:
+                          existing.append(item)
+
+                  new_classes = " ".join(existing)
+
+                  return (
+                      prefix
+                      + new_classes
+                      + middle
+                      + label
+                      + closing
+                  )
+
+              updated = pattern.sub(replace_button, text)
+
+              if updated != original:
+                  path.write_text(updated, encoding="utf-8")
+                  print(f"Modifié : {path}")
+
+      - name: Verify theme classes
+        shell: bash
+        run: |
+          echo "Vérification du bouton..."
+
+          if grep -Rni \
+            --include="*.tsx" \
+            --include="*.jsx" \
+            "dark:text-white" \
+            src; then
+            echo "✓ Texte clair/sombre détecté."
+          else
+            echo "⚠ Aucun bouton correspondant trouvé."
+          fi
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Build
+        run: |
+          npm run build
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git add src
+
+          if git diff --cached --quiet; then
+            echo "Aucune modification à enregistrer."
+            exit 0
+          fi
+
+          git commit -m "Update create account Liquid Glass button"
+          git push origin main
