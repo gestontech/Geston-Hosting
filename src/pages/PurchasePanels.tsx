@@ -506,7 +506,7 @@ export function PurchasePanels() {
                   <button
                     type="button"
                     onClick={closeWizard}
-                    className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
                     aria-label="Fermer"
                   >
                     <X className="w-4 h-4 text-muted-foreground" />
@@ -866,7 +866,7 @@ export function PurchasePanels() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="p-2 -ml-2 rounded-lg hover:bg-muted"
+                className="p-2 -ml-2 rounded-lg hover:bg-white/10"
                 onClick={() => setNavOpen(true)}
                 aria-label="Ouvrir le menu"
               >
@@ -885,7 +885,7 @@ export function PurchasePanels() {
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="p-2 rounded-lg hover:bg-muted"
+                className="p-2 rounded-lg hover:bg-white/10"
                 aria-label="Changer de thème"
               >
                 {theme === "dark" ? (
@@ -898,7 +898,7 @@ export function PurchasePanels() {
               <button
                 type="button"
                 onClick={() => navigateWithLoader("/profile")}
-                className="p-2 rounded-lg hover:bg-muted"
+                className="p-2 rounded-lg hover:bg-white/10"
                 aria-label="Profil"
               >
                 <UserCircle className="w-5 h-5 text-muted-foreground" />
@@ -916,7 +916,7 @@ export function PurchasePanels() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-card border-r border-border z-[110] transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full w-72 liquid-glass border-r border-white/15 z-[110] transform transition-transform duration-300 ${
           navOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -931,7 +931,7 @@ export function PurchasePanels() {
           <button
             type="button"
             onClick={() => setNavOpen(false)}
-            className="p-2 rounded-lg hover:bg-muted"
+            className="p-2 rounded-lg hover:bg-white/10"
             aria-label="Fermer"
           >
             <X className="w-4 h-4" />
@@ -958,7 +958,7 @@ export function PurchasePanels() {
                   navigateWithLoader(item.path);
                   setNavOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground"
               >
                 <div className="flex items-center gap-2.5">
                   <item.icon className="w-4 h-4" />
@@ -975,7 +975,7 @@ export function PurchasePanels() {
                 navigateWithLoader("/services/bots");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10"
             >
               <div className="flex items-center gap-2.5">
                 <Bot className="w-4 h-4" />
@@ -1027,7 +1027,7 @@ export function PurchasePanels() {
                 navigateWithLoader("/profile");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10"
             >
               <UserCircle className="w-4 h-4" />
               Profil
@@ -1050,7 +1050,7 @@ export function PurchasePanels() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="p-2 rounded-lg hover:bg-muted"
+            className="p-2 rounded-lg hover:bg-white/10"
             aria-label="Retour"
           >
             <ArrowLeft className="w-4 h-4" />

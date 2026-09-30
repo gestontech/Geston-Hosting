@@ -89,7 +89,7 @@ return (
         <div className="flex items-center h-14 gap-3">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors shrink-0"
+            className="p-2 -ml-2 rounded-lg hover:bg-white/10 transition-colors shrink-0"
             aria-label="Open navigation"
           >
             <Menu className="w-5 h-5" />
@@ -115,14 +115,14 @@ return (
     )}
 
     <aside
-      className={`fixed top-0 left-0 h-full w-72 bg-card border-r border-border z-[110] transform transition-transform duration-300 ease-out flex flex-col ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
+      className={`fixed top-0 left-0 h-full w-72 liquid-glass border-r border-white/15 z-[110] transform transition-transform duration-300 ease-out flex flex-col ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
     >
       <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
         <div className="flex items-center gap-2">
           <Crown className="w-4 h-4 text-amber-400" />
           <span className="font-bold text-sm">Admin Navigation</span>
         </div>
-        <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Close">
+        <button onClick={() => setDrawerOpen(false)} className="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Close">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -130,7 +130,7 @@ return (
       <div className="flex-1 overflow-y-auto p-3 space-y-0.5">
         <button
           onClick={() => { navigateWithLoader("/"); setDrawerOpen(false); }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
@@ -145,7 +145,7 @@ return (
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
               activeTab === item.key
                 ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                : "text-muted-foreground hover:bg-white/10 hover:text-foreground"
             }`}
           >
             {item.icon}

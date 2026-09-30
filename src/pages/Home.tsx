@@ -320,7 +320,7 @@ function HeroShowcase() {
           onClick={() =>
             setIndex((i) => (i - 1 + count) % count)
           }
-          className="p-1.5 rounded-lg border border-border hover:bg-muted transition-colors"
+          className="p-1.5 rounded-lg border border-border hover:bg-white/10 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -335,7 +335,7 @@ function HeroShowcase() {
               className={`h-1.5 rounded-full transition-all ${
                 i === index
                   ? "w-6 bg-lime-400"
-                  : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                  : "w-1.5 bg-muted-foreground/30 hover:bg-white/10-foreground/50"
               }`}
             />
           ))}
@@ -345,7 +345,7 @@ function HeroShowcase() {
           type="button"
           aria-label="Diapositive suivante"
           onClick={() => setIndex((i) => (i + 1) % count)}
-          className="p-1.5 rounded-lg border border-border hover:bg-muted transition-colors"
+          className="p-1.5 rounded-lg border border-border hover:bg-white/10 transition-colors"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -532,7 +532,7 @@ export default function Home() {
                 key={l.href}
                 type="button"
                 onClick={() => navigateWithLoader(l.href)}
-                className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors"
+                className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/10 transition-colors"
               >
                 {l.label}
               </button>
@@ -543,7 +543,7 @@ export default function Home() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="p-2 rounded-md hover:bg-muted"
+              className="p-2 rounded-md hover:bg-white/10"
               aria-label="Changer de thème"
             >
               {theme === "dark" ? (
@@ -580,7 +580,7 @@ export default function Home() {
 
             <button
               type="button"
-              className="lg:hidden p-2 rounded-md hover:bg-muted"
+              className="lg:hidden p-2 rounded-md hover:bg-white/10"
               onClick={() =>
                 setMobileMenuOpen((o) => !o)
               }
@@ -596,7 +596,7 @@ export default function Home() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-border bg-background px-4 py-3 space-y-1">
+          <div className="lg:hidden liquid-glass border-t border-white/15 px-4 py-3 space-y-2">
             {NAV_LINKS.map((l) => (
               <button
                 key={l.href}
@@ -605,7 +605,7 @@ export default function Home() {
                   navigateWithLoader(l.href);
                   setMobileMenuOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
               >
                 {l.label}
                 <ChevronRight className="w-4 h-4 opacity-40" />

@@ -98,7 +98,7 @@ export function Contact() {
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">
               <button
-                className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
+                className="p-2 -ml-2 rounded-lg hover:bg-white/10 transition-colors"
                 onClick={() => setNavOpen(true)}
               >
                 <Menu className="w-5 h-5" />
@@ -118,7 +118,7 @@ export function Contact() {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg hover:bg-muted transition-all"
+                className="p-2 rounded-lg hover:bg-white/10 transition-all"
               >
                 {theme === "dark" ? (
                   <Sun className="w-4 h-4 text-muted-foreground" />
@@ -130,7 +130,7 @@ export function Contact() {
               {user ? (
                 <button
                   onClick={() => navigateWithLoader("/profile")}
-                  className="p-2 rounded-lg hover:bg-muted transition-colors"
+                  className="p-2 rounded-lg hover:bg-white/10 transition-colors"
                 >
                   <UserCircle className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -165,7 +165,7 @@ export function Contact() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-card border-r border-border z-[110] transform transition-transform duration-300 ease-out ${
+        className={`fixed top-0 left-0 h-full w-72 liquid-glass border-r border-white/15 z-[110] transform transition-transform duration-300 ease-out ${
           navOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -179,7 +179,7 @@ export function Contact() {
 
           <button
             onClick={() => setNavOpen(false)}
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -246,7 +246,7 @@ export function Contact() {
                   navigateWithLoader(item.path);
                   setNavOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
               >
                 <div className="flex items-center gap-2.5">
                   <item.icon className="w-4 h-4" />
@@ -262,7 +262,7 @@ export function Contact() {
                 navigateWithLoader("/services/bots");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
             >
               <div className="flex items-center gap-2.5">
                 <Bot className="w-4 h-4" />
@@ -310,7 +310,7 @@ export function Contact() {
                     navigateWithLoader("/profile");
                     setNavOpen(false);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
                 >
                   <UserCircle className="w-4 h-4" />
                   Profil
@@ -330,7 +330,7 @@ export function Contact() {
                   navigateWithLoader("/");
                   setNavOpen(false);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Retour à l'accueil
@@ -344,7 +344,7 @@ export function Contact() {
         <div className="flex items-center gap-3 mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
