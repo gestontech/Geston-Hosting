@@ -4,7 +4,7 @@ export type SystemTheme = "dark" | "light";
 
 function getSystemTheme(): SystemTheme {
   if (typeof window === "undefined") {
-    return "dark";
+    return "light";
   }
 
   return window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -12,44 +12,38 @@ function getSystemTheme(): SystemTheme {
     : "light";
 }
 
-export function useSystemTheme() {
+export function useSystemTheme(): SystemTheme {
   const [theme, setTheme] = useState<SystemTheme>(getSystemTheme);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
 
-    const updateTheme = () => {
-      const nextTheme: SystemTheme = media.matches ? "dark" : "light";
+    const applyTheme = (isDark: boolean) => {
+      const nextTheme: SystemTheme = isDark ? "dark" : "light";
 
       setTheme(nextTheme);
 
-      document.documentElement.classList.toggle(
-        "dark",
-        nextTheme === "dark",
-      );
+      const root = document.documentElement;
 
-      document.documentElement.classList.toggle(
-        "light",
-        nextTheme === "light",
-      );
-
-      document.documentElement.style.colorScheme = nextTheme;
+      root.classList.remove("dark", "light");
+      root.classList.add(nextTheme);
+      root.style.colorScheme = nextTheme;
     };
 
-    updateTheme();
+    applyTheme(media.matches);
 
-    media.addEventListener("change", updateTheme);
+    const handleChange = (event: MediaQueryListEvent) => {
+      applyTheme(event.matches);
+    };
+
+    media.addEventListener("change", handleChange);
 
     return () => {
-      media.removeEventListener("change", updateTheme);
+      media.removeEventListener("change", handleChange);
     };
   }, []);
 
-  return {
-    theme,
-    toggle: () => {
-      // Le thème est contrôlé par le téléphone.
-      // Aucun remplacement manuel n'est effectué.
-    },
-  };
+  return theme;
 }
+
+export default useSystemTheme;
