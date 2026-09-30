@@ -38,7 +38,7 @@ function useTheme() {
       : "light";
 
   const [theme, setTheme] = useState<"dark" | "light">(
-    getSystemTheme
+    getSystemTheme()
   );
 
   useEffect(() => {
@@ -247,6 +247,7 @@ export function MyPanels() {
 
               <div className="flex items-center gap-2">
                 <AnimatedLogo />
+
                 <span className="font-bold text-base">
                   Geston Hosting
                 </span>
@@ -289,6 +290,7 @@ export function MyPanels() {
         />
       )}
 
+      {/* MENU LATERAL CLIENT */}
       <aside
         className={`fixed top-0 left-0 h-full w-72 geston-menu-glass border-r border-white/15 z-[110] transform transition-transform duration-300 ease-out ${
           navOpen
@@ -299,6 +301,7 @@ export function MyPanels() {
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2.5">
             <AnimatedLogo />
+
             <span className="font-bold text-base">
               Geston Hosting
             </span>
@@ -315,6 +318,7 @@ export function MyPanels() {
         </div>
 
         <div className="p-4 flex flex-col h-[calc(100%-65px)] overflow-y-auto">
+          {/* Compte utilisateur : aucun cadre */}
           <div className="mb-5 p-3 rounded-xl bg-transparent border-0">
             <p className="text-xs text-muted-foreground mb-0.5">
               Connecté en tant que
@@ -328,12 +332,14 @@ export function MyPanels() {
 
             <div className="mt-2 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+
               <span className="text-xs text-green-400">
                 Services
               </span>
             </div>
           </div>
 
+          {/* OPTIONS DU MENU : SANS CADRES INDIVIDUELS */}
           <nav className="sidebar-glass-list flex-1">
             {navItems.map((item) => (
               <button
@@ -376,7 +382,7 @@ export function MyPanels() {
                 navigateWithLoader("/services/panels");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg geston-menu-option text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl geston-menu-option text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
             >
               <div className="flex items-center gap-2.5">
                 <Shield className="w-4 h-4" />
@@ -393,7 +399,7 @@ export function MyPanels() {
                   navigateWithLoader("/admin");
                   setNavOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg geston-menu-option text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl geston-menu-option text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"
               >
                 <div className="flex items-center gap-2.5">
                   <Shield className="w-4 h-4" />
@@ -405,6 +411,7 @@ export function MyPanels() {
             )}
           </nav>
 
+          {/* BAS DU MENU */}
           <div className="space-y-0.5 border-t border-border pt-3 mt-3">
             <button
               type="button"
@@ -421,7 +428,7 @@ export function MyPanels() {
             <button
               type="button"
               onClick={logout}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl geston-menu-option text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
             >
               <LogOut className="w-4 h-4" />
               Déconnexion
