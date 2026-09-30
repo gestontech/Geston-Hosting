@@ -1,4 +1,4 @@
-name: Update Confirmation Logout Button
+name: Update Confirmation Logout Text
 
 on:
   workflow_dispatch:
@@ -7,8 +7,8 @@ permissions:
   contents: write
 
 jobs:
-  update-confirmation-logout:
-    name: Modifier uniquement Déconnexion de la confirmation
+  update-logout-text:
+    name: Modifier uniquement le texte du bouton Déconnexion
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Modifier uniquement le bouton de confirmation
+      - name: Modifier uniquement la couleur du texte
         shell: python
         run: |
           from pathlib import Path
@@ -39,7 +39,6 @@ jobs:
 
           text = path.read_text(encoding="utf-8")
 
-          # Trouver les blocs Button complets sans traverser plusieurs boutons.
           button_pattern = re.compile(
               r"<Button\b[^>]*>[\s\S]*?</Button>",
               re.MULTILINE
@@ -52,7 +51,7 @@ jobs:
           for match in matches:
               block = match.group(0)
 
-              # Cible UNIQUEMENT le bouton de confirmation.
+              # Cible uniquement le bouton de confirmation.
               if (
                   "onClick={onConfirm}" in block
                   and "Déconnexion" in block
@@ -67,20 +66,35 @@ jobs:
 
           old = target.group(0)
 
-          new = '''<Button
-            className="flex-1 bg-black text-white hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/85"
-            onClick={onConfirm}
-            disabled={loading}
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-            {loading ? "Déconnexion..." : "Déconnexion"}
-          </Button>'''
+          # Modifier UNIQUEMENT les couleurs du texte.
+          new = re.sub(
+              r'className="([^"]*)"',
+              lambda m: (
+                  'className="' +
+                  re.sub(
+                      r'\btext-(?:white|black|foreground)\b',
+                      '',
+                      m.group(1)
+                  ).strip() +
+                  ' text-black dark:text-white"'
+              ),
+              old,
+              count=1
+          )
+
+          if new == old:
+              raise SystemExit(
+                  "ERREUR : impossible de modifier uniquement la couleur du texte."
+              )
 
           text = text[:target.start()] + new + text[target.end():]
 
           path.write_text(text, encoding="utf-8")
 
-          print("✓ Seul le bouton de confirmation Déconnexion a été modifié.")
+          print("✓ Fond du bouton conservé.")
+          print("✓ Seule la couleur du texte a été modifiée.")
+          print("✓ Mode clair : texte noir.")
+          print("✓ Mode sombre : texte blanc.")
 
       - name: Vérifier précisément la modification
         shell: python
@@ -105,40 +119,47 @@ jobs:
 
           if len(confirmation_buttons) != 1:
               raise SystemExit(
-                  f"ERREUR : {len(confirmation_buttons)} bouton(s) de confirmation trouvé(s), 1 attendu."
+                  f"ERREUR : {len(confirmation_buttons)} bouton(s) trouvé(s), 1 attendu."
               )
 
           button = confirmation_buttons[0]
 
-          required = [
-              'bg-black text-white',
-              'dark:bg-white dark:text-black',
-              'onClick={onConfirm}',
-              'disabled={loading}',
-              '"Déconnexion"',
-          ]
-
-          for value in required:
-              if value not in button:
-                  raise SystemExit(
-                      f"ERREUR : élément attendu absent du bouton : {value}"
-                  )
-
-          if "variant=\"destructive\"" in button:
+          if "text-black" not in button:
               raise SystemExit(
-                  "ERREUR : l'ancien variant destructive est encore présent."
+                  "ERREUR : text-black absent du bouton."
               )
 
-          # Vérifie que le bouton Annuler existe toujours.
+          if "dark:text-white" not in button:
+              raise SystemExit(
+                  "ERREUR : dark:text-white absent du bouton."
+              )
+
+          # Vérifier qu'aucune couleur de fond n'a été ajoutée/modifiée
+          # par cette opération.
+          if "bg-black" in button or "bg-white" in button:
+              raise SystemExit(
+                  "ERREUR : une couleur de fond a été ajoutée au bouton."
+              )
+
+          if 'onClick={onConfirm}' not in button:
+              raise SystemExit(
+                  "ERREUR : onConfirm a été modifié."
+              )
+
+          if '"Déconnexion"' not in button:
+              raise SystemExit(
+                  "ERREUR : texte Déconnexion absent."
+              )
+
           if 'onClick={onClose}' not in text or "Annuler" not in text:
               raise SystemExit(
-                  "ERREUR : le bouton Annuler semble avoir été modifié ou supprimé."
+                  "ERREUR : bouton Annuler modifié ou supprimé."
               )
 
-          print("✓ Bouton confirmation : noir en mode clair.")
-          print("✓ Bouton confirmation : blanc en mode sombre.")
-          print("✓ Texte adapté au thème.")
-          print("✓ onConfirm conservé.")
+          print("✓ Mode clair : texte noir.")
+          print("✓ Mode sombre : texte blanc.")
+          print("✓ Fond du bouton non modifié.")
+          print("✓ Déconnexion conservé.")
           print("✓ Annuler conservé.")
           print("✓ Aucun autre bouton ciblé.")
 
@@ -163,5 +184,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Style confirmation logout button"
+          git commit -m "Fix logout confirmation text color"
           git push origin main
