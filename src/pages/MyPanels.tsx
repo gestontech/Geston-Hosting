@@ -349,7 +349,7 @@ export function MyPanels() {
                   navigateWithLoader(item.path);
                   setNavOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl geston-menu-option text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
               >
                 <div className="flex items-center gap-2.5">
                   <item.icon className="w-4 h-4" />
@@ -366,7 +366,7 @@ export function MyPanels() {
                 navigateWithLoader("/services/bots");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl geston-menu-option text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
             >
               <div className="flex items-center gap-2.5">
                 <Bot className="w-4 h-4" />
@@ -382,7 +382,7 @@ export function MyPanels() {
                 navigateWithLoader("/services/panels");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl geston-menu-option text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
             >
               <div className="flex items-center gap-2.5">
                 <Shield className="w-4 h-4" />
@@ -399,7 +399,7 @@ export function MyPanels() {
                   navigateWithLoader("/admin");
                   setNavOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl geston-menu-option text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"
               >
                 <div className="flex items-center gap-2.5">
                   <Shield className="w-4 h-4" />
@@ -419,7 +419,7 @@ export function MyPanels() {
                 navigateWithLoader("/profile");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl geston-menu-option text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
             >
               <UserCircle className="w-4 h-4" />
               Profil
@@ -428,7 +428,7 @@ export function MyPanels() {
             <button
               type="button"
               onClick={logout}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl geston-menu-option text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
             >
               <LogOut className="w-4 h-4" />
               Déconnexion
