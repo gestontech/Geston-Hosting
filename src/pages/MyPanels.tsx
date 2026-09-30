@@ -83,27 +83,6 @@ function useTheme() {
   };
 }
 
-  useEffect(() => {
-    document.documentElement.classList.toggle(
-      "dark",
-      theme === "dark",
-    );
-    document.documentElement.classList.toggle(
-      "light",
-      theme === "light",
-    );
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  return {
-    theme,
-    toggle: () =>
-      setTheme((current) =>
-        current === "dark" ? "light" : "dark",
-      ),
-  };
-}
-
 function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
