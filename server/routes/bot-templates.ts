@@ -16,9 +16,6 @@ const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").toLowerCase();
 export const DEFAULT_GESTON_MD_LOGO =
   "https://hosting.gestontech.online/logo/icon.png";
 
-export const DEFAULT_KNIGHTBOT_MD_LOGO =
-  "https://raw.githubusercontent.com/mruniquehacker/Knightbot-MD/main/assets/bot_image.jpg";
-
 interface AdminReq extends Request {
   user?: IUser;
 }
