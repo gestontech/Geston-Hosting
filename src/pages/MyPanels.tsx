@@ -315,7 +315,7 @@ export function MyPanels() {
         </div>
 
         <div className="p-4 flex flex-col h-[calc(100%-65px)] overflow-y-auto">
-          <div className="mb-5 p-3 rounded-xl bg-muted/50 border border-border/50">
+          <div className="mb-5 p-3 rounded-xl bg-transparent border-0">
             <p className="text-xs text-muted-foreground mb-0.5">
               Connecté en tant que
             </p>
@@ -376,7 +376,7 @@ export function MyPanels() {
                 navigateWithLoader("/services/panels");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium bg-muted text-foreground"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg geston-menu-option text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
             >
               <div className="flex items-center gap-2.5">
                 <Shield className="w-4 h-4" />
@@ -393,7 +393,7 @@ export function MyPanels() {
                   navigateWithLoader("/admin");
                   setNavOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg geston-menu-option text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"
               >
                 <div className="flex items-center gap-2.5">
                   <Shield className="w-4 h-4" />
