@@ -68,18 +68,6 @@ function useTheme() {
   };
 }
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.classList.toggle("light", theme === "light");
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  return {
-    theme,
-    toggle: () => setTheme(t => t === "dark" ? "light" : "dark"),
-  };
-}
-
 function getYoutubeId(url: string): string | null {
   const match = url.match(
     /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/
