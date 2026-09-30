@@ -481,3 +481,109 @@ html.light select {
 /* =========================================================
    END LIQUID GLASS THEME
    ========================================================= */
+
+/* GESTON HOSTING — SIDEBAR LIQUID GLASS START */
+
+@layer components {
+
+  /* Carte individuelle de chaque option du menu */
+  .sidebar-glass-item {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.22),
+        rgba(255, 255, 255, 0.07)
+      );
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow:
+      0 5px 18px rgba(0, 0, 0, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(26px) saturate(165%);
+    -webkit-backdrop-filter: blur(26px) saturate(165%);
+    transition:
+      background 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  .sidebar-glass-item:hover {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.28),
+        rgba(255, 255, 255, 0.10)
+      );
+    box-shadow:
+      0 7px 22px rgba(0, 0, 0, 0.13),
+      inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  }
+
+  /* Espace entre les petites cartes */
+  .sidebar-glass-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* Surface principale du menu */
+  .sidebar-glass-panel {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.18),
+        rgba(255, 255, 255, 0.055)
+      );
+    border-right: 1px solid rgba(255, 255, 255, 0.20);
+    box-shadow:
+      8px 0 35px rgba(0, 0, 0, 0.12),
+      inset -1px 0 0 rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(30px) saturate(170%);
+    -webkit-backdrop-filter: blur(30px) saturate(170%);
+  }
+
+  /* Menu mobile */
+  .sidebar-glass-mobile {
+    background:
+      linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.20),
+        rgba(255, 255, 255, 0.06)
+      );
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+      0 10px 35px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.20);
+    backdrop-filter: blur(30px) saturate(170%);
+    -webkit-backdrop-filter: blur(30px) saturate(170%);
+  }
+}
+
+html.dark .sidebar-glass-item {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.035)
+    );
+  border-color: rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+html.dark .sidebar-glass-item:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.17),
+      rgba(255, 255, 255, 0.055)
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-glass-item {
+    transition: none;
+  }
+}
+
+/* GESTON HOSTING — SIDEBAR LIQUID GLASS END */

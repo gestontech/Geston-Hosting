@@ -916,7 +916,7 @@ export function PurchasePanels() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-full w-72 liquid-glass border-r border-white/15 z-[110] transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full w-72 sidebar-glass-panel border-r border-white/15 z-[110] transform transition-transform duration-300 ${
           navOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -949,7 +949,7 @@ export function PurchasePanels() {
             </p>
           </div>
 
-          <nav className="space-y-0.5 flex-1">
+          <nav className="sidebar-glass-list flex-1">
             {navItems.map((item) => (
               <button
                 type="button"

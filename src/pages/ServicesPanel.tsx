@@ -231,7 +231,7 @@ export function ServicesPanel() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-full w-72 liquid-glass border-r border-white/15 z-[110] transform transition-transform duration-300 ease-out ${
+        className={`fixed top-0 left-0 h-full w-72 sidebar-glass-panel border-r border-white/15 z-[110] transform transition-transform duration-300 ease-out ${
           navOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -310,7 +310,7 @@ export function ServicesPanel() {
             </div>
           )}
 
-          <nav className="space-y-0.5 flex-1">
+          <nav className="sidebar-glass-list flex-1">
             {user &&
               navItems.map(item => (
                 <button
@@ -319,7 +319,7 @@ export function ServicesPanel() {
                     navigateWithLoader(item.path);
                     setNavOpen(false);
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl sidebar-glass-item text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
                 >
                   <div className="flex items-center gap-2.5">
                     <item.icon className="w-4 h-4" />
@@ -335,7 +335,7 @@ export function ServicesPanel() {
                 navigateWithLoader("/services/bots");
                 setNavOpen(false);
               }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl sidebar-glass-item text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
             >
               <div className="flex items-center gap-2.5">
                 <Bot className="w-4 h-4" />
@@ -386,7 +386,7 @@ export function ServicesPanel() {
                     navigateWithLoader("/profile");
                     setNavOpen(false);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl sidebar-glass-item text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
                 >
                   <UserCircle className="w-4 h-4" />
                   Profil
@@ -406,7 +406,7 @@ export function ServicesPanel() {
                   navigateWithLoader("/");
                   setNavOpen(false);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl liquid-glass-subtle text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl sidebar-glass-item text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Retour à l'accueil
