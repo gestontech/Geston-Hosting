@@ -1,4 +1,12 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from "react-router";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+  Link,
+} from "react-router";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { CurrencyProvider } from "@/hooks/useCurrency";
 import { CurrencyPickerModal } from "@/components/CurrencyPickerModal";
@@ -53,7 +61,11 @@ export function useNavLoader() {
   return useContext(NavLoadingContext);
 }
 
-function NavLoadingProvider({ children }: { children: ReactNode }) {
+function NavLoadingProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -72,7 +84,9 @@ function NavLoadingProvider({ children }: { children: ReactNode }) {
   if (loading) return <PageLoader />;
 
   return (
-    <NavLoadingContext.Provider value={{ navigateWithLoader }}>
+    <NavLoadingContext.Provider
+      value={{ navigateWithLoader }}
+    >
       {children}
     </NavLoadingContext.Provider>
   );
@@ -92,7 +106,11 @@ function ScrollToTop() {
   return null;
 }
 
-function ProtectedRoute({ children }: { children: ReactNode }) {
+function ProtectedRoute({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -101,7 +119,9 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   if (!user) {
     return (
       <Navigate
-        to={`/login?next=${encodeURIComponent(location.pathname)}`}
+        to={`/login?next=${encodeURIComponent(
+          location.pathname
+        )}`}
         replace
       />
     );
@@ -113,7 +133,18 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 function HomeRoute() {
   const { user, loading } = useAuth();
 
-  if (loading) return null;
+  /*
+   * Important SEO behavior:
+   *
+   * The public home page must not remain empty while
+   * authentication is being checked.
+   *
+   * If a logged-in user is detected, we redirect to
+   * the dashboard once authentication is ready.
+   */
+  if (loading) {
+    return <Home />;
+  }
 
   if (user) {
     return <Navigate to="/dashboard" replace />;
@@ -128,14 +159,35 @@ function AppRoutes() {
       <ScrollToTop />
 
       <Routes>
-        <Route path="/" element={<HomeRoute />} />
+        <Route
+          path="/"
+          element={<HomeRoute />}
+        />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-        <Route path="/auth/magic" element={<MagicLinkVerify />} />
-        <Route path="/auth/login" element={<MagicLinkVerify />} />
-        <Route path="/auth/verify" element={<MagicLinkVerify />} />
+        <Route
+          path="/signup"
+          element={<Signup />}
+        />
+
+        <Route
+          path="/auth/magic"
+          element={<MagicLinkVerify />}
+        />
+
+        <Route
+          path="/auth/login"
+          element={<MagicLinkVerify />}
+        />
+
+        <Route
+          path="/auth/verify"
+          element={<MagicLinkVerify />}
+        />
 
         <Route
           path="/auth/github/success"
@@ -152,10 +204,26 @@ function AppRoutes() {
           element={<ResetPassword />}
         />
 
-        <Route path="/docs" element={<Docs />} />
-        <Route path="/tutorials" element={<Tutorials />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/ai-chat" element={<AiChat />} />
+        {/* PUBLIC SEO ROUTES */}
+        <Route
+          path="/docs"
+          element={<Docs />}
+        />
+
+        <Route
+          path="/tutorials"
+          element={<Tutorials />}
+        />
+
+        <Route
+          path="/contact"
+          element={<Contact />}
+        />
+
+        <Route
+          path="/ai-chat"
+          element={<AiChat />}
+        />
 
         <Route
           path="/services/bots"
@@ -180,6 +248,18 @@ function AppRoutes() {
         />
 
         <Route
+          path="/features"
+          element={<BotFeatures />}
+        />
+
+        <Route
+          path="/botfeatures"
+          element={<BotFeatures />}
+        />
+
+        {/* PROTECTED ROUTES */}
+
+        <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
@@ -197,11 +277,14 @@ function AppRoutes() {
           }
         />
 
-        {/* Legacy payment/top-up URL:
-            intentionally redirected because the platform is free. */}
         <Route
           path="/topup"
-          element={<Navigate to="/dashboard" replace />}
+          element={
+            <Navigate
+              to="/dashboard"
+              replace
+            />
+          }
         />
 
         <Route
@@ -311,16 +394,6 @@ function AppRoutes() {
         />
 
         <Route
-          path="/features"
-          element={<BotFeatures />}
-        />
-
-        <Route
-          path="/botfeatures"
-          element={<BotFeatures />}
-        />
-
-        <Route
           path="*"
           element={<NotFound />}
         />
@@ -331,8 +404,17 @@ function AppRoutes() {
   );
 }
 
-function BanGate({ children }: { children: ReactNode }) {
-  const { user, loading, logout } = useAuth();
+function BanGate({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const {
+    user,
+    loading,
+    logout,
+  } = useAuth();
+
   const { pathname } = useLocation();
 
   const authPaths = [
@@ -349,13 +431,21 @@ function BanGate({ children }: { children: ReactNode }) {
 
   if (
     authPaths.some(
-      (p) => pathname === p || pathname.startsWith(p + "/")
+      (p) =>
+        pathname === p ||
+        pathname.startsWith(p + "/")
     )
   ) {
     return <>{children}</>;
   }
 
-  if (loading) return <>{children}</>;
+  /*
+   * Never block public pages while authentication
+   * is still being checked.
+   */
+  if (loading) {
+    return <>{children}</>;
+  }
 
   if (!user?.isBanned) {
     return <>{children}</>;
@@ -414,14 +504,24 @@ function BanGate({ children }: { children: ReactNode }) {
   );
 }
 
-function MaintenanceGate({ children }: { children: ReactNode }) {
-  const { user, isAdmin, isModerator } = useAuth();
+function MaintenanceGate({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const {
+    user,
+    isAdmin,
+    isModerator,
+  } = useAuth();
+
   const { pathname } = useLocation();
 
   const [maintenanceOn, setMaintenanceOn] =
     useState(false);
 
-  const [checked, setChecked] = useState(false);
+  const [checked, setChecked] =
+    useState(false);
 
   useEffect(() => {
     getPublicMaintenanceStatus()
@@ -434,7 +534,13 @@ function MaintenanceGate({ children }: { children: ReactNode }) {
       .finally(() => setChecked(true));
   }, []);
 
-  if (!checked) return null;
+  /*
+   * If the status endpoint is temporarily unavailable,
+   * do not keep the entire public site blank.
+   */
+  if (!checked) {
+    return <>{children}</>;
+  }
 
   const authPaths = [
     "/login",
@@ -449,13 +555,18 @@ function MaintenanceGate({ children }: { children: ReactNode }) {
 
   if (
     authPaths.some(
-      (p) => pathname === p || pathname.startsWith(p + "/")
+      (p) =>
+        pathname === p ||
+        pathname.startsWith(p + "/")
     )
   ) {
     return <>{children}</>;
   }
 
-  if (maintenanceOn && !(isAdmin || isModerator)) {
+  if (
+    maintenanceOn &&
+    !(isAdmin || isModerator)
+  ) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center max-w-sm">
@@ -496,14 +607,48 @@ function MaintenanceGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+/*
+ * Public routes that Google and normal visitors must
+ * be able to render without waiting for authentication.
+ */
+function isPublicRoute(pathname: string) {
+  const publicPaths = [
+    "/",
+    "/features",
+    "/docs",
+    "/tutorials",
+    "/contact",
+    "/ai-chat",
+    "/services/bots",
+    "/services/panels",
+  ];
+
+  if (publicPaths.includes(pathname)) {
+    return true;
+  }
+
+  if (
+    pathname.startsWith("/services/bots/")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 function AppBootWrapper({
   children,
 }: {
   children: ReactNode;
 }) {
   const { loading } = useAuth();
+  const { pathname } = useLocation();
+
   const [minTimeElapsed, setMinTimeElapsed] =
     useState(false);
+
+  const publicRoute =
+    isPublicRoute(pathname);
 
   useEffect(() => {
     const t = setTimeout(
@@ -515,8 +660,16 @@ function AppBootWrapper({
   }, []);
 
   useEffect(() => {
-    if (!loading && minTimeElapsed) {
-      const el = document.getElementById("boot-loader");
+    /*
+     * For public routes we remove the boot loader
+     * immediately. The page itself must be available
+     * without waiting for authentication.
+     */
+    if (publicRoute) {
+      const el =
+        document.getElementById(
+          "boot-loader"
+        );
 
       if (el) {
         el.style.opacity = "0";
@@ -524,17 +677,56 @@ function AppBootWrapper({
         setTimeout(() => {
           el.remove();
 
-          const style = document.getElementById(
-            "boot-loader-style"
-          );
+          const style =
+            document.getElementById(
+              "boot-loader-style"
+            );
+
+          if (style) style.remove();
+        }, 300);
+      }
+
+      return;
+    }
+
+    if (!loading && minTimeElapsed) {
+      const el =
+        document.getElementById(
+          "boot-loader"
+        );
+
+      if (el) {
+        el.style.opacity = "0";
+
+        setTimeout(() => {
+          el.remove();
+
+          const style =
+            document.getElementById(
+              "boot-loader-style"
+            );
 
           if (style) style.remove();
         }, 300);
       }
     }
-  }, [loading, minTimeElapsed]);
+  }, [
+    loading,
+    minTimeElapsed,
+    publicRoute,
+  ]);
 
-  if (loading || !minTimeElapsed) return null;
+  /*
+   * Public pages render immediately.
+   * Protected pages keep the existing boot behavior.
+   */
+  if (publicRoute) {
+    return <>{children}</>;
+  }
+
+  if (loading || !minTimeElapsed) {
+    return null;
+  }
 
   return <>{children}</>;
 }
