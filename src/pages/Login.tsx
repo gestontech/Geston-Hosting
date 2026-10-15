@@ -459,7 +459,7 @@ export function Login() {
                     <p className="text-center text-sm text-muted-foreground pt-1">
                       Pas encore de compte ?{" "}
                       <Link to="/signup" className="text-primary hover:underline font-medium">
-                        Inscription
+                        Inscription gratuite
                       </Link>
                     </p>
                   </>

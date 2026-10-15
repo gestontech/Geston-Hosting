@@ -21,14 +21,10 @@ export function LogoutConfirmModal({ isOpen, onClose, onConfirm, loading = false
           <Button variant="outline" className="flex-1" onClick={onClose} disabled={loading}>
             Annuler
           </Button>
-          <Button
-  className="flex-1 bg-black hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/85 text-black dark:text-white"
-  onClick={onConfirm}
-  disabled={loading}
->
-  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-  {loading ? "Déconnexion..." : "Déconnexion"}
-</Button>
+          <Button variant="destructive" className="flex-1" onClick={onConfirm} disabled={loading}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+            {loading ? "Déconnexion..." : "Déconnexion"}
+          </Button>
         </div>
       </div>
     </Modal>

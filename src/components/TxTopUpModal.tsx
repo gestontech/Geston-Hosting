@@ -8,21 +8,16 @@ interface TxTopUpModalProps {
   onSuccess?: () => void;
 }
 
-export function TxTopUpModal({
-  isOpen,
-  onClose,
-  onSuccess,
-}: TxTopUpModalProps) {
+export function TxTopUpModal({ isOpen, onClose, requiredTx, onSuccess }: TxTopUpModalProps) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Services"
-      maxWidth="max-w-xl"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Buy Coins without leaving" maxWidth="max-w-xl">
       <div className="space-y-3 p-1 max-h-[70vh] overflow-y-auto">
+        <p className="text-xs text-muted-foreground">
+          Choose your country and pay. When payment confirms, your Coins balance updates automatically so you can deploy right away.
+        </p>
         <TopUpFlow
           compact
+          requiredTx={requiredTx}
           onSuccess={() => {
             onSuccess?.();
             onClose();

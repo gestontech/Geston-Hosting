@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,271 +11,120 @@ import { PageLoader } from "@/components/PageLoader";
 import { StaticLogo as AnimatedLogo } from "@/components/StaticLogo";
 import { lockScroll, unlockScroll } from "@/lib/scrollLock";
 import {
-  ArrowLeft,
-  Loader2,
-  Server,
-  Plus,
-  ExternalLink,
-  LayoutDashboard,
-  BookOpen,
-  UserCircle,
-  LogOut,
-  ChevronRight,
-  Moon,
-  Sun,
-  Menu,
-  X,
-  Bot,
-  Shield,
-  Copy,
-  Check,
+  ArrowLeft, Coins, Loader2, Server, Plus, ExternalLink,
+  LayoutDashboard, CreditCard, BookOpen, UserCircle, LogOut,
+  ChevronRight, Moon, Sun, Menu, X, Bot, Shield, Copy, Check
 } from "lucide-react";
 
 function useTheme() {
-  const getSystemTheme = (): "dark" | "light" =>
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-
-  const [theme, setTheme] = useState<"dark" | "light">(
-    getSystemTheme()
+  const [theme, setTheme] = useState<"dark" | "light">(() =>
+    (localStorage.getItem("theme") as "dark" | "light") || "dark"
   );
-
   useEffect(() => {
-    const media = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    );
-
-    const applySystemTheme = () => {
-      const nextTheme: "dark" | "light" = media.matches
-        ? "dark"
-        : "light";
-
-      setTheme(nextTheme);
-
-      document.documentElement.classList.toggle(
-        "dark",
-        nextTheme === "dark"
-      );
-
-      document.documentElement.classList.toggle(
-        "light",
-        nextTheme === "light"
-      );
-
-      document.documentElement.style.colorScheme = nextTheme;
-    };
-
-    applySystemTheme();
-
-    media.addEventListener("change", applySystemTheme);
-
-    return () => {
-      media.removeEventListener("change", applySystemTheme);
-    };
-  }, []);
-
-  return {
-    theme,
-    toggle: () => {
-      // Le thème du téléphone reste prioritaire.
-    },
-  };
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.classList.toggle("light", theme === "light");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+  return { theme, toggle: () => setTheme(t => t === "dark" ? "light" : "dark") };
 }
 
 function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
-
   const handle = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-
-      window.setTimeout(() => {
-        setCopied(false);
-      }, 2000);
+      setTimeout(() => setCopied(false), 2000);
     } catch {}
   };
-
   return (
-    <button
-      type="button"
-      onClick={handle}
-      className={`p-1.5 rounded transition-colors ${
-        copied
-          ? "text-green-400"
-          : "text-muted-foreground hover:text-foreground"
-      }`}
-      title="Copier"
-      aria-label="Copier"
-    >
-      {copied ? (
-        <Check className="w-3.5 h-3.5" />
-      ) : (
-        <Copy className="w-3.5 h-3.5" />
-      )}
+    <button onClick={handle} className={`p-1.5 rounded transition-colors ${copied ? "text-green-400" : "text-muted-foreground hover:text-foreground"}`}>
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
     </button>
   );
 }
 
 export function MyPanels() {
-  const {
-    user,
-    loading: authLoading,
-    logout,
-    isAdmin,
-    refreshUser,
-  } = useAuth();
-
+  const { user, loading: authLoading, logout, isAdmin, refreshUser } = useAuth();
   const navigate = useNavigate();
   const { navigateWithLoader } = useNavLoader();
   const { showToast } = useToast();
   const { theme, toggle: toggleTheme } = useTheme();
-
   const [panels, setPanels] = useState<UserPanel[]>([]);
   const [loading, setLoading] = useState(true);
-  const [renewingId, setRenewingId] =
-    useState<string | null>(null);
+  const [renewingId, setRenewingId] = useState<string | null>(null);
   const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/login");
-    }
+    if (!authLoading && !user) navigate("/login");
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (!navOpen) return;
-
-    lockScroll();
-
-    return () => {
-      unlockScroll();
-    };
+    if (navOpen) {
+      lockScroll();
+      return () => unlockScroll();
+    }
   }, [navOpen]);
 
-  const loadPanels = useCallback(async () => {
-    try {
-      const data = await getMyPanels();
-
-      if (Array.isArray(data)) {
-        setPanels(data);
-      }
-    } catch {
-      showToast(
-        "Impossible de charger les panels",
-        "error",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [showToast]);
+  const loadPanels = () => {
+    getMyPanels()
+      .then(data => { if (Array.isArray(data)) setPanels(data); })
+      .catch(() => showToast("Failed to load panels", "error"))
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
-    if (user) {
-      loadPanels();
-    }
-  }, [user, loadPanels]);
+    if (!user) return;
+    loadPanels();
+  }, [user, showToast]);
 
   const handleRenew = async (panelId: string) => {
     setRenewingId(panelId);
-
     try {
       const res = await renewPanel(panelId);
-
       if (res.success) {
-        showToast(
-          "Panel renouvelé gratuitement pour 30 jours !",
-          "success",
-        );
-
-        await loadPanels();
-        await refreshUser();
+        showToast("Panel renewed for another 30 days!", "success");
+        loadPanels();
+        refreshUser();
+      } else if (res.code === "INSUFFICIENT_COINS") {
+        showToast(`Not enough Coins. You need ${res.requiredTx} Coins to renew.`, "error");
+        navigateWithLoader(`/topup?required=${res.requiredTx}`);
       } else {
-        showToast(
-          res.error || "Impossible de renouveler le panel",
-          "error",
-        );
+        showToast(res.error || "Failed to renew panel", "error");
       }
     } catch {
-      showToast(
-        "Impossible de renouveler le panel",
-        "error",
-      );
+      showToast("Failed to renew panel", "error");
     } finally {
       setRenewingId(null);
     }
   };
 
-  if (authLoading) {
-    return <PageLoader />;
-  }
-
-  if (!user) {
-    return <PageLoader />;
-  }
+  if (authLoading) return <PageLoader />;
+  if (!user) return <PageLoader />;
 
   const navItems = [
-    {
-      label: "Dashboard",
-      icon: LayoutDashboard,
-      path: "/dashboard",
-    },
-    {
-      label: "Documentation",
-      icon: BookOpen,
-      path: "/docs",
-    },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+    { label: "Top Up Coins", icon: CreditCard, path: "/topup" },
+    { label: "Docs", icon: BookOpen, path: "/docs" },
   ];
 
   return (
     <div className="min-h-screen bg-background relative">
       <TechBackground />
-
       <nav className="border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="p-2 -ml-2 rounded-lg hover:bg-white/10 transition-colors"
-                onClick={() => setNavOpen(true)}
-                aria-label="Ouvrir le menu"
-              >
+              <button className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors" onClick={() => setNavOpen(true)}>
                 <Menu className="w-5 h-5" />
               </button>
-
-              <div className="flex items-center gap-2">
-                <AnimatedLogo />
-
-                <span className="font-bold text-base">
-                  Geston Hosting
-                </span>
-              </div>
+              <div className="flex items-center gap-2"><AnimatedLogo /><span className="font-bold text-base">Geston Hosting</span></div>
             </div>
-
             <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="p-2 rounded-lg hover:bg-white/10 transition-all"
-                aria-label="Changer de thème"
-              >
-                {theme === "dark" ? (
-                  <Sun className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <Moon className="w-4 h-4 text-muted-foreground" />
-                )}
+              <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-muted transition-all">
+                {theme === "dark" ? <Sun className="w-4 h-4 text-muted-foreground" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
               </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  navigateWithLoader("/profile")
-                }
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                aria-label="Profil"
-              >
+              <button onClick={() => navigateWithLoader("/profile")} className="p-2 rounded-lg hover:bg-muted transition-colors">
                 <UserCircle className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -283,180 +132,76 @@ export function MyPanels() {
         </div>
       </nav>
 
-      {navOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-          onClick={() => setNavOpen(false)}
-        />
-      )}
-
-      {/* MENU LATERAL CLIENT */}
-      <aside
-        className={`fixed top-0 left-0 h-full w-72 geston-menu-glass border-r border-white/15 z-[110] transform transition-transform duration-300 ease-out ${
-          navOpen
-            ? "translate-x-0"
-            : "-translate-x-full"
-        }`}
-      >
+      {navOpen && <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]" onClick={() => setNavOpen(false)} />}
+      <aside className={`fixed top-0 left-0 h-full w-72 bg-card border-r border-border z-[110] transform transition-transform duration-300 ease-out ${navOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-2.5">
-            <AnimatedLogo />
-
-            <span className="font-bold text-base">
-              Geston Hosting
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setNavOpen(false)}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-            aria-label="Fermer le menu"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2.5"><AnimatedLogo /><span className="font-bold text-base">Geston Hosting</span></div>
+          <button onClick={() => setNavOpen(false)} className="p-2 rounded-lg hover:bg-muted transition-colors"><X className="w-4 h-4" /></button>
         </div>
-
         <div className="p-4 flex flex-col h-[calc(100%-65px)] overflow-y-auto">
-          {/* INFORMATIONS UTILISATEUR SANS CARTE */}
-          <div className="mb-5 px-3 py-2">
-            <p className="text-xs text-muted-foreground mb-0.5">
-              Connecté en tant que
-            </p>
-
-            <p className="text-sm font-semibold truncate">
-              {user.username
-                ? `@${user.username}`
-                : user.email}
-            </p>
-
-            <div className="mt-2 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-
-              <span className="text-xs text-green-400">
-                Services
-              </span>
+          {user && (
+            <div className="mb-5 p-3 rounded-xl bg-muted/50 border border-border/50">
+              <p className="text-xs text-muted-foreground mb-0.5">Signed in as</p>
+              <p className="text-sm font-semibold truncate">{user.username ? `@${user.username}` : user.email}</p>
+              <div className="mt-2 flex items-center gap-1.5">
+                <Coins className="w-3.5 h-3.5 text-teal-400" />
+                <span className="text-sm font-bold text-teal-400">Balance: {user.txCoins} Coins</span>
+              </div>
             </div>
-          </div>
-
-          {/* OPTIONS SANS CARTES INDIVIDUELLES */}
-          <nav className="sidebar-glass-list flex-1">
-            {navItems.map((item) => (
-              <button
-                type="button"
-                key={item.path}
-                onClick={() => {
-                  navigateWithLoader(item.path);
-                  setNavOpen(false);
-                }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                </div>
-
+          )}
+          <nav className="space-y-0.5 flex-1">
+            {navItems.map(item => (
+              <button key={item.path} onClick={() => { navigateWithLoader(item.path); setNavOpen(false); }}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
+                <div className="flex items-center gap-2.5"><item.icon className="w-4 h-4" />{item.label}</div>
                 <ChevronRight className="w-3.5 h-3.5 opacity-40" />
               </button>
             ))}
-
-            <button
-              type="button"
-              onClick={() => {
-                navigateWithLoader("/services/bots");
-                setNavOpen(false);
-              }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
-            >
-              <div className="flex items-center gap-2.5">
-                <Bot className="w-4 h-4" />
-                Bots
-              </div>
-
+            <button onClick={() => { navigateWithLoader("/services/bots"); setNavOpen(false); }}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
+              <div className="flex items-center gap-2.5"><Bot className="w-4 h-4" />Bot Deployment</div>
               <ChevronRight className="w-3.5 h-3.5 opacity-40" />
             </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                navigateWithLoader("/services/panels");
-                setNavOpen(false);
-              }}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
-            >
-              <div className="flex items-center gap-2.5">
-                <Shield className="w-4 h-4" />
-                Panels
-              </div>
-
+            <button onClick={() => { navigateWithLoader("/services/panels"); setNavOpen(false); }}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
+              <div className="flex items-center gap-2.5"><Shield className="w-4 h-4" />Panels</div>
               <ChevronRight className="w-3.5 h-3.5 opacity-40" />
             </button>
-
             {isAdmin && (
-              <button
-                type="button"
-                onClick={() => {
-                  navigateWithLoader("/admin");
-                  setNavOpen(false);
-                }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Shield className="w-4 h-4" />
-                  Admin Panel
-                </div>
-
+              <button onClick={() => { navigateWithLoader("/admin"); setNavOpen(false); }}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all">
+                <div className="flex items-center gap-2.5"><Shield className="w-4 h-4" />Admin Panel</div>
                 <ChevronRight className="w-3.5 h-3.5 opacity-40" />
               </button>
             )}
           </nav>
-
-          {/* BAS DU MENU */}
           <div className="space-y-0.5 border-t border-border pt-3 mt-3">
-            <button
-              type="button"
-              onClick={() => {
-                navigateWithLoader("/profile");
-                setNavOpen(false);
-              }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
-            >
-              <UserCircle className="w-4 h-4" />
-              Profil
+            <button onClick={() => { navigateWithLoader("/profile"); setNavOpen(false); }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
+              <UserCircle className="w-4 h-4" />Profile
             </button>
-
-            <button
-              type="button"
-              onClick={logout}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
-            >
-              <LogOut className="w-4 h-4" />
-              Déconnexion
+            <button onClick={logout} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all">
+              <LogOut className="w-4 h-4" />Sign Out
             </button>
           </div>
         </div>
       </aside>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative z-[1]">
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard")}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-            aria-label="Retour au dashboard"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-
-          <div>
-            <h1 className="text-2xl font-bold">
-              Mes panels
-            </h1>
-
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Gérez vos panels et renouvelez-les gratuitement.
-            </p>
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate("/dashboard")} className="p-2 rounded-lg hover:bg-muted transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold">My Panels</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">Your purchased game server panels</p>
+            </div>
           </div>
+          <Button size="sm" onClick={() => navigateWithLoader("/services/panels/purchasepanel")}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            Purchase
+          </Button>
         </div>
 
         {loading ? (
@@ -468,188 +213,91 @@ export function MyPanels() {
             <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-border flex items-center justify-center mx-auto mb-4">
               <Server className="w-8 h-8 text-muted-foreground" />
             </div>
-
-            <h3 className="text-lg font-medium mb-1">
-              Aucun panel
-            </h3>
-
-            <p className="text-sm text-muted-foreground mb-5">
-              Créez votre premier panel gratuitement.
-            </p>
-
-            <Button
-              onClick={() =>
-                navigateWithLoader("/services/panels")
-              }
-            >
+            <h3 className="text-lg font-medium mb-1">No panels yet</h3>
+            <p className="text-sm text-muted-foreground mb-5">Purchase a panel plan to get started</p>
+            <Button onClick={() => navigateWithLoader("/services/panels/purchasepanel")}>
               <Plus className="w-4 h-4 mr-1" />
-              Créer un panel
+              Purchase a Panel
             </Button>
           </div>
         ) : (
-          <>
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  navigateWithLoader("/services/panels")
-                }
-                className="border-teal-500/30 text-teal-400 hover:bg-teal-500/10"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Créer un autre panel gratuitement
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {panels.map((panel) => {
-                const panelId = String(panel._id);
-
-                const panelLoginUrl =
-                  (panel as unknown as {
-                    panelLoginUrl?: string;
-                  }).panelLoginUrl || "";
-
-                const panelUsername =
-                  (panel as unknown as {
-                    panelUsername?: string;
-                  }).panelUsername || "";
-
-                const panelEmail =
-                  (panel as unknown as {
-                    panelEmail?: string;
-                  }).panelEmail || "";
-
-                const expiresAt = panel.expiresAt
-                  ? new Date(panel.expiresAt)
-                  : new Date(Number.NaN);
-
-                const isExpired =
-                  Number.isNaN(expiresAt.getTime()) ||
-                  expiresAt.getTime() <= Date.now();
-
-                return (
-                  <div
-                    key={panelId}
-                    className="rounded-xl bg-card border border-border overflow-hidden"
-                  >
-                    <div className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-11 h-11 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
-                            <Server className="w-5 h-5 text-teal-400" />
-                          </div>
-
-                          <div className="min-w-0">
-                            <h3 className="font-semibold truncate">
-                              {panel.planName ||
-                                "Panel Geston Hosting"}
-                            </h3>
-
-                            <p className="text-xs text-muted-foreground truncate">
-                              {panelEmail || user.email}
-                            </p>
-                          </div>
-                        </div>
-
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
-                            isExpired
-                              ? "text-orange-400 bg-orange-500/10 border-orange-500/20"
-                              : "text-green-400 bg-green-500/10 border-green-500/20"
-                          }`}
-                        >
-                          {isExpired ? "Expiré" : "Actif"}
-                        </span>
-                      </div>
-
-                      <div className="mt-4 space-y-2">
-                        {panelUsername && (
-                          <div className="flex items-center justify-between gap-3 text-xs">
-                            <span className="text-muted-foreground">
-                              Utilisateur
-                            </span>
-
-                            <div className="flex items-center gap-1">
-                              <span className="font-mono truncate max-w-[180px]">
-                                {panelUsername}
-                              </span>
-
-                              <CopyBtn text={panelUsername} />
-                            </div>
-                          </div>
-                        )}
-
-                        {panelEmail && (
-                          <div className="flex items-center justify-between gap-3 text-xs">
-                            <span className="text-muted-foreground">
-                              E-mail
-                            </span>
-
-                            <div className="flex items-center gap-1">
-                              <span className="truncate max-w-[180px]">
-                                {panelEmail}
-                              </span>
-
-                              <CopyBtn text={panelEmail} />
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between gap-3 text-xs">
-                          <span className="text-muted-foreground">
-                            Expiration
-                          </span>
-
-                          <span className="font-medium">
-                            {Number.isNaN(expiresAt.getTime())
-                              ? "—"
-                              : expiresAt.toLocaleDateString(
-                                  "fr-FR",
-                                )}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {panelLoginUrl && (
-                          <a
-                            href={panelLoginUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            Ouvrir le panel
-                          </a>
-                        )}
-
-                        {isExpired && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              handleRenew(panelId)
-                            }
-                            disabled={renewingId === panelId}
-                            className="h-9 text-xs border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
-                          >
-                            {renewingId === panelId ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
-                            ) : (
-                              <Server className="w-3.5 h-3.5 mr-1.5" />
-                            )}
-
-                            Renouveler
-                          </Button>
-                        )}
-                      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {panels.map(panel => (
+              <div key={panel._id} className="rounded-xl border border-border bg-card p-4">
+                {(() => {
+                  const now = new Date();
+                  const expires = panel.expiresAt ? new Date(panel.expiresAt) : null;
+                  const daysLeft = expires ? Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
+                  const isExpired = daysLeft !== null && daysLeft <= 0;
+                  const isExpiringSoon = daysLeft !== null && daysLeft > 0 && daysLeft <= 5;
+                  const graceEnd = panel.gracePeriodEnd ? new Date(panel.gracePeriodEnd) : null;
+                  const graceDaysLeft = graceEnd ? Math.ceil((graceEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
+                  return (
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-semibold">{panel.planName}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Purchased {new Date(panel.purchasedAt).toLocaleDateString()}
+                    </p>
+                    {daysLeft !== null && (
+                      <p className={`text-xs mt-0.5 font-medium ${isExpired ? "text-red-400" : isExpiringSoon ? "text-amber-400" : "text-muted-foreground"}`}>
+                        {isExpired
+                          ? (graceDaysLeft !== null && graceDaysLeft > 0
+                              ? `Expired — renew within ${graceDaysLeft} day${graceDaysLeft !== 1 ? "s" : ""} or it'll be deleted`
+                              : "Expired")
+                          : `Expires in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}`}
+                      </p>
+                    )}
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${isExpired ? "bg-red-500/10 text-red-400 border-red-500/20" : isExpiringSoon ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-green-500/10 text-green-400 border-green-500/20"}`}>
+                    {isExpired ? "Expired" : "Active"}
+                  </span>
+                </div>
+                  );
+                })()}
+                <div className="space-y-2 mb-3">
+                  <div className="flex items-center justify-between bg-muted/40 rounded-lg px-3 py-2">
+                    <span className="text-xs text-muted-foreground">Username</span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono text-xs">{panel.panelUsername}</span>
+                      <CopyBtn text={panel.panelUsername} />
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </>
+                  <div className="flex items-center justify-between bg-muted/40 rounded-lg px-3 py-2">
+                    <span className="text-xs text-muted-foreground">Password</span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono text-xs">{panel.panelPassword}</span>
+                      <CopyBtn text={panel.panelPassword} />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a href={panel.panelLoginUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 flex-1 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Open Panel
+                  </a>
+                  {(() => {
+                    const expires = panel.expiresAt ? new Date(panel.expiresAt) : null;
+                    const daysLeft = expires ? Math.ceil((expires.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+                    const showRenew = daysLeft !== null && daysLeft <= 5;
+                    if (!showRenew) return null;
+                    return (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={renewingId === panel._id}
+                        onClick={() => handleRenew(panel._id)}
+                        className="shrink-0"
+                      >
+                        {renewingId === panel._id ? "..." : `Renew (${panel.txCost} Coins)`}
+                      </Button>
+                    );
+                  })()}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </main>
     </div>

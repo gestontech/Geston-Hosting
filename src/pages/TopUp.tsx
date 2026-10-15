@@ -1,106 +1,72 @@
-import { ArrowLeft, Gift, CheckCircle2 } from "lucide-react";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 import { useNavLoader } from "@/App";
 import { TechBackground } from "@/components/TechBackground";
+import { PageLoader } from "@/components/PageLoader";
+import { TopUpFlow } from "@/components/TopUpFlow";
+import { placeBoostOrder } from "@/lib/api";
+import { ArrowLeft, Coins } from "lucide-react";
 
 export default function TopUp() {
+  const { user, loading, refreshUser } = useAuth();
+  const { showToast } = useToast();
   const { navigateWithLoader } = useNavLoader();
+  const [searchParams] = useSearchParams();
+  const required = searchParams.get("required");
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    const ref = searchParams.get("ref");
+    if (status === "success" && ref) {
+      showToast("Paiement confirmé ! Coins ajoutés à votre solde.", "success");
+      refreshUser().then(async () => {
+        const pending = localStorage.getItem("pendingBoostOrder");
+        if (pending) {
+          localStorage.removeItem("pendingBoostOrder");
+          try {
+            const order = JSON.parse(pending);
+            const res = await placeBoostOrder(order);
+            if (res.ok) {
+              showToast("Commande de boost passée !", "success");
+              navigateWithLoader("/services/boosting?tab=orders");
+            } else if (res.error) {
+              showToast(res.error, "error");
+            }
+          } catch {}
+        }
+      });
+    } else if (status === "failed") {
+      showToast("Le paiement a échoué ou a été annulé.", "error");
+    }
+  }, [searchParams, showToast, refreshUser, navigateWithLoader]);
+
+  if (loading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-background relative">
       <TechBackground />
-
       <div className="relative z-10 max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
-          <button
-            type="button"
-            onClick={() => navigateWithLoader("/dashboard")}
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
-            aria-label="Retour au tableau de bord"
-          >
+          <button onClick={() => navigateWithLoader("/dashboard")} className="p-2 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
-
           <div>
-            <h1 className="text-2xl font-bold">
-              Services
-            </h1>
-
-            <p className="text-sm text-muted-foreground">
-              Geston Hosting fonctionne sans achat ni paiement.
-            </p>
+            <h1 className="text-2xl font-bold">Recharger</h1>
+            <p className="text-sm text-muted-foreground">Ajoutez des Coins à votre compte</p>
           </div>
+          {user && (
+            <div className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 border border-border">
+              <Coins className="w-4 h-4 text-yellow-400" />
+              <div className="flex flex-col leading-tight">
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Solde</span>
+                <span className="font-semibold text-sm">{user.txCoins} Coins</span>
+              </div>
+            </div>
+          )}
         </div>
-
-        <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-6">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-11 h-11 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
-              <Gift className="w-6 h-6 text-teal-400" />
-            </div>
-
-            <div>
-              <h2 className="font-bold text-lg">
-                Tout est gratuit
-              </h2>
-
-              <p className="text-sm text-muted-foreground">
-                Aucun rechargement n'est nécessaire.
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-
-              <div>
-                <p className="font-medium">
-                  Déploiement des bots
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  Les services de déploiement disponibles sont
-                  accessibles gratuitement.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-
-              <div>
-                <p className="font-medium">
-                  Panneaux
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  Les plans disponibles ne nécessitent aucun achat.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-
-              <div>
-                <p className="font-medium">
-                  Boost réseaux sociaux
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  Les commandes de boost ne nécessitent aucun paiement.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigateWithLoader("/dashboard")}
-            className="w-full mt-6 rounded-xl bg-primary text-primary-foreground px-4 py-3 text-sm font-semibold hover:opacity-90 transition-opacity"
-          >
-            Retour au tableau de bord
-          </button>
-        </div>
+        <TopUpFlow requiredTx={required ? Number(required) : undefined} />
       </div>
     </div>
   );

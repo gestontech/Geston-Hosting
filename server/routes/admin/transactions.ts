@@ -1,169 +1,73 @@
 import { Router } from "express";
 import { Transaction } from "../../models/Transaction.js";
 import { User } from "../../models/User.js";
+import { NGN_PER_USD, XAF_PER_USD, TZS_PER_USD, KES_PER_USD } from "./shared.js";
 import type { Request, Response, NextFunction } from "express";
 
 const router = Router();
 
-/**
- * Historique des opérations de la plateforme.
- *
- * Geston Hosting fonctionne en mode gratuit :
- * - aucune recharge de Coins ;
- * - aucun montant de paiement ;
- * - aucune donnée Paystack ;
- * - aucune opération financière n'est créée par les services gratuits.
- *
- * Les anciens champs financiers du modèle Transaction sont volontairement
- * ignorés ici afin de conserver la compatibilité avec les anciennes données.
- */
-router.get(
-  "/transactions",
-  async (_req: Request, res: Response, next: NextFunction) => {
-    try {
-      const txs = await Transaction.find({})
-        .sort({ createdAt: -1 })
-        .limit(500)
-        .lean();
+router.get("/transactions", async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const txs = await Transaction.find({}).sort({ createdAt: -1 }).limit(500).lean();
+    const userMap: Record<string, { email: string; username?: string }> = {};
+    const users = await User.find({}).select("email username").lean();
+    for (const u of users) { userMap[u._id.toString()] = { email: u.email, username: u.username || "" }; }
+    const countryMeta: Record<string, { code: string; rateFromKes: number }> = {
+      kenya: { code: "KES", rateFromKes: 1 },
+      nigeria: { code: "NGN", rateFromKes: NGN_PER_USD / KES_PER_USD },
+      cameroon: { code: "XAF", rateFromKes: XAF_PER_USD / KES_PER_USD },
+      tanzania: { code: "TZS", rateFromKes: TZS_PER_USD / KES_PER_USD },
+      drc: { code: "USD", rateFromKes: 1 / KES_PER_USD },
+    };
+    res.json(txs.map(t => {
+      const country = (t.paystackCountry as string) || "kenya";
+      const meta = countryMeta[country] || countryMeta.kenya;
+      const localAmount = Math.round((t.ksAmount || 0) * meta.rateFromKes * 100) / 100;
+      return {
+        _id: t._id,
+        type: t.type,
+        txAmount: t.txAmount,
+        txSign: t.type === "admin_grant" || t.type === "topup" || t.type === "refund" ? "+" : "-",
+        ksAmount: t.ksAmount,
+        localAmount,
+        localCurrency: meta.code,
+        status: t.status,
+        paystackRef: t.paystackRef,
+        paystackCountry: country,
+        ownerEmail: userMap[t.userId?.toString()]?.email || "unknown",
+        ownerUsername: userMap[t.userId?.toString()]?.username || "",
+        userId: t.userId?.toString() || "",
+        createdAt: t.createdAt
+      };
+    }));
+  } catch (err) { next(err); }
+});
 
-      const users = await User.find({})
-        .select("email username")
-        .lean();
+router.delete("/transactions/:id", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await Transaction.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
 
-      const userMap: Record<
-        string,
-        {
-          email: string;
-          username: string;
-        }
-      > = {};
+router.delete("/transactions/bulk", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { ids } = req.body || {};
+    if (!Array.isArray(ids) || ids.length === 0) { res.status(400).json({ error: "No IDs provided" }); return; }
+    await Transaction.deleteMany({ _id: { $in: ids } });
+    res.json({ ok: true, deleted: ids.length });
+  } catch (err) { next(err); }
+});
 
-      for (const user of users) {
-        userMap[user._id.toString()] = {
-          email: user.email,
-          username: user.username || "",
-        };
-      }
-
-      res.json(
-        txs.map((transaction) => {
-          const userId = transaction.userId?.toString() || "";
-          const user = userMap[userId];
-
-          return {
-            _id: transaction._id,
-            type: transaction.type,
-            status: transaction.status,
-
-            // Mode gratuit : aucune valeur financière n'est exposée.
-            txAmount: 0,
-            ksAmount: 0,
-            localAmount: 0,
-
-            // Compatibilité frontend/API.
-            localCurrency: "FREE",
-            paystackRef: null,
-            paystackCountry: null,
-
-            ownerEmail: user?.email || "unknown",
-            ownerUsername: user?.username || "",
-            userId,
-
-            createdAt: transaction.createdAt,
-          };
-        }),
-      );
-    } catch (error) {
-      next(error);
-    }
-  },
-);
-
-/**
- * Suppression d'une ancienne entrée d'historique.
- */
-router.delete(
-  "/transactions/:id",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await Transaction.findByIdAndDelete(req.params.id);
-
-      res.json({
-        ok: true,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
-
-/**
- * Suppression groupée d'anciennes entrées.
- */
-router.delete(
-  "/transactions/bulk",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { ids } = req.body || {};
-
-      if (!Array.isArray(ids) || ids.length === 0) {
-        res.status(400).json({
-          error: "No IDs provided",
-        });
-        return;
-      }
-
-      await Transaction.deleteMany({
-        _id: {
-          $in: ids,
-        },
-      });
-
-      res.json({
-        ok: true,
-        deleted: ids.length,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
-
-/**
- * Marque les anciennes opérations pending comme failed.
- *
- * Cette route est conservée pour compatibilité avec l'administration,
- * notamment avec d'anciennes données de paiement.
- */
-router.post(
-  "/transactions/resolve-stale",
-  async (_req: Request, res: Response, next: NextFunction) => {
-    try {
-      const cutoff = new Date(Date.now() - 60 * 60 * 1000);
-
-      const result = await Transaction.updateMany(
-        {
-          status: "pending",
-          createdAt: {
-            $lt: cutoff,
-          },
-        },
-        {
-          $set: {
-            status: "failed",
-          },
-        },
-      );
-
-      res.json({
-        ok: true,
-        updated: result.modifiedCount,
-        resolved: result.modifiedCount,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-);
+router.post("/transactions/resolve-stale", async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const cutoff = new Date(Date.now() - 60 * 60 * 1000);
+    const result = await Transaction.updateMany(
+      { status: "pending", createdAt: { $lt: cutoff } },
+      { $set: { status: "failed" } }
+    );
+    res.json({ ok: true, updated: result.modifiedCount });
+  } catch (err) { next(err); }
+});
 
 export default router;
