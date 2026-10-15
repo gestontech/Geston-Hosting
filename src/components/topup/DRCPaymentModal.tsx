@@ -41,10 +41,7 @@ export function DRCPaymentModal({
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: pkg.usdPrice,
-          currency: "USD",
-          txAmount: pkg.txAmount,
-          bonusTx: pkg.bonusTx,
+          packageId: pkg.id,
         }),
       });
 

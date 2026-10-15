@@ -169,16 +169,22 @@
       "description": "Optional pairing / session-ID page URL for the default bot template",
       "required": false
     },
-    "KSH_PER_TX": {
-      "description": "Kenyan Shillings per 1 TX (used for refund/top-up displays)",
-      "required": false
-    },
     "MONGO_STORAGE_QUOTA_MB": {
       "description": "Soft Mongo storage quota shown on admin Database page (default 512)",
       "required": false
     },
-    "OPTGATEWAY_BASE_URL": "https://pay.optsolution.pro",
-    "OPTGATEWAY_KEY": "",
-    "OPTGATEWAY_WEBHOOK_SECRET": ""
+    "OPTGATEWAY_BASE_URL": {
+      "description": "Official OPTGateway API base URL for DRC payments",
+      "value": "https://pay.optsolution.pro",
+      "required": true
+    },
+    "OPTGATEWAY_KEY": {
+      "description": "Server-side OPTGateway API key (sk_test_... or sk_live_...)",
+      "required": true
+    },
+    "OPTGATEWAY_WEBHOOK_SECRET": {
+      "description": "OPTGateway webhook signing secret (whsec_...)",
+      "required": true
+    }
   }
 }
