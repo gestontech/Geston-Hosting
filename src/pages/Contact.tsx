@@ -212,7 +212,7 @@ export function Contact() {
             </div>
           </a>
 
-          <a href="https://whatsapp.com/channel/0029Vb7dL1LHltY3pgCvwR3B" target="_blank" rel="noopener noreferrer"
+          <a href="https://whatsapp.com/channel/0029Vb8D3NVInlqTTymDYe3j" target="_blank" rel="noopener noreferrer"
             className="flex flex-col gap-3 p-5 rounded-xl border border-green-500/30 bg-green-500/5 hover:border-green-500/50 hover:bg-green-500/10 transition-all group">
             <div className="w-10 h-10 rounded-lg bg-green-500/15 border border-green-500/25 flex items-center justify-center group-hover:bg-green-500/25 transition-colors">
               <WhatsAppIcon className="w-5 h-5 shrink-0" />
