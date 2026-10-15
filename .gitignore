@@ -6,11 +6,3 @@ session.json
 creds.json
 .DS_Store
 *.session
-
-# Android release secrets and local artifacts
-*.keystore
-*.jks
-*.base64
-*.aab
-app-release.aab
-geston-hosting-release-aab/
