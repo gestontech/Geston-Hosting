@@ -1,33 +1,89 @@
 import { Router } from "express";
 import { requireAuth } from "../../middleware/auth.js";
 import { Transaction } from "../../models/Transaction.js";
-import { createOPTCheckoutSession, generateOPTReference, isOPTGatewayAvailable } from "../../services/optgateway.js";
+import {
+  createOPTCheckoutSession,
+  generateOPTReference,
+  isOPTGatewayAvailable,
+} from "../../services/optgateway.js";
 
 const router = Router();
 
-const DRC_PACKAGES: Record<string, { txAmount: number; bonusTx: number; usdPrice: number; name: string }> = {
-  cd_starter: { name: "Starter", txAmount: 10, bonusTx: 0, usdPrice: 2 },
-  cd_basic: { name: "Basic", txAmount: 20, bonusTx: 0, usdPrice: 4 },
-  cd_standard: { name: "Standard", txAmount: 30, bonusTx: 0, usdPrice: 6 },
-  cd_pro: { name: "Pro", txAmount: 50, bonusTx: 5, usdPrice: 10 },
-  cd_elite: { name: "Elite", txAmount: 100, bonusTx: 10, usdPrice: 20 },
-  cd_ultimate: { name: "Ultimate", txAmount: 200, bonusTx: 20, usdPrice: 40 },
+const DRC_PACKAGES: Record<
+  string,
+  {
+    txAmount: number;
+    bonusTx: number;
+    usdPrice: number;
+    name: string;
+  }
+> = {
+  cd_starter: {
+    name: "Starter",
+    txAmount: 10,
+    bonusTx: 0,
+    usdPrice: 2,
+  },
+  cd_basic: {
+    name: "Basic",
+    txAmount: 20,
+    bonusTx: 0,
+    usdPrice: 4,
+  },
+  cd_standard: {
+    name: "Standard",
+    txAmount: 30,
+    bonusTx: 0,
+    usdPrice: 6,
+  },
+  cd_pro: {
+    name: "Pro",
+    txAmount: 50,
+    bonusTx: 5,
+    usdPrice: 10,
+  },
+  cd_elite: {
+    name: "Elite",
+    txAmount: 100,
+    bonusTx: 10,
+    usdPrice: 20,
+  },
+  cd_ultimate: {
+    name: "Ultimate",
+    txAmount: 200,
+    bonusTx: 20,
+    usdPrice: 40,
+  },
 };
 
-function appUrl(req: any) {
-  const v = process.env.APP_URL || process.env.CLIENT_URL || process.env.SITE_URL;
-  return (v || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
+function appUrl(req: any): string {
+  const value =
+    process.env.APP_URL ||
+    process.env.CLIENT_URL ||
+    process.env.SITE_URL;
+
+  return (value || `${req.protocol}://${req.get("host")}`).replace(
+    /\/$/,
+    "",
+  );
 }
 
 router.post("/initiate-drc", requireAuth, async (req: any, res) => {
   try {
     if (!isOPTGatewayAvailable()) {
-      return res.status(503).json({ error: "Le paiement OPTGateway n'est pas configuré." });
+      return res.status(503).json({
+        error: "Le paiement OPTGateway n'est pas configuré.",
+      });
     }
 
     const packageId = String(req.body?.packageId || "");
     const pkg = DRC_PACKAGES[packageId];
-    if (!pkg) return res.status(400).json({ error: "Pack RDC invalide." });
+
+    if (!pkg) {
+      return res.status(400).json({
+        error: "Pack RDC invalide.",
+      });
+    }
 
     const reference = generateOPTReference();
     const totalTx = pkg.txAmount + pkg.bonusTx;
@@ -42,8 +98,6 @@ router.post("/initiate-drc", requireAuth, async (req: any, res) => {
       reference,
       provider: "optgateway",
       country: "drc",
-      paystackRef: reference,
-      paystackCountry: "drc",
       status: "pending",
     });
 
@@ -57,14 +111,34 @@ router.post("/initiate-drc", requireAuth, async (req: any, res) => {
     });
 
     if (!checkout.success) {
-      await Transaction.updateOne({ reference, status: "pending" }, { $set: { status: "failed" } });
-      return res.status(502).json({ error: checkout.message });
+      await Transaction.updateOne(
+        {
+          reference,
+          provider: "optgateway",
+          status: "pending",
+        },
+        {
+          $set: {
+            status: "failed",
+          },
+        },
+      );
+
+      return res.status(502).json({
+        error: checkout.message,
+      });
     }
 
-    return res.json({ checkoutUrl: checkout.url, reference });
-  } catch (e) {
-    console.error("[OPT] initiate-drc", e);
-    return res.status(500).json({ error: "Impossible de lancer le paiement." });
+    return res.json({
+      checkoutUrl: checkout.url,
+      reference,
+    });
+  } catch (error) {
+    console.error("[OPT] initiate-drc", error);
+
+    return res.status(500).json({
+      error: "Impossible de lancer le paiement.",
+    });
   }
 });
 
