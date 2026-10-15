@@ -63,74 +63,6 @@
       "description": "API key for deploying bots (Account Settings → API Key). Also usable from admin AppSettings.",
       "required": true
     },
-    "PAYSTACK_PUBLIC_KEY": {
-      "description": "Kenya Paystack public API key (pk_live_...)",
-      "required": true
-    },
-    "PAYSTACK_SECRET_KEY": {
-      "description": "Kenya Paystack secret API key (sk_live_...)",
-      "required": true
-    },
-    "PAYSTACK_WEBHOOK_SECRET": {
-      "description": "Optional Paystack webhook secret for signature verification",
-      "required": false
-    },
-    "PAYSTACK_NIGERIA_PUBLIC_KEY": {
-      "description": "Nigeria Paystack public API key (pk_live_...). Leave empty to disable Nigeria payments.",
-      "required": false
-    },
-    "PAYSTACK_NIGERIA_SECRET_KEY": {
-      "description": "Nigeria Paystack secret API key (sk_live_...). Leave empty to disable Nigeria payments.",
-      "required": false
-    },
-    "PAYSTACK_SA_PUBLIC_KEY": {
-      "description": "South Africa Paystack public API key (pk_live_...). Leave empty to disable SA payments.",
-      "required": false
-    },
-    "PAYSTACK_SA_SECRET_KEY": {
-      "description": "South Africa Paystack secret API key (sk_live_...). Leave empty to disable SA payments.",
-      "required": false
-    },
-    "PAYSTACK_GHANA_PUBLIC_KEY": {
-      "description": "Ghana Paystack public API key (pk_live_...). Leave empty to disable Ghana payments.",
-      "required": false
-    },
-    "PAYSTACK_GHANA_SECRET_KEY": {
-      "description": "Ghana Paystack secret API key (sk_live_...). Leave empty to disable Ghana payments.",
-      "required": false
-    },
-    "FAPSHI_API_USER": {
-      "description": "Fapshi API user (Cameroon payments)",
-      "required": false
-    },
-    "FAPSHI_API_KEY": {
-      "description": "Fapshi API key (Cameroon payments)",
-      "required": false
-    },
-    "SPEEDPESA_API_KEY": {
-      "description": "SpeedPesa API key for Tanzania payments (x-api-key header). Set webhook URL to {APP_URL}/webhook/speedpesa in SpeedPesa dashboard.",
-      "required": false
-    },
-    "WONYA_TOKEN": {
-      "description": "DRC WonyaPay token (leave empty to disable DRC payments)",
-      "required": false
-    },
-    "WONYA_PARTNER_ID": {
-      "description": "DRC WonyaPay partner id",
-      "required": false
-    },
-    "WONYA_CALLBACK_URL": {
-      "description": "DRC WonyaPay callback URL",
-      "required": false
-    },
-    "TXH_API": {
-      "description": "API key from your boosting provider's own Developer API page (e.g. from another site running this same project)",
-      "required": false
-    },
-    "TXH_API_URL": {
-      "description": "Boosting provider's API base URL, e.g. https://hosting.toxicx.tech/api/v1 — must expose /boost/services, /boost/order, /boost/orders/:id/refresh",
-      "required": false
-    },
     "SMTP_HOST": {
       "description": "SMTP host for sending emails (default: smtp.resend.com)",
       "required": false
@@ -244,6 +176,9 @@
     "MONGO_STORAGE_QUOTA_MB": {
       "description": "Soft Mongo storage quota shown on admin Database page (default 512)",
       "required": false
-    }
+    },
+    "OPTGATEWAY_BASE_URL": "https://pay.optsolution.pro",
+    "OPTGATEWAY_KEY": "",
+    "OPTGATEWAY_WEBHOOK_SECRET": ""
   }
 }
