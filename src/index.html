@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GESTONX — Bots WhatsApp, Panels & Boost Réseaux Sociaux</title>
+    <meta name="description" content="Déployez des bots WhatsApp, achetez des panels Pterodactyl, et boostez Instagram, TikTok, YouTube & Twitch à prix super réduits. Parlez à notre assistant IA sur WhatsApp, ou discutez en direct sur le site." />
+    <meta name="theme-color" content="#0a0f1f" />
+    <link rel="canonical" href="https://hosting.gestontech.online/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://hosting.gestontech.online/" />
+    <meta property="og:title" content="GESTONX — Bots WhatsApp, Panels & Boost Réseaux Sociaux" />
+    <meta property="og:description" content="Hébergement de bots WhatsApp, panels Pterodactyl, et boost de réseaux sociaux aux prix les plus bas. Instagram, TikTok, YouTube, Twitch & plus encore." />
+    <!-- Large PNG/JPG for WhatsApp/Discord (SVG is ignored by most crawlers) -->
+    <meta property="og:image" content="https://hosting.gestontech.online/opengraph.jpg" />
+    <meta property="og:image:secure_url" content="https://hosting.gestontech.online/opengraph.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="GESTONX" />
+    <meta property="og:site_name" content="GESTONX" />
+    <meta property="og:locale" content="fr_FR" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GESTONX — Bots WhatsApp, Panels & Boost Réseaux Sociaux" />
+    <meta name="twitter:description" content="Hébergement de bots WhatsApp, panels, et boost de réseaux sociaux super pas cher. Instagram, TikTok, YouTube & plus." />
+    <meta name="twitter:image" content="https://hosting.gestontech.online/opengraph.jpg" />
+    <meta name="twitter:image:alt" content="GESTONX" />
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/logo/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/logo/icon.png" color="#22c55e" />
+
+    <script src="https://js.paystack.co/v2/inline.js"></script>
+    <style id="boot-loader-style">
+      #boot-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        background: #09090b;
+        transition: opacity 0.3s ease;
+      }
+      .boot-cubes { display: flex; gap: 14px; align-items: center; }
+      .boot-cube {
+        width: 18px;
+        height: 18px;
+        border-radius: 5px;
+        animation: cube-float 2.1s ease-in-out infinite;
+      }
+      .boot-cube:nth-child(1) { background: linear-gradient(135deg, #4ade80, #16a34a); animation-delay: 0s; }
+      .boot-cube:nth-child(2) { background: linear-gradient(135deg, #22d3ee, #0d9488); animation-delay: 0.25s; }
+      .boot-cube:nth-child(3) { background: linear-gradient(135deg, #a3e635, #65a30d); animation-delay: 0.5s; }
+      @keyframes cube-float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.85; }
+        50% { transform: translateY(-14px) rotate(12deg); opacity: 1; }
+      }
+      #boot-loader img {
+        width: 56px;
+        height: 56px;
+        object-fit: contain;
+        background: transparent;
+        filter: drop-shadow(0 0 12px rgba(34,197,94,0.35));
+        animation: boot-logo-pulse 2.1s ease-in-out infinite;
+      }
+      @keyframes boot-logo-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.08); opacity: 1; }
+      }
+      .boot-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        background: linear-gradient(90deg, #4ade80, #22d3ee);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="boot-loader">
+      <img src="/logo/icon.png" alt="GESTONX" />
+      <div class="boot-cubes">
+        <div class="boot-cube"></div>
+        <div class="boot-cube"></div>
+        <div class="boot-cube"></div>
+      </div>
+      <span class="boot-label">GESTONX</span>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

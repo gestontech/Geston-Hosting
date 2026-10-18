@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#0a0f1f"/>
+  <text x="256" y="275" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="140" font-weight="800" fill="#4ade80" letter-spacing="-4">GH</text>
+  <text x="256" y="340" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="26" font-weight="600" fill="#94a3b8">GESTONX</text>
+</svg>
