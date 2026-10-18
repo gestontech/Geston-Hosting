@@ -1,10 +1,6 @@
 export type ThemePreference = "system" | "light" | "dark";
 
-export const SUPPORTED_LANGUAGES = ["fr", "en"] as const;
-export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
-
 const THEME_KEY = "theme";
-const LANGUAGE_KEY = "language";
 
 export function getSystemTheme(): "light" | "dark" {
   if (typeof window === "undefined") return "light";
@@ -30,34 +26,8 @@ export function applyTheme(preference: ThemePreference = getThemePreference()): 
   root.style.colorScheme = resolved;
 }
 
-export function detectLanguage(): SupportedLanguage {
-  if (typeof navigator === "undefined") return "fr";
-
-  const candidates = navigator.languages?.length ? navigator.languages : [navigator.language];
-  for (const value of candidates) {
-    const language = value?.toLowerCase().split("-")[0];
-    if (language === "fr" || language === "en") return language;
-  }
-  return "fr";
-}
-
-export function getLanguage(): SupportedLanguage {
-  if (typeof window === "undefined") return "fr";
-  const saved = localStorage.getItem(LANGUAGE_KEY);
-  if (saved === "fr" || saved === "en") return saved;
-  return detectLanguage();
-}
-
-export function applyLanguage(): SupportedLanguage {
-  const language = getLanguage();
-  document.documentElement.lang = language;
-  document.documentElement.dir = "ltr";
-  return language;
-}
-
 export function applySystemPreferences(): void {
   applyTheme();
-  applyLanguage();
 }
 
 export function watchSystemPreferences(): () => void {
@@ -67,15 +37,10 @@ export function watchSystemPreferences(): () => void {
   const onThemeChange = () => {
     if (getThemePreference() === "system") applyTheme("system");
   };
-  const onLanguageChange = () => {
-    if (!localStorage.getItem(LANGUAGE_KEY)) applyLanguage();
-  };
 
   media.addEventListener?.("change", onThemeChange);
-  window.addEventListener("languagechange", onLanguageChange);
 
   return () => {
     media.removeEventListener?.("change", onThemeChange);
-    window.removeEventListener("languagechange", onLanguageChange);
   };
 }
