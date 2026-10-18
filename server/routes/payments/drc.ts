@@ -1,144 +1,98 @@
-import { Router } from "express";
-import { requireAuth } from "../../middleware/auth.js";
+import { Router, type Response, type NextFunction } from "express";
+import { z } from "zod";
 import { Transaction } from "../../models/Transaction.js";
+import { User } from "../../models/User.js";
+import { authGuard, type AuthRequest } from "../../middleware/auth.js";
+import { banCheck } from "../../middleware/banCheck.js";
+import { paymentRateLimit } from "../../middleware/rateLimit.js";
 import {
-  createOPTCheckoutSession,
-  generateOPTReference,
-  isOPTGatewayAvailable,
-} from "../../services/optgateway.js";
+  isDRCAvailable,
+  initiateWonyaPayment,
+  getWonyaPaymentStatus,
+  normalizeDRCPhone,
+} from "../../services/wonyapay.js";
+import { notifyOwner } from "../../services/notify.js";
+import { createNotification } from "../../services/notifications.js";
+import { getParam } from "./shared.js";
+import { requirePaymentMethod } from "../../lib/featureFlags.js";
 
 const router = Router();
 
-const DRC_PACKAGES: Record<
-  string,
-  {
-    txAmount: number;
-    bonusTx: number;
-    usdPrice: number;
-    name: string;
-  }
-> = {
-  cd_starter: {
-    name: "Starter",
-    txAmount: 10,
-    bonusTx: 0,
-    usdPrice: 2,
-  },
-  cd_basic: {
-    name: "Basic",
-    txAmount: 20,
-    bonusTx: 0,
-    usdPrice: 4,
-  },
-  cd_standard: {
-    name: "Standard",
-    txAmount: 30,
-    bonusTx: 0,
-    usdPrice: 6,
-  },
-  cd_pro: {
-    name: "Pro",
-    txAmount: 50,
-    bonusTx: 5,
-    usdPrice: 10,
-  },
-  cd_elite: {
-    name: "Elite",
-    txAmount: 100,
-    bonusTx: 10,
-    usdPrice: 20,
-  },
-  cd_ultimate: {
-    name: "Ultimate",
-    txAmount: 200,
-    bonusTx: 20,
-    usdPrice: 40,
-  },
-};
-
-function appUrl(req: any): string {
-  const value =
-    process.env.APP_URL ||
-    process.env.CLIENT_URL ||
-    process.env.SITE_URL;
-
-  return (value || `${req.protocol}://${req.get("host")}`).replace(
-    /\/$/,
-    "",
-  );
-}
-
-router.post("/initiate-drc", requireAuth, async (req: any, res) => {
+router.post("/initiate-drc", authGuard, banCheck, requirePaymentMethod("drc"), paymentRateLimit, async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    if (!isOPTGatewayAvailable()) {
-      return res.status(503).json({
-        error: "Le paiement OPTGateway n'est pas configuré.",
-      });
+    if (!isDRCAvailable()) { res.status(503).json({ error: "DR Congo payments are not available." }); return; }
+    const schema = z.object({
+      amount: z.number().positive(),
+      currency: z.enum(["CDF", "USD"]).default("USD"),
+      txAmount: z.number().min(1),
+      bonusTx: z.number().min(0).default(0),
+      phone: z.string().min(8).max(16),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0]?.message || "Invalid input" }); return; }
+    const { amount, currency, txAmount, bonusTx } = parsed.data;
+    const phone = normalizeDRCPhone(parsed.data.phone);
+    if (!phone) { res.status(400).json({ error: "Enter a valid DR Congo mobile number (e.g. 0997654321)" }); return; }
+    const totalTx = txAmount + bonusTx;
+    const user = await User.findById(req.user!._id);
+    if (!user) { res.status(404).json({ error: "User not found" }); return; }
+
+    const result = await initiateWonyaPayment({ amount, currency, phone, reason: `GESTONX: ${totalTx} Coins top-up` });
+    if (!result.success || !result.refTransa) {
+      res.status(500).json({ error: result.message || "Failed to initiate payment" });
+      return;
     }
-
-    const packageId = String(req.body?.packageId || "");
-    const pkg = DRC_PACKAGES[packageId];
-
-    if (!pkg) {
-      return res.status(400).json({
-        error: "Pack RDC invalide.",
-      });
-    }
-
-    const reference = generateOPTReference();
-    const totalTx = pkg.txAmount + pkg.bonusTx;
 
     await Transaction.create({
-      userId: req.user._id,
+      userId: user._id,
       type: "topup",
       txAmount: totalTx,
-      ksAmount: 0,
-      paymentAmount: pkg.usdPrice,
-      currency: "USD",
-      reference,
-      provider: "optgateway",
-      country: "drc",
+      ksAmount: amount,
+      paystackRef: result.refTransa,
       status: "pending",
+      paystackCountry: "drc",
     });
 
-    const checkout = await createOPTCheckoutSession({
-      amount: pkg.usdPrice,
-      currency: "USD",
-      reference,
-      description: `Geston Hosting - ${pkg.name} - ${totalTx} Coins`,
-      returnUrl: `${appUrl(req)}/dashboard?payment=return&reference=${encodeURIComponent(reference)}`,
-      cancelUrl: `${appUrl(req)}/topup?payment=cancelled&reference=${encodeURIComponent(reference)}`,
-    });
+    res.json({ refTransa: result.refTransa });
+  } catch (err) {
+    next(err);
+  }
+});
 
-    if (!checkout.success) {
-      await Transaction.updateOne(
-        {
-          reference,
-          provider: "optgateway",
-          status: "pending",
-        },
-        {
-          $set: {
-            status: "failed",
-          },
-        },
-      );
-
-      return res.status(502).json({
-        error: checkout.message,
-      });
+router.get("/drc-status/:refTransa", authGuard, banCheck, async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const refTransa = getParam(req.params.refTransa);
+    const result = await getWonyaPaymentStatus(refTransa);
+    if (!result.success) { res.json({ status: "pending" }); return; }
+    if (result.status === "completed") {
+      const tx = await Transaction.findOne({ paystackRef: refTransa, userId: req.user!._id });
+      if (tx && tx.status === "pending") {
+        tx.status = "success";
+        await tx.save();
+        const user = await User.findById(req.user!._id);
+        if (user) {
+          user.txCoins += tx.txAmount;
+          await user.save();
+          notifyOwner(`💰 *DRC Payment Received*\n\nUser: \`${user.email}\`\nAmount: ${tx.txAmount} Coins (${tx.ksAmount})\nRef: \`${refTransa}\``).catch(() => {});
+          createNotification(user._id, "topup", "Top up successful", `You topped up ${tx.txAmount} Coins.`).catch(() => {});
+        }
+        res.json({ status: "success", txAmount: tx.txAmount });
+        return;
+      }
+      if (tx && tx.status === "success") { res.json({ status: "success", txAmount: tx.txAmount }); return; }
     }
-
-    return res.json({
-      checkoutUrl: checkout.url,
-      reference,
-    });
-  } catch (error) {
-    console.error("[OPT] initiate-drc", error);
-
-    return res.status(500).json({
-      error: "Impossible de lancer le paiement.",
-    });
+    if (result.status === "failed") {
+      const tx = await Transaction.findOne({ paystackRef: refTransa, userId: req.user!._id });
+      if (tx && tx.status === "pending") {
+        tx.status = "failed";
+        await tx.save();
+      }
+      res.json({ status: "failed" });
+      return;
+    }
+    res.json({ status: "pending" });
+  } catch (err) {
+    next(err);
   }
 });
 

@@ -11,17 +11,10 @@ interface ModalProps {
   maxWidth?: string;
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  title,
-  children,
-  maxWidth = "max-w-lg",
-}: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-lg" }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       lockScroll();
-
       return () => unlockScroll();
     }
   }, [isOpen]);
@@ -29,22 +22,17 @@ export function Modal({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ alignItems: "center" }}
+    >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
       <div
         className={`relative w-full ${maxWidth} bg-card border border-border rounded-xl shadow-2xl flex flex-col`}
-        style={{
-          maxHeight: "min(90dvh, 90vh)",
-          marginTop: "auto",
-          marginBottom: "auto",
-        }}
+        style={{ maxHeight: "min(90dvh, 90vh)", marginTop: "auto", marginBottom: "auto" }}
       >
         <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
-          <h2 className="font-semibold text-base">
-            {title}
-          </h2>
-
+          <h2 className="font-semibold text-base">{title}</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-muted transition-colors"
@@ -53,12 +41,11 @@ export function Modal({
             <X className="w-4 h-4" />
           </button>
         </div>
-
         <div className="overflow-y-auto p-4 flex-1">
           {children}
         </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }

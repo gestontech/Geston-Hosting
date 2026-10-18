@@ -1,4 +1,4 @@
-# Contribuer à Geston Hosting
+# Contribuer à GESTONX
 
 ## Démarrage
 

@@ -1,6 +1,6 @@
 # Changelog
 
-Tous les changements notables de Geston Hosting sont documentés dans ce fichier.
+Tous les changements notables de GESTONX sont documentés dans ce fichier.
 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et ce projet adhère au [Versionnage Sémantique](https://semver.org/lang/fr/).
@@ -103,5 +103,5 @@ et ce projet adhère au [Versionnage Sémantique](https://semver.org/lang/fr/).
 ## [1.0.0] - 2026-08-18
 
 ### Added
-- Initial Geston Hosting fullstack release: React/Vite frontend, Express/MongoDB backend
+- Initial GESTONX fullstack release: React/Vite frontend, Express/MongoDB backend
 - TX coin economy, bot deploy, panel shop, social boosting, payments, admin panel

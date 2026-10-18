@@ -1,4 +1,4 @@
-# Geston Hosting
+# GESTONX
 
 Plateforme d'hébergement de bots WhatsApp avec économie de pièces TX, boutique de panels Pterodactyl, boost de réseaux sociaux et déploiement automatisé.
 

@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import authRouter from "./routes/auth.js";
 import botRouter from "./routes/bots.js";
-import paymentsRouter, { optGatewayWebhookHandler } from "./routes/payments.js";
+import paymentsRouter, { paystackWebhookHandler, speedpesaWebhookHandler, wonyaWebhookHandler } from "./routes/payments.js";
 import panelsRouter from "./routes/panels.js";
 import adminRouter from "./routes/admin.js";
 import couponRouter from "./routes/coupons.js";
@@ -91,7 +91,7 @@ app.use((req, res, next) => {
   if (req.secure) res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   next();
 });
-app.use(express.json({ limit: "2mb", verify: (req, _res, buf) => { if (req.originalUrl === "/webhook/optgateway") (req as any).rawBody = buf.toString("utf8"); } }));
+app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -114,7 +114,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/webhook/optgateway", optGatewayWebhookHandler);
+app.post("/webhook", paystackWebhookHandler);
+app.post("/webhook/speedpesa", speedpesaWebhookHandler);
+app.post("/webhook/wonyapay", wonyaWebhookHandler);
 
 app.use("/api/auth", authRouter);
 
