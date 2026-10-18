@@ -2,7 +2,6 @@ import { StrictMode, Component } from "react";
   import type { ReactNode, ErrorInfo } from "react";
   import { createRoot } from "react-dom/client";
   import "./index.css";
-  import { applySystemPreferences, watchSystemPreferences } from "@/lib/systemPreferences";
   import App from "./App";
 
   const ACCENT_HSL: Record<string, string> = {
@@ -21,8 +20,15 @@ import { StrictMode, Component } from "react";
   };
 
   (function initThemeAndAccent() {
-    applySystemPreferences();
-    watchSystemPreferences();
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const applyPhoneTheme = () => {
+      const dark = media.matches;
+      document.documentElement.classList.toggle("dark", dark);
+      document.documentElement.classList.toggle("light", !dark);
+      document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    };
+    applyPhoneTheme();
+    media.addEventListener?.("change", applyPhoneTheme);
 
     // Default site accent: green (never violet/purple)
     let accent = localStorage.getItem("accent") || "green";

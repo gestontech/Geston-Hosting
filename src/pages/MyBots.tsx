@@ -19,12 +19,11 @@ import {
 
 function useTheme() {
   const [theme, setTheme] = useState<"dark" | "light">(() =>
-    (localStorage.getItem("theme") as "dark" | "light") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+    (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
   );
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.classList.toggle("light", theme === "light");
-    localStorage.setItem("theme", theme);
   }, [theme]);
   return { theme, toggle: () => setTheme(t => t === "dark" ? "light" : "dark") };
 }
