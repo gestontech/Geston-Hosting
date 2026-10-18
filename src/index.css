@@ -605,3 +605,144 @@ button:not([class*="bg-primary"]):not([class*="bg-destructive"]),
     transition: none !important;
   }
 }
+
+/* ---------- GESTONX Liquid Glass — system light/dark ---------- */
+:root {
+  color-scheme: light dark;
+  --glass-bg: rgba(255, 255, 255, 0.64);
+  --glass-bg-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.74);
+  --glass-border-soft: rgba(0, 0, 0, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.92);
+  --glass-shadow: 0 18px 55px rgba(15, 23, 42, 0.10), 0 2px 12px rgba(15, 23, 42, 0.06);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.92), inset 0 -1px 0 rgba(15, 23, 42, 0.04);
+  --glass-blur: 26px;
+}
+
+.dark {
+  --glass-bg: rgba(31, 31, 34, 0.66);
+  --glass-bg-strong: rgba(39, 39, 42, 0.80);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-border-soft: rgba(255, 255, 255, 0.09);
+  --glass-highlight: rgba(255, 255, 255, 0.20);
+  --glass-shadow: 0 22px 60px rgba(0, 0, 0, 0.38), 0 2px 14px rgba(0, 0, 0, 0.24);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+/* Main glass surfaces. Existing functionality/classes stay untouched. */
+.bg-card,
+.bg-popover,
+[role="dialog"],
+[data-radix-menu-content],
+[data-radix-dropdown-menu-content],
+[data-radix-select-content],
+[data-radix-popover-content],
+[data-radix-context-menu-content],
+[data-radix-hover-card-content],
+[data-radix-tooltip-content] {
+  background: var(--glass-bg) !important;
+  background-image: linear-gradient(135deg, rgba(255,255,255,0.12), transparent 46%, rgba(255,255,255,0.04)) !important;
+  border-color: var(--glass-border) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(145%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(145%);
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+}
+
+/* Cards and panels with the common Tailwind border/card utilities. */
+[class*="rounded"][class*="border"],
+[class*="rounded-xl"][class*="bg-"],
+[class*="rounded-2xl"][class*="bg-"],
+[class*="rounded-3xl"][class*="bg-"] {
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(140%);
+}
+
+/* Inputs keep the iOS-like translucent capsule/glass appearance. */
+input,
+textarea,
+select {
+  background: var(--glass-bg) !important;
+  border-color: var(--glass-border-soft) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 0 rgba(0,0,0,0.035);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: hsl(var(--ring) / 0.55) !important;
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.12), inset 0 1px 0 var(--glass-highlight) !important;
+}
+
+/* Buttons receive a restrained glass layer without changing their actions. */
+button:not(:disabled) {
+  -webkit-backdrop-filter: blur(14px) saturate(135%);
+  backdrop-filter: blur(14px) saturate(135%);
+  transition: transform 160ms ease, box-shadow 180ms ease, filter 180ms ease, background 180ms ease;
+}
+
+button:not(:disabled):hover {
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.10), inset 0 1px 0 var(--glass-highlight);
+}
+
+.dark button:not(:disabled):hover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.30), inset 0 1px 0 var(--glass-highlight);
+}
+
+/* Neutral controls match the reference: translucent, soft and pill-like. */
+.bg-secondary,
+.bg-muted,
+.bg-accent {
+  background: var(--glass-bg) !important;
+  border-color: var(--glass-border-soft) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Primary controls keep the existing accent color while gaining glass depth. */
+.bg-primary {
+  box-shadow: 0 8px 24px hsl(var(--primary) / 0.20), inset 0 1px 0 rgba(255,255,255,0.28);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+/* Native scrolling surfaces should feel continuous with the glass UI. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(127, 127, 127, 0.28);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not(.dark) {
+    color-scheme: light;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  input, textarea, select, button:not(:disabled) {
+    transition: none !important;
+  }
+}

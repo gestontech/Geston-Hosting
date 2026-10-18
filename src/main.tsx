@@ -21,6 +21,8 @@ import { StrictMode, Component } from "react";
 
   (function initThemeAndAccent() {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
+    // Theme is intentionally controlled by the phone/browser system setting.
+
     const applyPhoneTheme = () => {
       const dark = media.matches;
       document.documentElement.classList.toggle("dark", dark);
